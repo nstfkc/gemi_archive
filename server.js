@@ -1,85 +1,69 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import express from "express";
-import { createServer as createViteServer, build, defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import { createServer, build, defineConfig } from "vite";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const getAssets = async (input) => {
+  const result = await build(
+    defineConfig({
+      plugins: [react()],
+      build: {
+        minify: false,
+        rollupOptions: {
+          input,
+        },
+      },
+    })
+  );
 
-async function createServer() {
+  console.log(result.output.map(({ code, ...rest }) => rest));
+  const scripts = result.output
+    .map(
+      (out) =>
+        `<script type="module" src="http://localhost:5173/${out.fileName}"></script>`
+    )
+    .join("\n");
+
+  return {
+    scripts,
+  };
+};
+
+const rootDir = path.resolve(process.cwd());
+const assetsDir = path.join(rootDir, "dist/assets");
+const libDir = path.join(rootDir, "lib");
+const bootstrapPath = path.join(libDir, "bootstrap");
+
+async function main() {
   const app = express();
 
-  // Create Vite server in middleware mode and configure the app type as
-  // 'custom', disabling Vite's own HTML serving logic so parent server
-  // can take control
-  const vite = await createViteServer({
+  const vite = await createServer({
     server: { middlewareMode: true },
     appType: "custom",
   });
 
-  // Use vite's connect instance as middleware. If you use your own
-  // express router (express.Router()), you should use router.use
   app.use(vite.middlewares);
 
-  app.use("/assets", express.static("dist/assets"));
+  app.use("/assets", express.static(assetsDir));
 
   app.use("*", async (req, res, next) => {
-    console.log(req.url);
-
-    const result = await build(
-      defineConfig({
-        mode: "development",
-        plugins: [react()],
-        build: {
-          minify: false,
-          rollupOptions: {
-            input: "src/Test.tsx",
-          },
-        },
-      })
-    );
-
-    const url = req.originalUrl;
-
     try {
-      // 1. Read index.html
-      let template = fs.readFileSync(
-        path.resolve(__dirname, "index.html"),
-        "utf-8"
-      );
+      let template = fs.readFileSync(path.join(rootDir, "index.html"), "utf-8");
 
-      // 2. Apply Vite HTML transforms. This injects the Vite HMR client,
-      //    and also applies HTML transforms from Vite plugins, e.g. global
-      //    preambles from @vitejs/plugin-react
-      template = await vite.transformIndexHtml(url, template);
+      const { bootstrap } = await vite.ssrLoadModule(bootstrapPath);
+      const { viewPath, kind, render } = await bootstrap({ req, res });
 
-      // 3. Load the server entry. ssrLoadModule automatically transforms
-      //    ESM source code to be usable in Node.js! There is no bundling
-      //    required, and provides efficient invalidation similar to HMR.
-      const { default: render } = await vite.ssrLoadModule(
-        "/src/entry-server.tsx"
-      );
-
-      // 4. render the app HTML. This assumes entry-server.js's exported
-      //     `render` function calls appropriate framework SSR APIs,
-      //    e.g. ReactDOMServer.renderToString()
-      const appHtml = await render(url);
-
-      const scripts = result.output
-        .map(
-          (out) =>
-            `<script type="module" src="http://localhost:5173/${out.fileName}"></script>`
-        )
-        .join("\n");
-
-      // 5. Inject the app-rendered HTML into the template.
-      const html = template.replace(`<!--ssr-outlet-->`, appHtml.trim());
-
-      const htmlWithScripts = html.replace(`<!--scripts-->`, `${scripts}`);
-
-      // 6. Send the rendered HTML back.
-      res.status(200).set({ "Content-Type": "text/html" }).end(htmlWithScripts);
+      if (kind === "html") {
+        const { scripts } = await getAssets(viewPath);
+        const appHtml = await render();
+        const html = template.replace(`<!--ssr-outlet-->`, appHtml.trim());
+        const htmlWithScripts = html.replace(`<!--scripts-->`, `${scripts}`);
+        res
+          .status(200)
+          .set({ "Content-Type": "text/html" })
+          .end(htmlWithScripts);
+      }
     } catch (e) {
       // If an error is caught, let Vite fix the stack trace so it maps back
       // to your actual source code.
@@ -91,4 +75,4 @@ async function createServer() {
   app.listen(5173);
 }
 
-createServer();
+main();
