@@ -1,6 +1,8 @@
 import { Response, Request } from "express";
 import { renderToString } from "react-dom/server";
 
+import { routes } from "@/app/http/routes";
+
 interface Ctx {
   res: Response;
   req: Request;
@@ -9,9 +11,15 @@ interface Ctx {
 export async function bootstrap(_ctx: Ctx) {
   const App = (await import("./app")).default;
 
+  const route = routes["/"];
+
   return {
     viewPath: ["lib/app.tsx"],
     kind: "html",
-    render: () => renderToString(<App />),
+    render: () => {
+      console.log();
+      const res = route(_ctx.req, _ctx.res);
+      return `${res}${renderToString(<App />)}`;
+    },
   };
 }

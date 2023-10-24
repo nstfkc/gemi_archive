@@ -17,7 +17,6 @@ const getAssets = async (input) => {
     })
   );
 
-  console.log(result.output.map(({ code, ...rest }) => rest));
   const scripts = result.output
     .map(
       (out) =>
@@ -33,6 +32,7 @@ const getAssets = async (input) => {
 const rootDir = path.resolve(process.cwd());
 const assetsDir = path.join(rootDir, "dist/assets");
 const libDir = path.join(rootDir, "lib");
+const appDir = path.join(rootDir, "app");
 const bootstrapPath = path.join(libDir, "bootstrap");
 
 async function main() {
@@ -41,6 +41,12 @@ async function main() {
   const vite = await createServer({
     server: { middlewareMode: true },
     appType: "custom",
+    resolve: {
+      alias: {
+        "@/lib": libDir,
+        "@/app": appDir,
+      },
+    },
   });
 
   app.use(vite.middlewares);

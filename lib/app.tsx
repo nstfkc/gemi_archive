@@ -1,5 +1,5 @@
 import { hydrateRoot } from "react-dom/client";
-import Test from "../src/Test";
+import Test from "../app/Test";
 
 const App = () => {
   return (
@@ -10,11 +10,11 @@ const App = () => {
   );
 };
 
-if (typeof document !== "undefined") {
-  document.getElementById("app")!.innerHTML = document
-    .getElementById("app")!
-    .innerHTML.trim();
-  hydrateRoot(document.getElementById("app")!, <App />);
-}
+/* if (typeof document !== "undefined") {
+ *   document.getElementById("app")!.innerHTML = document
+ *     .getElementById("app")!
+ *     .innerHTML.trim();
+ *   hydrateRoot(document.getElementById("app")!, <App />);
+ * } */
 
 export default App;
