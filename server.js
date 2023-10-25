@@ -14,16 +14,16 @@ const getAssets = async (input) => {
   const result = await build(
     defineConfig({
       plugins: [react()],
+      resolve: {
+        alias: {
+          "@/lib": libDir,
+          "@/app": appDir,
+        },
+      },
       build: {
         minify: false,
         rollupOptions: {
           input,
-        },
-        resolve: {
-          alias: {
-            "@/lib": libDir,
-            "@/app": appDir,
-          },
         },
       },
     })
@@ -66,7 +66,6 @@ async function main() {
       const { bootstrap } = await vite.ssrLoadModule(bootstrapPath);
       const { viewPath, kind, data, render } = await bootstrap({ req, res });
 
-      console.log({ viewPath });
       if (kind === "html") {
         const { scripts } = await getAssets(viewPath);
         const appHtml = await render();
