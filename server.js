@@ -71,9 +71,13 @@ async function main() {
         const appHtml = await render();
         const html = template.replace(`<!--ssr-outlet-->`, appHtml.trim());
         const dataString = JSON.stringify(data);
-        const htmlWithScripts = html
-          .replace(`<!--scripts-->`, scripts)
-          .concat(`<script>window.data = '${dataString}'</script>`);
+
+        const allScripts = scripts.concat(
+          `<script type="module" src="http://localhost:5173/@vite/client"></script>
+<script>window.data = '${dataString}'</script>`
+        );
+        const htmlWithScripts = html.replace(`<!--scripts-->`, allScripts);
+
         res
           .status(200)
           .set({ "Content-Type": "text/html" })
