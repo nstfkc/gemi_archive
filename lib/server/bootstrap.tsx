@@ -15,26 +15,44 @@ export async function bootstrap(ctx: Ctx) {
   const App = (await import("../app")).default;
 
   const routeMatcher = createRouteMatcher(routes);
-  const { match, params } = routeMatcher(req.originalUrl.split("?")[0]);
+  const isRoutePath = req.originalUrl.startsWith("/__route");
+  const { match, params } = routeMatcher(
+    req.originalUrl.split("?")[0].replace("__route", "").replace("//", "/")
+  );
 
   const route = routes[match];
 
   if (!route) {
     res.end("404");
   }
-  const handler = routes[match];
-  const { kind, viewPath, data } = handler({ req, res, params });
+
+  const kind = isRoutePath ? "route" : "html";
+  const { viewPath, data } = route({ req, res, params });
 
   const Children = (await import(`../../app/views/${viewPath}`)).default;
+  if (kind === "route") {
+    return {
+      viewPath: ["lib/app.tsx", `app/views/${viewPath}.tsx`],
+      kind,
+      serverData: {
+        data,
+      },
+      render: () => "",
+    };
+  }
 
   return {
     viewPath: ["lib/app.tsx", `app/views/${viewPath}.tsx`],
-    data,
-    kind: "html",
+    kind,
+    serverData: {
+      data,
+      routes: Object.keys(routes),
+      currentRoute: match,
+    },
     render: () => {
       return renderToString(
         <App>
-          <StaticRouter location="/">
+          <StaticRouter location={req.originalUrl}>
             <Children data={data} />
           </StaticRouter>
         </App>

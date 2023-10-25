@@ -1,16 +1,13 @@
-type RouteParams = {
-  [key: string]: string;
-};
-
 type RouteHandlers = {
-  [key: string]: (params: RouteParams) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: (params: any) => void;
 };
 
 export function createRouteMatcher(routes: RouteHandlers) {
   return (
     url: string
   ): {
-    match: string;
+    match: keyof typeof routes;
     params: unknown[];
   } => {
     const routeKeys = Object.keys(routes);

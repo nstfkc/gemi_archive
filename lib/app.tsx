@@ -1,15 +1,32 @@
 import { PropsWithChildren } from "react";
 import { hydrateRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { DynamicRoute } from "./client/DynamicRoute";
 
 const App = (props: PropsWithChildren) => {
   let children = props.children;
   if (typeof window !== "undefined") {
+    const { data, routes, currentRoute } = JSON.parse(window.serverData);
+
     const C = window.component;
-    const data = JSON.parse(window.data);
+    const element = <C data={data} />;
     children = (
       <BrowserRouter>
-        <C data={data} />
+        <Routes>
+          <Route path={currentRoute} element={element} />
+
+          {(routes as string[])
+            .filter((r) => r !== currentRoute)
+            .map((r) => {
+              return (
+                <Route
+                  key={r}
+                  path={r}
+                  element={<DynamicRoute fallback={element} path={r} />}
+                />
+              );
+            })}
+        </Routes>
       </BrowserRouter>
     );
   }
@@ -21,7 +38,7 @@ if (typeof window !== "undefined") {
     .getElementById("app")!
     .innerHTML.trim();
 
-  hydrateRoot(document.getElementById("app")!, <App></App>);
+  hydrateRoot(document.getElementById("app")!, <App />);
 }
 
 export default App;

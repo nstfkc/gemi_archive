@@ -1,4 +1,5 @@
 import { defineView } from "../../lib/client/view";
+import { Link } from "react-router-dom";
 
 type HomeData = {
   message: string;
@@ -7,9 +8,9 @@ type HomeData = {
 const Home = (props: { data: HomeData }) => {
   return (
     <div>
-      <div>{props.data.message}</div>
+      Home Page
       <div>
-        <a href="/about">About</a>
+        <Link to="/about">About</Link>
       </div>
     </div>
   );
