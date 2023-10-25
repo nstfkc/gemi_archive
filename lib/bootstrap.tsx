@@ -22,14 +22,20 @@ export async function bootstrap(ctx: Ctx) {
   if (!route) {
     res.end("404");
   }
+  const handler = routes[match];
+  const { kind, viewPath, data } = handler({ req, res, params });
+
+  const Children = (await import(`../app/views/${viewPath}`)).default;
 
   return {
     viewPath: ["lib/app.tsx"],
     kind: "html",
     render: () => {
-      const handler = routes[match];
-      const response = handler({ req, res, params });
-      return `${response}${renderToString(<App />)}`;
+      return renderToString(
+        <App>
+          <Children data={data} />
+        </App>
+      );
     },
   };
 }

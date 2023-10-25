@@ -1,11 +1,11 @@
+import { PropsWithChildren } from "react";
 import { hydrateRoot } from "react-dom/client";
-import Test from "../app/Test";
 
-const App = () => {
+const App = (props: PropsWithChildren) => {
   return (
     <div>
       <h1>Welcome to jaravel</h1>
-      <Test />
+      {props.children}
     </div>
   );
 };

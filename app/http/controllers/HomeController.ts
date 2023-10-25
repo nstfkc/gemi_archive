@@ -2,7 +2,7 @@ import { Controller } from "@/lib/Controller";
 
 export class HomeController extends Controller {
   index = () => {
-    return this.req.originalUrl;
+    return this.render("Home", { message: "hello world" });
   };
 
   page = (pageId: string) => {
