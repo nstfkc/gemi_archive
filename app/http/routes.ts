@@ -1,9 +1,9 @@
 import { Route } from "@/lib/Route";
 
 import { HomeController } from "./controllers/HomeController";
+import { AboutController } from "./controllers/AboutController";
 
 export const routes = {
   "/": Route(HomeController, "index"),
-  "/page/:pageId": Route(HomeController, "page"),
-  "/foo/:bar/:baz": Route(HomeController, "foo"),
+  "/about": Route(AboutController, "index"),
 };

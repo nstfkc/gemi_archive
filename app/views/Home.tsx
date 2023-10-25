@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { defineView } from "../../lib/client/view";
 
 type HomeData = {
@@ -6,13 +5,15 @@ type HomeData = {
 };
 
 const Home = (props: { data: HomeData }) => {
-  const [count, setCount] = useState(0);
   return (
     <div>
       <div>{props.data.message}</div>
-      <button onClick={() => setCount((s) => s + 1)}>{count}</button>
+      <div>
+        <a href="/about">About</a>
+      </div>
     </div>
   );
 };
 
-export default defineView(Home);
+const view = defineView(Home);
+export default view;
