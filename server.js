@@ -16,6 +16,7 @@ const getAssets = async (input) => {
       plugins: [react()],
       resolve: {
         alias: {
+          "@/lib/server": path.join(libDir, "client"),
           "@/lib": libDir,
           "@/app": appDir,
         },
