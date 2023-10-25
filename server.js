@@ -4,6 +4,12 @@ import express from "express";
 import react from "@vitejs/plugin-react-swc";
 import { createServer, build, defineConfig } from "vite";
 
+const rootDir = path.resolve(process.cwd());
+const assetsDir = path.join(rootDir, "dist/assets");
+const libDir = path.join(rootDir, "lib");
+const appDir = path.join(rootDir, "app");
+const bootstrapPath = path.join(libDir, "bootstrap");
+
 const getAssets = async (input) => {
   const result = await build(
     defineConfig({
@@ -12,6 +18,12 @@ const getAssets = async (input) => {
         minify: false,
         rollupOptions: {
           input,
+        },
+        resolve: {
+          alias: {
+            "@/lib": libDir,
+            "@/app": appDir,
+          },
         },
       },
     })
@@ -28,12 +40,6 @@ const getAssets = async (input) => {
     scripts,
   };
 };
-
-const rootDir = path.resolve(process.cwd());
-const assetsDir = path.join(rootDir, "dist/assets");
-const libDir = path.join(rootDir, "lib");
-const appDir = path.join(rootDir, "app");
-const bootstrapPath = path.join(libDir, "bootstrap");
 
 async function main() {
   const app = express();
@@ -58,13 +64,17 @@ async function main() {
       let template = fs.readFileSync(path.join(rootDir, "index.html"), "utf-8");
 
       const { bootstrap } = await vite.ssrLoadModule(bootstrapPath);
-      const { viewPath, kind, render } = await bootstrap({ req, res });
+      const { viewPath, kind, data, render } = await bootstrap({ req, res });
 
+      console.log({ viewPath });
       if (kind === "html") {
         const { scripts } = await getAssets(viewPath);
         const appHtml = await render();
         const html = template.replace(`<!--ssr-outlet-->`, appHtml.trim());
-        const htmlWithScripts = html.replace(`<!--scripts-->`, `${scripts}`);
+        const dataString = JSON.stringify(data);
+        const htmlWithScripts = html
+          .replace(`<!--scripts-->`, scripts)
+          .concat(`<script>window.data = '${dataString}'</script>`);
         res
           .status(200)
           .set({ "Content-Type": "text/html" })

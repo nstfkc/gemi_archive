@@ -28,7 +28,8 @@ export async function bootstrap(ctx: Ctx) {
   const Children = (await import(`../app/views/${viewPath}`)).default;
 
   return {
-    viewPath: ["lib/app.tsx"],
+    viewPath: ["lib/app.tsx", `app/views/${viewPath}.tsx`],
+    data,
     kind: "html",
     render: () => {
       return renderToString(
