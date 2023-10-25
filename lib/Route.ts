@@ -1,20 +1,29 @@
 import { Request, Response } from "express";
 import { Controller } from "./Controller";
 
+interface RouterContext<T> {
+  req: Request;
+  res: Response;
+  params: T;
+}
+
+type Todo<T extends string> = T extends string ? unknown : unknown;
+
 type ClassMethodNames<T> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
 }[keyof T];
 
 export function Route<T extends Controller>(
-  C: { new (): T },
+  C: { new (req: Request, res: Response): T },
   method: ClassMethodNames<T>
 ) {
-  const instance = new C();
-  const m = instance[method];
-
-  return (req: Request, res: Response) => {
+  return (ctx: RouterContext<Todo<"Type parameters">>) => {
+    const { req, res, params } = ctx;
+    const instance = new C(req, res);
+    const m = instance[method];
     if (typeof m === "function") {
-      return m.call(instance, {}, { req, res });
+      return m(...params);
     }
   };
 }

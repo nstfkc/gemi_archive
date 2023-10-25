@@ -2,24 +2,34 @@ import { Response, Request } from "express";
 import { renderToString } from "react-dom/server";
 
 import { routes } from "@/app/http/routes";
+import { createRouteMatcher } from "./helpers/routeMatcher";
 
 interface Ctx {
   res: Response;
   req: Request;
 }
 
-export async function bootstrap(_ctx: Ctx) {
+export async function bootstrap(ctx: Ctx) {
+  const { req, res } = ctx;
   const App = (await import("./app")).default;
 
-  const route = routes["/"];
+  const routeMatcher = createRouteMatcher(routes);
+  const { match, params } = routeMatcher(req.originalUrl.split("?")[0]);
+
+  console.log({ params });
+  const route = routes[match];
+
+  if (!route) {
+    res.end("404");
+  }
 
   return {
     viewPath: ["lib/app.tsx"],
     kind: "html",
     render: () => {
-      console.log();
-      const res = route(_ctx.req, _ctx.res);
-      return `${res}${renderToString(<App />)}`;
+      const handler = routes[match];
+      const response = handler({ req, res, params });
+      return `${response}${renderToString(<App />)}`;
     },
   };
 }
