@@ -1,4 +1,4 @@
-import { Controller } from "@/lib/Controller";
+import { Controller } from "@/lib/server/Controller";
 
 export class AboutController extends Controller {
   index = () => {

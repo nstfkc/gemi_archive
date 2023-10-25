@@ -8,7 +8,7 @@ const rootDir = path.resolve(process.cwd());
 const assetsDir = path.join(rootDir, "dist/assets");
 const libDir = path.join(rootDir, "lib");
 const appDir = path.join(rootDir, "app");
-const bootstrapPath = path.join(libDir, "bootstrap");
+const bootstrapPath = path.join(libDir, "server/bootstrap");
 
 const getAssets = async (input) => {
   const result = await build(

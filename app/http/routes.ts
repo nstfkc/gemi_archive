@@ -1,4 +1,4 @@
-import { Route } from "@/lib/Route";
+import { Route } from "@/lib/server/Route";
 
 import { HomeController } from "./controllers/HomeController";
 import { AboutController } from "./controllers/AboutController";

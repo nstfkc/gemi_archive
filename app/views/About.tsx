@@ -1,5 +1,4 @@
 import { defineView } from "@/lib/client/view";
-import { Button } from "./components/Button";
 
 type AboutData = {
   message: string;

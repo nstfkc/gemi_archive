@@ -1,19 +1,19 @@
 import { PropsWithChildren } from "react";
 import { hydrateRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 
 const App = (props: PropsWithChildren) => {
   let children = props.children;
   if (typeof window !== "undefined") {
     const C = window.component;
     const data = JSON.parse(window.data);
-    children = <C data={data} />;
+    children = (
+      <BrowserRouter>
+        <C data={data} />
+      </BrowserRouter>
+    );
   }
-  return (
-    <div>
-      <h1>Welcome to jaravel</h1>
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 };
 
 if (typeof window !== "undefined") {
