@@ -9,8 +9,13 @@ function createRoutes() {
   const { routeViewMap } = JSON.parse(window.serverData);
   return (
     <>
-      <Route path="/" Component={views["/app/views/Home.tsx"].default} />,
-      <Route path="/about" Component={views["/app/views/About.tsx"].default} />
+      {Object.entries(routeViewMap).map(([path, { viewPath }]) => (
+        <Route
+          key={path}
+          path={path}
+          Component={views[`/app/views/${viewPath}.tsx`].default}
+        />
+      ))}
     </>
   );
 }
