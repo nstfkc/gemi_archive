@@ -1,8 +1,5 @@
 import { hydrateRoot } from "react-dom/client";
 import {
-  BrowserRouter,
-  Route,
-  Routes,
   useLoaderData,
   createBrowserRouter,
   RouterProvider,
@@ -14,7 +11,6 @@ const views = import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
 
 const DataLoader = (props: { Component: any }) => {
   const data = useLoaderData();
-  console.log(data);
   return <props.Component data={data} />;
 };
 
@@ -28,7 +24,7 @@ function createRouter() {
         path,
         element: <DataLoader Component={Component} />,
       };
-    })
+    }),
   );
 }
 

@@ -16,7 +16,7 @@ const bootstrapPath = path.join(libDir, "server/bootstrap");
 export async function createServer(
   root = process.cwd(),
   isProd = process.env.NODE_ENV === "production",
-  hmrPort
+  hmrPort,
 ) {
   const resolve = (p) => path.resolve(__dirname, p);
 
@@ -35,13 +35,10 @@ export async function createServer(
       await import("vite")
     ).createServer({
       root,
-
       logLevel: isTest ? "error" : "info",
       server: {
         middlewareMode: true,
         watch: {
-          // During tests we edit the files too fast and sometimes chokidar
-          // misses change events, so enforce polling for consistency
           usePolling: true,
           interval: 100,
         },
@@ -57,14 +54,13 @@ export async function createServer(
         },
       },
     });
-    // use vite's connect instance as middleware
     app.use(vite.middlewares);
   } else {
     app.use((await import("compression")).default());
     app.use(
       (await import("serve-static")).default(resolve("dist/client"), {
         index: false,
-      })
+      }),
     );
   }
 
@@ -74,7 +70,6 @@ export async function createServer(
 
       let template, bootstrap;
       if (!isProd) {
-        // always read fresh template in dev
         template = fs.readFileSync(resolve("index.html"), "utf-8");
         template = await vite.transformIndexHtml(url, template);
         bootstrap = (await vite.ssrLoadModule("/lib/server/bootstrap.tsx"))
@@ -88,13 +83,8 @@ export async function createServer(
       const { render, serverData } = await bootstrap({ req, res });
       const appHtml = render(url, context);
 
-      // if (context.url) {
-      //   // Somewhere a `<Redirect>` was rendered
-      //   return res.redirect(301, context.url);
-      // }
-
       const scripts = `<script>window.serverData = '${JSON.stringify(
-        serverData
+        serverData,
       )}';</script>`;
 
       const html = template.replace(`<!--app-html-->`, appHtml).concat(scripts);
@@ -107,13 +97,13 @@ export async function createServer(
     }
   });
 
-  return { app, vite };
+  return { app };
 }
 
 if (!isTest) {
   createServer().then(({ app }) =>
     app.listen(5173, () => {
       console.log("http://localhost:5173");
-    })
+    }),
   );
 }

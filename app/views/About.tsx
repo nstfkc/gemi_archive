@@ -1,4 +1,4 @@
-import { Link } from "@/lib/client/Link";
+import { Link } from "react-router-dom";
 
 type AboutData = {
   message: string;
@@ -7,7 +7,7 @@ type AboutData = {
 const About = () => {
   return (
     <div>
-      <div>About page</div>
+      <div>About page x</div>
       <div>
         <Link to="/">Home Route</Link>
       </div>
