@@ -4,10 +4,10 @@ type AboutData = {
   message: string;
 };
 
-const About = () => {
+const About = (props: { data: AboutData }) => {
   return (
     <div>
-      <div>About page</div>
+      <div>{props.data.message}</div>
       <div>
         <Link to="/">Home Route</Link>
       </div>

@@ -4,10 +4,10 @@ type HomeData = {
   message: string;
 };
 
-const Home = () => {
+const Home = (props: { data: HomeData }) => {
   return (
     <div>
-      Home Page
+      {props.data.message}
       <div>
         <Link to="/about">About</Link>
       </div>

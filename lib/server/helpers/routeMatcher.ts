@@ -5,7 +5,7 @@ type RouteHandlers = {
 
 export function createRouteMatcher(routes: RouteHandlers) {
   return (
-    url: string
+    url: string,
   ): {
     match: keyof typeof routes;
     params: unknown[];
@@ -16,7 +16,7 @@ export function createRouteMatcher(routes: RouteHandlers) {
     const firstSegmentMatches = routeKeys.filter(
       (key) =>
         key.startsWith(`/${firstSegment}`) &&
-        key.split("/").length === urlSegments.length + 2
+        key.split("/").length === urlSegments.length + 2,
     );
 
     const match = firstSegmentMatches[0];

@@ -6,14 +6,24 @@ const views = import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
 });
 
 const App = () => {
-  const { routeViewMap, currentRoute } = JSON.parse(window.serverData);
+  const { routeViewMap, currentRoute, routeData } = JSON.parse(
+    window.serverData,
+  );
   return (
-    <RouterProvider initialPath={currentRoute}>
-      {Object.entries(routeViewMap).map(([path, { viewPath }]) => {
-        const Component = views[`/app/views/${viewPath}.tsx`].default;
-        return <Route key={path} Component={Component} path={path} />;
-      })}
-    </RouterProvider>
+    <RouterProvider
+      initialPath={currentRoute}
+      initialRouteData={routeData[currentRoute]}
+      routes={
+        Object.entries(routeViewMap).map(([path, { viewPath }]) => {
+          const Component = views[`/app/views/${viewPath}.tsx`].default;
+          return {
+            Component,
+            loader: () => fetch(`/__json/${path}`).then((res) => res.json()),
+            path,
+          };
+        }) as any
+      }
+    />
   );
 };
 

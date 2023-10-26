@@ -17,9 +17,9 @@ export async function bootstrap(ctx: Ctx) {
   const { req, res } = ctx;
 
   const routeMatcher = createRouteMatcher(routes);
-  const isRoutePath = req.originalUrl.startsWith("/__route");
+  const isJSONRequest = req.originalUrl.startsWith("/__json");
   const { match, params } = routeMatcher(
-    req.originalUrl.split("?")[0].replace("__route", "").replace("//", "/"),
+    req.originalUrl.split("?")[0].replace("/__json", "").replace("//", "/"),
   );
 
   const route = routes[match];
@@ -28,18 +28,11 @@ export async function bootstrap(ctx: Ctx) {
     res.end("404");
   }
 
-  const routeViewMap = Object.fromEntries(
-    Object.entries(routes).filter(([, x]) => x?.viewPath),
-  );
-
-  const kind = isRoutePath ? "route" : "html";
   const { viewPath, data } = route.exec({ req, res, params });
 
-  const Children = views[`../../app/views/${viewPath}.tsx`].default;
-
-  if (kind === "route") {
+  if (isJSONRequest) {
     return {
-      kind,
+      isJSONRequest: true,
       serverData: {
         data,
       },
@@ -47,8 +40,14 @@ export async function bootstrap(ctx: Ctx) {
     };
   }
 
+  const routeViewMap = Object.fromEntries(
+    Object.entries(routes).filter(([, x]) => x?.viewPath),
+  );
+
+  const Children = views[`../../app/views/${viewPath}.tsx`].default;
+
   return {
-    kind,
+    isJSONRequest: false,
     serverData: {
       routeViewMap,
       routeData: { [match]: data },

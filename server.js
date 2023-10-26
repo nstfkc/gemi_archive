@@ -80,7 +80,15 @@ export async function createServer(
       }
 
       const context = {};
-      const { render, serverData } = await bootstrap({ req, res });
+      const { render, serverData, isJSONRequest } = await bootstrap({
+        req,
+        res,
+      });
+
+      if (isJSONRequest) {
+        return res.json(serverData.data);
+      }
+
       const appHtml = render(url, context);
 
       const scripts = `<script>window.serverData = '${JSON.stringify(

@@ -33,8 +33,8 @@ export function view<T extends Controller>(
   viewPath: string,
   [C, method]: [
     { new (req: Request, res: Response, kind: RenderKind): T },
-    ClassMethodNames<T>
-  ]
+    ClassMethodNames<T>,
+  ],
 ) {
   return {
     exec: (ctx: RouterContext<Todo<"Type parameters">>) => {
@@ -42,7 +42,8 @@ export function view<T extends Controller>(
       const instance = new C(req, res, kind);
       const m = instance[method];
       if (typeof m === "function") {
-        return m(...params);
+        const data = m(...params);
+        return { data, viewPath };
       }
     },
     viewPath,
@@ -51,7 +52,7 @@ export function view<T extends Controller>(
 
 export function get<T extends Controller>(
   C: { new (req: Request, res: Response, kind: RenderKind): T },
-  method: ClassMethodNames<T>
+  method: ClassMethodNames<T>,
 ) {
   return {
     exec: (ctx: RouterContext<Todo<"Type parameters">>) => {
