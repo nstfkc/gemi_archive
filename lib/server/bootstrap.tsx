@@ -6,6 +6,10 @@ import { routes } from "@/app/http/routes";
 import { createRouteMatcher } from "./helpers/routeMatcher";
 import App from "../app";
 
+const views = import.meta.glob(["../../app/views/**/*", "!**/components/*"], {
+  eager: true,
+});
+
 interface Ctx {
   res: Response;
   req: Request;
@@ -29,7 +33,7 @@ export async function bootstrap(ctx: Ctx) {
   const kind = isRoutePath ? "route" : "html";
   const { viewPath, data } = route({ req, res, params });
 
-  const Children = (await import(`../../app/views/${viewPath}.tsx`)).default;
+  const Children = views[`../../app/views/${viewPath}.tsx`].default;
 
   if (kind === "route") {
     return {

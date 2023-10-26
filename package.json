@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "node server.js",
     "test": "vitest",
-    "build": "tsc && vite build",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build --outDir dist/client",
+    "build:server": "vite build --ssr lib/server/bootstrap.tsx --outDir dist/lib/server",
+    "serve": "NODE_ENV=production node server",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -26,6 +29,7 @@
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.1.0",
     "@vitejs/plugin-react-swc": "^3.3.2",
     "eslint": "^8.45.0",
     "eslint-plugin-react-hooks": "^4.6.0",
