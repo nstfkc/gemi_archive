@@ -8,7 +8,12 @@ const App = (props: PropsWithChildren) => {
   if (typeof window !== "undefined") {
     const { data, routes, currentRoute } = JSON.parse(window.serverData);
 
-    const C = window.component;
+    window.views = {};
+    if (!window.views[currentRoute]) {
+      window.views[currentRoute] = window.component;
+    }
+
+    const C = window.views[currentRoute];
     const element = <C data={data} />;
     children = (
       <BrowserRouter>

@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import type { Response, Request } from "express";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
 
@@ -30,6 +30,7 @@ export async function bootstrap(ctx: Ctx) {
   const { viewPath, data } = route({ req, res, params });
 
   const Children = (await import(`../../app/views/${viewPath}.tsx`)).default;
+
   if (kind === "route") {
     return {
       viewPath: `app/views/${viewPath}.tsx`,

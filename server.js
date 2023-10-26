@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import express from "express";
 import react from "@vitejs/plugin-react-swc";
-import { createServer, build, defineConfig, preview } from "vite";
+import { createServer, build, defineConfig } from "vite";
 
 const rootDir = path.resolve(process.cwd());
 const assetsDir = path.join(rootDir, "dist/assets");
@@ -52,13 +52,13 @@ const getAssets = async (input) => {
     })
   );
 
-  const scripts = result.output.map(({ code, ...rest }) => rest);
+  const scripts = result.output.map(({ _code, ...rest }) => rest);
 
   return {
     scripts,
   };
 };
-console.log(await getViews());
+
 const viewManifest = await getAssets([...(await getViews()), "lib/app.tsx"]);
 
 async function main() {
@@ -90,7 +90,6 @@ async function main() {
       });
 
       if (kind === "html") {
-        // const { scripts } = await getAssets(["lib/app.tsx", viewPath]);
         const appHtml = await render();
 
         const s = viewManifest.scripts
@@ -133,10 +132,7 @@ async function main() {
           .set({ "Content-Type": "text/html" })
           .end(htmlWithScripts);
       } else {
-        const { scripts } = await getAssets(["lib/app.tsx", viewPath]);
-
         res.json({
-          module: { fileName: scripts[0].fileName },
           view: viewPath.replace("app/views/", "").split(".")[0],
           data: serverData.data,
         });

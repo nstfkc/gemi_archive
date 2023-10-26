@@ -8,7 +8,7 @@ type AboutData = {
 const About = (props: { data: AboutData }) => {
   return (
     <div>
-      <div>About page</div>
+      <div>About page test asd 1234</div>
       <div>
         <Link to="/">Home Route</Link>
       </div>
