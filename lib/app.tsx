@@ -1,32 +1,27 @@
-import { PropsWithChildren } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-let views = {};
+const views = import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
+  eager: true,
+});
 
-if (!import.meta.env.SSR) {
-  views = import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
-    eager: true,
-  });
+function createRoutes() {
+  const { routeViewMap } = JSON.parse(window.serverData);
+  return (
+    <>
+      <Route path="/" Component={views["/app/views/Home.tsx"].default} />,
+      <Route path="/about" Component={views["/app/views/About.tsx"].default} />
+    </>
+  );
 }
 
-const App = (props: PropsWithChildren) => {
-  let children = props.children;
-  if (typeof window !== "undefined") {
-    console.log(views);
-    children = (
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" Component={views["/app/views/Home.tsx"].default} />,
-          <Route
-            path="/about"
-            Component={views["/app/views/About.tsx"].default}
-          />
-        </Routes>
-      </BrowserRouter>
-    );
-  }
-  return <>{children}</>;
+const App = () => {
+  const routes = createRoutes();
+  return (
+    <BrowserRouter>
+      <Routes>{routes}</Routes>
+    </BrowserRouter>
+  );
 };
 
 if (typeof window !== "undefined") {

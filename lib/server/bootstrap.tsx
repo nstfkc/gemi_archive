@@ -4,7 +4,6 @@ import { StaticRouter } from "react-router-dom/server";
 
 import { routes } from "@/app/http/routes";
 import { createRouteMatcher } from "./helpers/routeMatcher";
-import App from "../app";
 
 const views = import.meta.glob(["../../app/views/**/*", "!**/components/*"], {
   eager: true,
@@ -30,8 +29,12 @@ export async function bootstrap(ctx: Ctx) {
     res.end("404");
   }
 
+  const routeViewMap = Object.fromEntries(
+    Object.entries(routes).filter(([, x]) => x?.viewPath)
+  );
+
   const kind = isRoutePath ? "route" : "html";
-  const { viewPath, data } = route({ req, res, params });
+  const { viewPath, data } = route.exec({ req, res, params });
 
   const Children = views[`../../app/views/${viewPath}.tsx`].default;
 
@@ -48,17 +51,16 @@ export async function bootstrap(ctx: Ctx) {
   return {
     kind,
     serverData: {
+      routeViewMap,
       data,
       routes: Object.keys(routes),
       currentRoute: match,
     },
     render: () => {
       return renderToString(
-        <App>
-          <StaticRouter location={req.originalUrl}>
-            <Children data={data} />
-          </StaticRouter>
-        </App>
+        <StaticRouter location={req.originalUrl}>
+          <Children data={data} />
+        </StaticRouter>
       );
     },
   };

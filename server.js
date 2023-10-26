@@ -93,9 +93,9 @@ export async function createServer(
       //   return res.redirect(301, context.url);
       // }
 
-      const scripts = `<script>window.serverData=${JSON.stringify(
+      const scripts = `<script>window.serverData='${JSON.stringify(
         serverData
-      )}<script/>`;
+      )}';<script/>`;
 
       const html = template.replace(`<!--app-html-->`, appHtml).concat(scripts);
 
