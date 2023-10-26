@@ -1,14 +1,13 @@
-import { defineView } from "@/lib/client/view";
 import { Link } from "react-router-dom";
 
 type AboutData = {
   message: string;
 };
 
-const About = (props: { data: AboutData }) => {
+const About = () => {
   return (
     <div>
-      <div>About page test asd 1234</div>
+      <div>About page</div>
       <div>
         <Link to="/">Home Route</Link>
       </div>
@@ -16,5 +15,4 @@ const About = (props: { data: AboutData }) => {
   );
 };
 
-const view = defineView(About);
-export default view;
+export default About;

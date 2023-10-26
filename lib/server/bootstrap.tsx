@@ -4,6 +4,7 @@ import { StaticRouter } from "react-router-dom/server";
 
 import { routes } from "@/app/http/routes";
 import { createRouteMatcher } from "./helpers/routeMatcher";
+import App from "../app";
 
 interface Ctx {
   res: Response;
@@ -12,7 +13,6 @@ interface Ctx {
 
 export async function bootstrap(ctx: Ctx) {
   const { req, res } = ctx;
-  const App = (await import("../app")).default;
 
   const routeMatcher = createRouteMatcher(routes);
   const isRoutePath = req.originalUrl.startsWith("/__route");
@@ -33,7 +33,6 @@ export async function bootstrap(ctx: Ctx) {
 
   if (kind === "route") {
     return {
-      viewPath: `app/views/${viewPath}.tsx`,
       kind,
       serverData: {
         data,
@@ -43,7 +42,6 @@ export async function bootstrap(ctx: Ctx) {
   }
 
   return {
-    viewPath: `app/views/${viewPath}.tsx`,
     kind,
     serverData: {
       data,
@@ -61,3 +59,5 @@ export async function bootstrap(ctx: Ctx) {
     },
   };
 }
+
+export default bootstrap;

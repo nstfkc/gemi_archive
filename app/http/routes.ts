@@ -6,6 +6,4 @@ import { AboutController } from "./controllers/AboutController";
 export const routes = {
   "/": Route(HomeController, "index"),
   "/about": Route(AboutController, "index"),
-  "/x": Route.view("Home", [AboutContoller, "index"]),
-  "/x": Route.post([HomeController, "test"]),
 };

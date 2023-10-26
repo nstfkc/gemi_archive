@@ -1,11 +1,10 @@
-import { defineView } from "../../lib/client/view";
 import { Link } from "react-router-dom";
 
 type HomeData = {
   message: string;
 };
 
-const Home = (props: { data: HomeData }) => {
+const Home = () => {
   return (
     <div>
       Home Page
@@ -16,5 +15,4 @@ const Home = (props: { data: HomeData }) => {
   );
 };
 
-const view = defineView(Home);
-export default view;
+export default Home;
