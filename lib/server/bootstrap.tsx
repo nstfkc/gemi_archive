@@ -29,10 +29,10 @@ export async function bootstrap(ctx: Ctx) {
   const kind = isRoutePath ? "route" : "html";
   const { viewPath, data } = route({ req, res, params });
 
-  const Children = (await import(`../../app/views/${viewPath}`)).default;
+  const Children = (await import(`../../app/views/${viewPath}.tsx`)).default;
   if (kind === "route") {
     return {
-      viewPath: ["lib/app.tsx", `app/views/${viewPath}.tsx`],
+      viewPath: `app/views/${viewPath}.tsx`,
       kind,
       serverData: {
         data,
@@ -42,7 +42,7 @@ export async function bootstrap(ctx: Ctx) {
   }
 
   return {
-    viewPath: ["lib/app.tsx", `app/views/${viewPath}.tsx`],
+    viewPath: `app/views/${viewPath}.tsx`,
     kind,
     serverData: {
       data,

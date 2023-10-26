@@ -58,7 +58,7 @@ const getAssets = async (input) => {
     scripts,
   };
 };
-
+console.log(await getViews());
 const viewManifest = await getAssets([...(await getViews()), "lib/app.tsx"]);
 
 async function main() {
@@ -90,20 +90,42 @@ async function main() {
       });
 
       if (kind === "html") {
-        const { scripts } = await getAssets(viewPath);
+        // const { scripts } = await getAssets(["lib/app.tsx", viewPath]);
         const appHtml = await render();
+
+        const s = viewManifest.scripts
+          .map((sc) => {
+            if (sc?.facadeModuleId?.includes("app/views/")) {
+              if (sc.facadeModuleId.includes(viewPath)) {
+                return sc;
+              }
+            } else {
+              return sc;
+            }
+          })
+          .filter((m) => typeof m !== "undefined");
+
         const html = template.replace(`<!--ssr-outlet-->`, appHtml.trim());
 
+        const routeManifest = viewManifest.scripts
+          .filter(
+            (s) => s.facadeModuleId && s.facadeModuleId.includes("app/views")
+          )
+          .map(({ fileName, name, imports }) => ({ fileName, name, imports }));
+
         const allScripts = [
-          ...scripts.map(
+          ...s.map(
             ({ fileName }) =>
               `<script type="module" src="http://localhost:5173/${fileName}"></script>`
           ),
           `<script type="module" src="http://localhost:5173/@vite/client"></script>`,
           `<script>window.serverData = '${JSON.stringify(
             serverData
-          )}';</script>`,
+          )}'; window.routeManifest = '${JSON.stringify(
+            routeManifest
+          )}'</script>`,
         ].join("\n");
+
         const htmlWithScripts = html.replace(`<!--scripts-->`, allScripts);
 
         res
@@ -111,10 +133,11 @@ async function main() {
           .set({ "Content-Type": "text/html" })
           .end(htmlWithScripts);
       } else {
-        const { scripts } = await getAssets(viewPath);
+        const { scripts } = await getAssets(["lib/app.tsx", viewPath]);
 
         res.json({
           module: { fileName: scripts[0].fileName },
+          view: viewPath.replace("app/views/", "").split(".")[0],
           data: serverData.data,
         });
       }
