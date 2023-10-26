@@ -52,7 +52,7 @@ export async function bootstrap(ctx: Ctx) {
     kind,
     serverData: {
       routeViewMap,
-      data,
+      routeData: { [match]: data },
       routes: Object.keys(routes),
       currentRoute: match,
     },

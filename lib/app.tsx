@@ -1,36 +1,41 @@
 import { hydrateRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  useLoaderData,
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
 
 const views = import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
   eager: true,
 });
 
-function createRoutes() {
-  const { routeViewMap } = JSON.parse(window.serverData);
-  return (
-    <>
-      {Object.entries(routeViewMap).map(([path, { viewPath }]) => (
-        <Route
-          key={path}
-          path={path}
-          Component={views[`/app/views/${viewPath}.tsx`].default}
-        />
-      ))}
-    </>
-  );
-}
-
-const App = () => {
-  const routes = createRoutes();
-  return (
-    <BrowserRouter>
-      <Routes>{routes}</Routes>
-    </BrowserRouter>
-  );
+const DataLoader = (props: { Component: any }) => {
+  const data = useLoaderData();
+  console.log(data);
+  return <props.Component data={data} />;
 };
 
-if (typeof window !== "undefined") {
-  hydrateRoot(document.getElementById("app")!, <App />);
+function createRouter() {
+  const { routeViewMap } = JSON.parse(window.serverData);
+
+  return createBrowserRouter(
+    Object.entries(routeViewMap).map(([path, { viewPath }]) => {
+      const Component = views[`/app/views/${viewPath}.tsx`].default;
+      return {
+        path,
+        element: <DataLoader Component={Component} />,
+      };
+    })
+  );
 }
 
-export default App;
+const router = createRouter();
+
+const App = () => {
+  return <RouterProvider router={router}></RouterProvider>;
+};
+
+hydrateRoot(document.getElementById("app")!, <App />);

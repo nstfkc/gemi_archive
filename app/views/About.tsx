@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/client/Link";
 
 type AboutData = {
   message: string;
