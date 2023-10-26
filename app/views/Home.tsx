@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/client/router";
 
 type HomeData = {
   message: string;

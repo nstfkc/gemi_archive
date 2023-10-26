@@ -1,6 +1,5 @@
 import type { Response, Request } from "express";
 import { renderToString } from "react-dom/server";
-import { StaticRouter } from "react-router-dom/server";
 
 import { routes } from "@/app/http/routes";
 import { createRouteMatcher } from "./helpers/routeMatcher";
@@ -20,7 +19,7 @@ export async function bootstrap(ctx: Ctx) {
   const routeMatcher = createRouteMatcher(routes);
   const isRoutePath = req.originalUrl.startsWith("/__route");
   const { match, params } = routeMatcher(
-    req.originalUrl.split("?")[0].replace("__route", "").replace("//", "/")
+    req.originalUrl.split("?")[0].replace("__route", "").replace("//", "/"),
   );
 
   const route = routes[match];
@@ -30,7 +29,7 @@ export async function bootstrap(ctx: Ctx) {
   }
 
   const routeViewMap = Object.fromEntries(
-    Object.entries(routes).filter(([, x]) => x?.viewPath)
+    Object.entries(routes).filter(([, x]) => x?.viewPath),
   );
 
   const kind = isRoutePath ? "route" : "html";
@@ -57,11 +56,7 @@ export async function bootstrap(ctx: Ctx) {
       currentRoute: match,
     },
     render: () => {
-      return renderToString(
-        <StaticRouter location={req.originalUrl}>
-          <Children data={data} />
-        </StaticRouter>
-      );
+      return renderToString(<Children data={data} />);
     },
   };
 }
