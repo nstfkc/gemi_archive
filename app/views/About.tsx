@@ -7,7 +7,7 @@ type AboutData = {
 const About = (props: { data: AboutData }) => {
   return (
     <div>
-      <div>{props.data.message}</div>
+      <div className="text-red-400">{props.data.message}</div>
       <div>
         <Link to="/">Home Route</Link>
       </div>

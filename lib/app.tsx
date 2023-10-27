@@ -1,6 +1,8 @@
 import { hydrateRoot } from "react-dom/client";
 import { RouterProvider, Route } from "@/lib/client/router";
 
+import "@/app/global.css";
+
 const views = import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
   eager: true,
 });
