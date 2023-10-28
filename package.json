@@ -7,8 +7,8 @@
     "dev": "bun server.js",
     "test": "vitest",
     "build": "bun run build:client && npm run build:server",
-    "build:client": "vite build --outDir dist/client",
-    "build:server": "vite build --ssr lib/server/bootstrap.tsx --outDir dist/lib/server",
+    "build:client": "vite build -c vite.build.config.js --outDir dist/client",
+    "build:server": "vite build -c vite.build.config.js --ssr lib/server/bootstrap.tsx --outDir dist/lib/server",
     "serve": "NODE_ENV=production node server",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
