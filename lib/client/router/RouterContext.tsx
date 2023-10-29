@@ -2,6 +2,8 @@ import type { Routes } from "./types";
 
 import {
   ComponentProps,
+  ComponentType,
+  LazyExoticComponent,
   RefObject,
   createContext,
   useContext,
@@ -11,14 +13,14 @@ import {
 } from "react";
 import { createBrowserHistory, History, Location } from "history";
 
-type RouteDefinition = {
-  Component: <T>(props: T) => JSX.Element;
+interface RouteDefinition {
+  Component: LazyExoticComponent<ComponentType<any>>;
   loader: () => Promise<unknown>;
   path: string;
-};
+}
 
 interface RouteProps {
-  Component: <T>(props: { data: T }) => JSX.Element;
+  Component: LazyExoticComponent<ComponentType<any>>;
   path: string;
 }
 

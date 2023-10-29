@@ -1,3 +1,4 @@
+import { ComponentType, lazy } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { RouterProvider } from "@/lib/client/router";
 
@@ -13,10 +14,14 @@ interface ServerData {
   routeData: Record<string, Readonly<unknown>>;
 }
 
-const views: Record<string, { default: <T>(p: T) => JSX.Element }> =
-  import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
-    eager: true,
-  });
+const views = import.meta.glob([
+  "@/app/views/**/*",
+  "!**/components/*",
+]) as Record<string, () => Promise<{ default: ComponentType<unknown> }>>;
+
+const lazyViews = Object.fromEntries(
+  Object.entries(views).map(([key, loaderFn]) => [key, lazy(loaderFn)]),
+);
 
 // eslint-disable-next-line react-refresh/only-export-components
 const App = () => {
@@ -28,7 +33,7 @@ const App = () => {
       initialPath={currentRoute}
       initialRouteData={routeData[currentRoute]}
       routes={Object.entries(routeViewMap).map(([path, { viewPath }]) => {
-        const Component = views[`/app/views/${viewPath}.tsx`].default;
+        const Component = lazyViews[`/app/views/${viewPath}.tsx`];
         return {
           Component,
           loader: () => fetch(`/__json/${path}`).then((res) => res.json()),
