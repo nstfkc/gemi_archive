@@ -102,10 +102,16 @@ export const Link = (props: LinkProps) => {
         if (route && typeof route.loader === "function") {
           loader = route.loader;
         }
-        loader().then((data) => {
-          routeDataRef.current?.set(route?.path!, data as any);
-          history.push(props.to);
-        });
+        loader()
+          .then((data) => {
+            if (data.redirect) {
+              history.push(data.redirect);
+            } else {
+              routeDataRef.current?.set(route?.path!, data as any);
+              history.push(props.to);
+            }
+          })
+          .catch(console.log);
       }}
     >
       {props.children}
