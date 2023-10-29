@@ -5,11 +5,10 @@ import { renderToString } from "react-dom/server";
 import { routes } from "@/app/http/routes";
 import { createRouteMatcher } from "./helpers/routeMatcher";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-const views = import.meta.glob(["../../app/views/**/*", "!**/components/*"], {
-  eager: true,
-});
+const views: Record<string, { default: <T>(p: T) => JSX.Element }> =
+  import.meta.glob(["../../app/views/**/*", "!**/components/*"], {
+    eager: true,
+  });
 
 interface Ctx {
   res: Response;

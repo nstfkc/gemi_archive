@@ -20,7 +20,8 @@
     "paths": {
       "@/app/*": ["./app/*"],
       "@/lib/*": ["./lib/*"]
-    }
+    },
+    "types": ["vite/client"]
   },
   "include": ["app", "lib"],
   "references": [{ "path": "./tsconfig.node.json" }]
