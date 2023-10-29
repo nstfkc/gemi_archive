@@ -30,7 +30,6 @@ function Guarded() {
 }
 
 export class HomeController extends Controller {
-  @Guarded()
   index() {
     return { message: "hello world" };
   }

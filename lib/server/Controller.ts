@@ -1,14 +1,6 @@
-import { Request, Response } from "express";
+export abstract class Controller {}
 
-export type RenderKind = "html" | "route";
-
-export abstract class Controller {
-  constructor(protected req: Request, protected res: Response) {}
-
-  protected render = (view: string, data: unknown) => {
-    return {
-      viewPath: view,
-      data,
-    };
-  };
-}
+export type RouteMethod<Body = object, Params = object> = (ctx: {
+  body: Body;
+  params: Params;
+}) => Record<string, unknown>;

@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import express from "express";
 import typescript from "@rollup/plugin-typescript";
 import cookieParser from "cookie-parser";
+import bodyParser from "body-parser";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -28,6 +29,7 @@ export async function createServer(
 
   const app = express();
   app.use(cookieParser());
+  app.use(bodyParser.json());
 
   /**
    * @type {import('vite').ViteDevServer}

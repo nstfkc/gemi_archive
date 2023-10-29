@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
-import { Controller, RenderKind } from "./Controller";
+import { Controller } from "./Controller";
 
 interface RouterContext<T> {
   req: Request;
   res: Response;
   params: T;
-  kind: RenderKind;
 }
 
 type ClassMethodNames<T> = {
@@ -15,46 +14,66 @@ type ClassMethodNames<T> = {
 
 export function view<T extends Controller, K extends ClassMethodNames<T>>(
   viewPath: string,
-  [Controller, method]: [
-    { new (req: Request, res: Response, kind: RenderKind): T },
-    K,
-  ],
+  [Controller, methodName]: [{ new (): T }, K],
 ) {
   return {
-    exec: (ctx: RouterContext<any[]>) => {
-      const { req, res, params, kind } = ctx;
-      const instance = new Controller(req, res, kind);
-      const m = instance[method];
-      if (typeof m === "function") {
-        const data = m(...params);
-        if (typeof data === "function") {
-          const result = data(req, res);
-          return { data: result, viewPath };
-        }
-        return { data, viewPath };
+    exec: (ctx: RouterContext<unknown[]>) => {
+      const { req, res, params } = ctx;
+      const instance = new Controller();
+      const method = instance[methodName];
+
+      const data = method({ params });
+
+      if (typeof data === "function") {
+        const result = data(req, res);
+        return { data: result, viewPath };
       }
+      return { data, viewPath };
     },
+    json: false,
+    method: "GET",
     viewPath,
   };
 }
 
 export function get<T extends Controller>(
-  C: { new (req: Request, res: Response, kind: RenderKind): T },
-  method: ClassMethodNames<T>,
+  Controller: { new (): T },
+  methodName: ClassMethodNames<T>,
 ) {
   return {
     exec: (ctx: RouterContext<any[]>) => {
-      const { req, res, params, kind } = ctx;
-      const instance = new C(req, res, kind);
-      const m = instance[method];
-      if (typeof m === "function") {
-        return m(...params);
+      const { params } = ctx;
+      const controllerInstance = new Controller();
+      const method = controllerInstance[methodName];
+      if (typeof method === "function") {
+        return { data: method({ params }) };
       }
     },
+    json: true,
+    method: "GET",
+  };
+}
+
+export function post<T extends Controller>(
+  Controller: { new (): T },
+  methodName: ClassMethodNames<T>,
+) {
+  return {
+    exec: (ctx: RouterContext<any[]>) => {
+      const { params, req } = ctx;
+      const instance = new Controller();
+      const method = instance[methodName];
+      if (typeof method === "function") {
+        return { data: method({ body: req.body, params }) };
+      }
+    },
+    json: true,
+    method: "POST",
   };
 }
 
 export const Route = {
   view,
   get,
+  post,
 };

@@ -24,21 +24,23 @@ export async function bootstrap(ctx: Ctx) {
     req.originalUrl.split("?")[0].replace("/__json", "").replace("//", "/"),
   );
 
-  const route = routes[match];
+  const matchedRoutes = Array.isArray(routes[match])
+    ? routes[match]
+    : [routes[match]];
 
-  if (!route) {
-    res.end("404");
+  const route = matchedRoutes.find((r) => r.method === req.method);
+
+  if (typeof route.exec !== "function") {
+    return res.send("404");
   }
 
-  const { viewPath, data } = route.exec({ req, res, params, kind: "html" })!;
+  const { viewPath, data } = route.exec({
+    req,
+    res,
+    params,
+  });
 
-  if (!viewPath) {
-    return {
-      render: () => "",
-    };
-  }
-
-  if (isJSONRequest) {
+  if (isJSONRequest || route.json) {
     return {
       isJSONRequest: true,
       serverData: {
@@ -48,8 +50,26 @@ export async function bootstrap(ctx: Ctx) {
     };
   }
 
+  if (!viewPath) {
+    return {
+      render: () => "",
+      serverData: { data: {} },
+    };
+  }
+
   const routeViewMap = Object.fromEntries(
-    Object.entries(routes).filter(([, x]) => x?.viewPath),
+    Object.entries(routes).map(([key, routeList]) => {
+      if (Array.isArray(routeList)) {
+        return [
+          key,
+          {
+            viewPath: (routeList.find((r) => (r as any)?.viewPath) as any)
+              ?.viewPath,
+          },
+        ];
+      }
+      return [key, { viewPath: routeList.viewPath }];
+    }),
   );
 
   const Children = views[`../../app/views/${viewPath}.tsx`].default;

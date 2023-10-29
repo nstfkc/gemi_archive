@@ -18,6 +18,7 @@ module.exports = {
       { allowConstantExport: true },
     ],
     "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+    "@typescript-eslint/prefer-function-type": ["off"],
   },
   parserOptions: {
     ecmaVersion: "latest",
