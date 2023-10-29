@@ -6,11 +6,13 @@ test("matches routes", () => {
   const home = vi.fn();
   const foo = vi.fn();
   const bar = vi.fn();
+
   const routes = {
     "/": home,
     "/foo/:id": foo,
     "/bar/:id/:xid": bar,
-  };
+  } as any;
+
   const routeMatcher = createRouteMatcher(routes);
 
   const { match: homeMatch, params: homeParams } = routeMatcher("/");

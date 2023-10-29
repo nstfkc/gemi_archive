@@ -7,8 +7,8 @@
     "dev": "bun server.js",
     "test": "vitest",
     "build": "bun run build:client && npm run build:server",
-    "build:client": "vite build -c vite.build.config.js --outDir dist/client",
-    "build:server": "vite build -c vite.build.config.js --ssr lib/server/bootstrap.tsx --outDir dist/lib/server",
+    "build:client": "vite build --outDir dist/client",
+    "build:server": "vite build -c vite.config.server.js",
     "serve": "NODE_ENV=production node server",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -21,6 +21,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.5",
     "@types/compression": "^1.7.4",
     "@types/express": "^4.17.20",
     "@types/react": "^18.2.15",
@@ -34,8 +35,10 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "postcss": "^8.4.31",
     "prettier": "^3.0.3",
+    "reflect-metadata": "^0.1.13",
     "serve-static": "^1.15.0",
     "tailwindcss": "^3.3.5",
+    "tslib": "^2.6.2",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",
     "vitest": "^0.34.6"

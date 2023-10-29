@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
+import typescript from "@rollup/plugin-typescript";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -36,11 +37,12 @@ export async function createServer(
     ).createServer({
       root,
       logLevel: isTest ? "error" : "info",
+      plugins: [typescript()],
       server: {
         middlewareMode: true,
         watch: {
           usePolling: true,
-          interval: 100,
+          interval: 1000,
         },
         hmr: {
           port: hmrPort,

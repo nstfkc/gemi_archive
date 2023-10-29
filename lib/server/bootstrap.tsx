@@ -1,9 +1,12 @@
+import "reflect-metadata";
 import type { Response, Request } from "express";
 import { renderToString } from "react-dom/server";
 
 import { routes } from "@/app/http/routes";
 import { createRouteMatcher } from "./helpers/routeMatcher";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 const views = import.meta.glob(["../../app/views/**/*", "!**/components/*"], {
   eager: true,
 });
@@ -28,7 +31,13 @@ export async function bootstrap(ctx: Ctx) {
     res.end("404");
   }
 
-  const { viewPath, data } = route.exec({ req, res, params });
+  const { viewPath, data } = route.exec({ req, res, params, kind: "html" })!;
+
+  if (!viewPath) {
+    return {
+      render: () => "",
+    };
+  }
 
   if (isJSONRequest) {
     return {

@@ -8,41 +8,28 @@ interface RouterContext<T> {
   kind: RenderKind;
 }
 
-type Todo<T extends string> = T extends string ? unknown : unknown;
-
 type ClassMethodNames<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
 }[keyof T];
 
-// export function Route<T extends Controller>(
-//   C: { new (req: Request, res: Response, kind: RenderKind): T },
-//   method: ClassMethodNames<T>
-// ) {
-//   return (ctx: RouterContext<Todo<"Type parameters">>) => {
-//     const { req, res, params, kind } = ctx;
-//     const instance = new C(req, res, kind);
-//     const m = instance[method];
-//     if (typeof m === "function") {
-//       return m(...params);
-//     }
-//   };
-// }
-
-export function view<T extends Controller>(
+export function view<T extends Controller, K extends ClassMethodNames<T>>(
   viewPath: string,
-  [C, method]: [
+  [Controller, method]: [
     { new (req: Request, res: Response, kind: RenderKind): T },
-    ClassMethodNames<T>,
+    K,
   ],
 ) {
   return {
-    exec: (ctx: RouterContext<Todo<"Type parameters">>) => {
+    exec: (ctx: RouterContext<any[]>) => {
       const { req, res, params, kind } = ctx;
-      const instance = new C(req, res, kind);
+      const instance = new Controller(req, res, kind);
       const m = instance[method];
       if (typeof m === "function") {
         const data = m(...params);
+        if (typeof data === "function") {
+          return data(req, res);
+        }
         return { data, viewPath };
       }
     },
@@ -55,7 +42,7 @@ export function get<T extends Controller>(
   method: ClassMethodNames<T>,
 ) {
   return {
-    exec: (ctx: RouterContext<Todo<"Type parameters">>) => {
+    exec: (ctx: RouterContext<any[]>) => {
       const { req, res, params, kind } = ctx;
       const instance = new C(req, res, kind);
       const m = instance[method];
