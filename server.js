@@ -91,6 +91,10 @@ export async function createServer(
         res,
       });
 
+      if (serverData.redirect) {
+        return res.redirect(304, serverData.redirect);
+      }
+
       if (isJSONRequest) {
         return res.json(serverData.data);
       }

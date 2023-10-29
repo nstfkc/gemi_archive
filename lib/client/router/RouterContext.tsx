@@ -26,9 +26,14 @@ interface RouteProps {
 
 export const Route = (props: RouteProps) => {
   const { Component } = props;
-  const { location, routeDataRef } = useContext(RouterContext);
+  const { location, routeDataRef, history } = useContext(RouterContext);
   if (location.pathname !== props.path) {
     return null;
+  }
+  const data = routeDataRef.current?.get(props.path);
+  if (data?.redirect) {
+    history.push(data.redirect);
+    return <></>;
   }
   return <Component data={routeDataRef.current?.get(props.path)} />;
 };

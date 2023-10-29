@@ -57,6 +57,15 @@ export async function bootstrap(ctx: Ctx) {
     };
   }
 
+  if (data.redirect) {
+    return {
+      serverData: {
+        redirect: data.redirect,
+        status: 304,
+      },
+    };
+  }
+
   const routeViewMap = Object.fromEntries(
     Object.entries(routes).map(([key, routeList]) => {
       if (Array.isArray(routeList)) {

@@ -20,7 +20,7 @@ function Guarded() {
         if (isAuth(req)) {
           return result;
         } else {
-          return res.redirect("/auth/login");
+          return { redirect: "/auth/login" };
         }
       };
       return middleware as typeof result;
@@ -30,6 +30,7 @@ function Guarded() {
 }
 
 export class HomeController extends Controller {
+  @Guarded()
   index() {
     return { message: "hello world" };
   }
