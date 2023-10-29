@@ -21,7 +21,7 @@
       "@/app/*": ["./app/*"],
       "@/lib/*": ["./lib/*"]
     },
-    "types": ["vite/client"]
+    "types": ["vite/client", "./types.d.ts"]
   },
   "include": ["app", "lib"],
   "references": [{ "path": "./tsconfig.node.json" }]

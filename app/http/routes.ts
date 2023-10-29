@@ -6,4 +6,8 @@ import { AboutController } from "./controllers/AboutController";
 export const routes = {
   "/": Route.view("Home", [HomeController, "index"]),
   "/about": Route.view("About", [AboutController, "index"]),
+  // Guarded
+  // "/dashboard": RouteGroup(["Guarded"], {
+  //   "/account": Route.view("Dashboard/Account", [AccountController, "index"]),
+  // }),
 };

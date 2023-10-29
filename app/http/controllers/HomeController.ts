@@ -1,19 +1,31 @@
+import type { Request, Response } from "express";
 import { Controller } from "@/lib/server/Controller";
 
+function isAuth(req: Request) {
+  if (req.cookies["auth"] === "true") {
+    return true;
+  }
+  return false;
+}
+
 function Guarded() {
-  return function (
-    originalMethod: () => any,
+  return function <P, K, T extends (...p: P[]) => K>(
+    originalMethod: T,
     _context: ClassMethodDecoratorContext,
   ) {
-    function ReplacementMethod(this: any, ...args: any[]) {
+    function guarded(this: unknown, ...args: P[]) {
       const result = originalMethod.call(this, ...args);
 
-      const middleware = (req, res) => {
-        return res.send("404");
+      const middleware = (req: Request, res: Response) => {
+        if (isAuth(req)) {
+          return result;
+        } else {
+          return res.redirect("/auth/login");
+        }
       };
       return middleware as typeof result;
     }
-    return ReplacementMethod;
+    return guarded as T;
   };
 }
 

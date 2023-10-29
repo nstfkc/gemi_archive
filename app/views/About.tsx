@@ -1,8 +1,8 @@
 import { Link } from "@/lib/client/router";
 
-type AboutData = {
+interface AboutData {
   message: string;
-};
+}
 
 const About = (props: { data: AboutData }) => {
   return (

@@ -28,7 +28,8 @@ export function view<T extends Controller, K extends ClassMethodNames<T>>(
       if (typeof m === "function") {
         const data = m(...params);
         if (typeof data === "function") {
-          return data(req, res);
+          const result = data(req, res);
+          return { data: result, viewPath };
         }
         return { data, viewPath };
       }
