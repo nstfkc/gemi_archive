@@ -14,6 +14,7 @@ const rootDir = path.resolve(process.cwd());
 const assetsDir = path.join(rootDir, "dist/assets");
 const libDir = path.join(rootDir, "lib");
 const appDir = path.join(rootDir, "app");
+const dbDir = path.join(rootDir, "db");
 const bootstrapPath = path.join(libDir, "server/bootstrap");
 
 export async function createServer(
@@ -57,6 +58,7 @@ export async function createServer(
         alias: {
           "@/lib": libDir,
           "@/app": appDir,
+          "@/db": dbDir,
         },
       },
     });

@@ -12,4 +12,5 @@ export const routes = {
     Route.view("auth/Login", [AuthController, "loginView"]),
     Route.post(AuthController, "login"),
   ],
+  "/auth/register": [Route.post(AuthController, "register")],
 };

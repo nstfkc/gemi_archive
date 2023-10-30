@@ -11,6 +11,14 @@ export function createRouteMatcher<T extends RouteHandlers>(routes: T) {
     params: unknown[];
   } => {
     const routeKeys = Object.keys(routes);
+
+    if (routeKeys.includes(url)) {
+      return {
+        match: url,
+        params: [],
+      };
+    }
+
     const [, firstSegment, ...urlSegments] = url.split("/");
 
     const firstSegmentMatches = routeKeys.filter(

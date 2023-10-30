@@ -34,7 +34,7 @@ export async function bootstrap(ctx: Ctx) {
     return res.send("404");
   }
 
-  const { viewPath, data } = route.exec({
+  const { viewPath, data } = await route.exec({
     req,
     res,
     params,

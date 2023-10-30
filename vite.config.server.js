@@ -6,6 +6,7 @@ import typescript from "@rollup/plugin-typescript";
 const rootDir = path.resolve(process.cwd());
 const libDir = path.join(rootDir, "lib");
 const appDir = path.join(rootDir, "app");
+const dbDir = path.join(rootDir, "db");
 
 export default defineConfig({
   plugins: [typescript()],
@@ -21,6 +22,7 @@ export default defineConfig({
     alias: {
       "@/lib": libDir,
       "@/app": appDir,
+      "@/db": dbDir,
     },
   },
 });

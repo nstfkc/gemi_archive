@@ -19,7 +19,8 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/app/*": ["./app/*"],
-      "@/lib/*": ["./lib/*"]
+      "@/lib/*": ["./lib/*"],
+      "@/db/*": ["./db/*"]
     },
     "types": ["vite/client", "./types.d.ts"]
   },
