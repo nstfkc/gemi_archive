@@ -5,6 +5,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator gemi {
+  provider = "./db/generator.cjs"
+}
+
 datasource db {
   provider = "sqlite"
   url      = "file:./sqlite.db"
@@ -15,4 +19,14 @@ model User {
   name     String?
   email    String? @unique
   password String?
+
+  post Post[]
+}
+
+model Post {
+  id    String @id @default(cuid())
+  title String
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
 }
