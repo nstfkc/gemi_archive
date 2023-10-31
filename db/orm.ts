@@ -5,7 +5,7 @@ const prismaGlobal = global as typeof global & {
 };
 
 export const prisma: PrismaClient =
-  prismaGlobal.prisma ||
+  prismaGlobal.prisma ??
   new PrismaClient({
     errorFormat: "minimal",
     log:

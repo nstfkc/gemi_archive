@@ -5,6 +5,7 @@ import { renderToString } from "react-dom/server";
 import { routes } from "@/app/http/routes";
 import { createRouteMatcher } from "./helpers/routeMatcher";
 import { storage } from "./storage";
+import { executionAsyncId } from "node:async_hooks";
 
 const views: Record<string, { default: <T>(p: T) => JSX.Element }> =
   import.meta.glob(["../../app/views/**/*", "!**/components/*"], {
@@ -18,10 +19,6 @@ interface Ctx {
 
 export async function bootstrap(ctx: Ctx) {
   const { req, res } = ctx;
-
-  storage.enterWith({
-    isAuthenticated: req.cookies["auth"] === "true",
-  });
 
   const routeMatcher = createRouteMatcher(routes);
   const isJSONRequest = req.originalUrl.startsWith("/__json");
@@ -39,11 +36,16 @@ export async function bootstrap(ctx: Ctx) {
     return res.send("404");
   }
 
-  const { viewPath, data } = await route.exec({
-    req,
-    res,
-    params,
-  });
+  const { viewPath, data } = await storage.run(
+    { request: req, response: res },
+    async () => {
+      return await route.exec({
+        req,
+        res,
+        params,
+      });
+    },
+  );
 
   if (isJSONRequest || route.json) {
     return {

@@ -1,6 +1,9 @@
+import { Request as ERequest } from "express";
+
 export abstract class Controller {}
 
-export type Handler<Body = object, Params = object> = (ctx: {
-  body: Body;
-  params: Params;
-}) => Promise<Record<string, unknown>> | Record<string, unknown>;
+export type Request<Body = object, Params = object> = ERequest<
+  Params,
+  null,
+  Body
+>;

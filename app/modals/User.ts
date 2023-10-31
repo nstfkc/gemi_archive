@@ -1,6 +1,5 @@
+// @ts-expect-error
 import { prisma } from "@/db/orm";
-
-import { randomBytes, scrypt } from "crypto";
 
 export async function encrypt(str: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -115,17 +114,16 @@ class BaseUser extends Modal {
     public name: string,
     public email: string,
     public password: string,
+    public role: string,
   ) {
     super();
   }
 
   static findFirst = prisma.user.findFirst;
   static findFirstOrThrow = prisma.user.findFirstOrThrow;
-  static findMany = wrap(prisma.user.findMany);
+  static findMany = prisma.user.findMany;
 
   static create = prisma.user.create;
 }
 
-@EncryptedFields(["password"])
-@HiddenFields(["id"])
 export class User extends BaseUser {}

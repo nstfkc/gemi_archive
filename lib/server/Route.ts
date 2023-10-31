@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { Controller } from "./Controller";
+import { storage } from "./storage";
+import { executionAsyncId } from "node:async_hooks";
 
 interface RouterContext<T> {
   req: Request;
@@ -61,10 +63,12 @@ export function post<T extends Controller>(
   return {
     exec: async (ctx: RouterContext<any[]>) => {
       const { params, req } = ctx;
+      (req as any).params = params;
+
       const instance = new Controller();
       const method = instance[methodName];
       if (typeof method === "function") {
-        return { data: await method({ body: req.body, params }) };
+        return { data: await method(req) };
       }
     },
     json: true,
