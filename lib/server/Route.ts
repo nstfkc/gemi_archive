@@ -17,6 +17,8 @@ interface RouteDefinition {
   kind: RouteKind;
 }
 
+type MaybePromise<T> = Promise<T> | T;
+
 interface ViewRouteDefinition extends RouteDefinition {
   kind: "VIEW";
   exec: (
@@ -30,7 +32,9 @@ interface ViewRouteDefinition extends RouteDefinition {
 
 type ViewRoute = <T extends Controller, K extends ClassMethodNames<T>>(
   viewPath: string,
-  controller?: [{ new (): T }, K],
+  controller?:
+    | [{ new (): T }, K]
+    | ((req: Request, res: Response) => MaybePromise<unknown>),
 ) => ViewRouteDefinition;
 
 interface EndpointRouteDefinition extends RouteDefinition {
@@ -56,6 +60,9 @@ export const view: ViewRoute = (viewPath, controller): ViewRouteDefinition => {
     exec: async (ctx: RouterContext<unknown[]>) => {
       if (!controller) {
         return { data: {}, viewPath };
+      }
+      if (typeof controller === "function") {
+        return { data: await controller(ctx.req, ctx.res), viewPath };
       }
       const [Controller, methodName] = controller;
       const { req, res, params } = ctx;

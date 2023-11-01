@@ -1,27 +1,21 @@
-# gemijs
+## gemijs
 
 Traditional MVC framework for building modern full-stack web applications. 
 
 ## Why?
 
 
-
+## 
 
 ### Routing
 
 ``` tsx
 // app/http/routes.ts
 
-export const routes = createRoutes({
-  '/': Route.view('Home', [HomeController, 'index']),
-
-  '/dashboard': Route.view('Dashboard', [DashboardController, 'index']),
-
-  '/account': [
-    Route.view('Account', [AccountController, 'index']),
-    Route.post(AccountController, 'update')
-  ],
-})
+export const routes = {
+  '/': Route.view('Home'),
+  '/about': Route.view('About'),
+}
 
 ```
 

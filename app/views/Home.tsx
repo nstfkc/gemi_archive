@@ -9,7 +9,7 @@ const Home = (props: { data: HomeData }) => {
     <div>
       {props.data.message}
       <div>
-        <Link to="/about">About</Link>
+        <Link to="/about">About 2</Link>
       </div>
       <div>
         <Link to="/auth/login">Login</Link>
