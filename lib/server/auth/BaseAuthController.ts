@@ -5,11 +5,14 @@ import { User } from "@/app/modals/User";
 import { Controller, Request } from "../Controller";
 import { encrypt, decrypt } from "../helpers/encryption";
 import { setCookie } from "../helpers/cookie";
+import { createRequest } from "../createRequest";
 
-interface LoginParams {
-  email: string;
-  password: string;
-}
+import * as z from "zod";
+
+const loginRequest = createRequest({
+  email: z.string().email(),
+  password: z.string(),
+});
 
 interface RegisterParams {
   name: string;
@@ -18,9 +21,7 @@ interface RegisterParams {
 }
 
 export class BaseAuthController extends Controller {
-  login = async (request: Request<LoginParams>) => {
-    const { email, password } = request.body;
-
+  login = loginRequest.next(async ({ email, password }) => {
     const user = await User.findFirst({
       where: { email },
       include: { accounts: true },
@@ -59,7 +60,7 @@ export class BaseAuthController extends Controller {
         success: true,
       };
     }
-  };
+  });
 
   register = async (request: Request<RegisterParams>) => {
     const { email, name, password } = request.body;

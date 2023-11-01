@@ -116,13 +116,11 @@ export const post: EndpointRoute = (
   return {
     kind: "ENDPOINT",
     exec: async (ctx: RouterContext<unknown[]>) => {
-      const { params } = ctx;
-
       const instance = new Controller();
       const method = instance[methodName];
       let data = {};
       if (typeof method === "function") {
-        data = (await method({ params })) as typeof data;
+        data = (await method(ctx.req)) as typeof data;
       }
       return { data };
     },

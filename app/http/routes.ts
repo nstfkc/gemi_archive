@@ -7,8 +7,8 @@ export const routes = {
   "/": Route.view("Home", () => {
     return { message: "Hello world" };
   }),
-  "/about": Route.view("About", [AboutController, "index"]),
 
+  "/about": Route.view("About", [AboutController, "index"]),
   "/auth/login": [
     Route.view("auth/Login", [AuthController, "loginView"]),
     Route.post(AuthController, "login"),

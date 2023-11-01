@@ -28,7 +28,8 @@
     "prisma": "^5.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^5.1.6",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@prisma/generator-helper": "^5.5.2",
