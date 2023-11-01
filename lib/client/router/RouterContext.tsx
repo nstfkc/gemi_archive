@@ -15,7 +15,7 @@ import { createBrowserHistory, History, Location } from "history";
 
 interface RouteDefinition {
   Component: LazyExoticComponent<ComponentType<any>>;
-  loader: () => Promise<unknown>;
+  loader: (() => Promise<unknown>) | null;
   path: string;
 }
 

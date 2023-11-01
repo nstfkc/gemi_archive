@@ -5,7 +5,6 @@ import { renderToString } from "react-dom/server";
 import { routes } from "@/app/http/routes";
 import { createRouteMatcher } from "./helpers/routeMatcher";
 import { storage } from "./storage";
-import { executionAsyncId } from "node:async_hooks";
 
 const views: Record<string, { default: <T>(p: T) => JSX.Element }> =
   import.meta.glob(["../../app/views/**/*", "!**/components/*"], {
@@ -76,15 +75,31 @@ export async function bootstrap(ctx: Ctx) {
   const routeViewMap = Object.fromEntries(
     Object.entries(routes).map(([key, routeList]) => {
       if (Array.isArray(routeList)) {
-        return [
-          key,
-          {
-            viewPath: (routeList.find((r) => (r as any)?.viewPath) as any)
-              ?.viewPath,
-          },
-        ];
+        const result = routeList
+          .filter((route) => route.kind === "VIEW")
+          .find((routeDefinition) => {
+            if (routeDefinition.kind === "VIEW") {
+              return {
+                viewPath: routeDefinition.viewPath,
+                hasLoader: routeDefinition.hasLoader,
+              };
+            }
+          });
+        if (result?.kind === "VIEW") {
+          return [
+            key,
+            { viewPath: result.viewPath, hasLoader: result.hasLoader },
+          ];
+        }
+      } else {
+        if (routeList.kind === "VIEW") {
+          return [
+            key,
+            { viewPath: routeList.viewPath, hasLoader: routeList.hasLoader },
+          ];
+        }
       }
-      return [key, { viewPath: routeList.viewPath }];
+      return [];
     }),
   );
 

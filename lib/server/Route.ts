@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import { Controller } from "./Controller";
-import { storage } from "./storage";
-import { executionAsyncId } from "node:async_hooks";
 
 interface RouterContext<T> {
   req: Request;
@@ -9,72 +7,122 @@ interface RouterContext<T> {
   params: T;
 }
 
+type RouteKind = "VIEW" | "ENDPOINT";
+enum RouteMethod {
+  GET = "GET",
+  POST = "POST",
+}
+
+interface RouteDefinition {
+  kind: RouteKind;
+}
+
+interface ViewRouteDefinition extends RouteDefinition {
+  kind: "VIEW";
+  exec: (
+    ctx: RouterContext<unknown[]>,
+  ) => Promise<{ data: unknown; viewPath: string }>;
+  viewPath: string;
+  hasLoader: boolean;
+  method: RouteMethod.GET;
+  json: false;
+}
+
+type ViewRoute = <T extends Controller, K extends ClassMethodNames<T>>(
+  viewPath: string,
+  controller?: [{ new (): T }, K],
+) => ViewRouteDefinition;
+
+interface EndpointRouteDefinition extends RouteDefinition {
+  kind: "ENDPOINT";
+  exec: (ctx: RouterContext<unknown[]>) => Promise<{ data: unknown }>;
+  method: RouteMethod.GET | RouteMethod.POST;
+  json: true;
+}
+
+type EndpointRoute = <T extends Controller, K extends ClassMethodNames<T>>(
+  Controller: { new (): T },
+  methodName: K,
+) => EndpointRouteDefinition;
+
 type ClassMethodNames<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
 }[keyof T];
 
-export function view<T extends Controller, K extends ClassMethodNames<T>>(
-  viewPath: string,
-  [Controller, methodName]: [{ new (): T }, K],
-) {
+export const view: ViewRoute = (viewPath, controller): ViewRouteDefinition => {
   return {
+    kind: "VIEW",
     exec: async (ctx: RouterContext<unknown[]>) => {
+      if (!controller) {
+        return { data: {}, viewPath };
+      }
+      const [Controller, methodName] = controller;
       const { req, res, params } = ctx;
       const instance = new Controller();
       const method = instance[methodName];
 
-      const data = await method({ params });
+      let data = {};
+      if (typeof method === "function") {
+        data = (await method({ params })) as typeof data;
+      }
 
+      let result = {};
       if (typeof data === "function") {
-        const result = data(req, res);
+        result = data(req, res) as typeof result;
         return { data: result, viewPath };
       }
       return { data, viewPath };
     },
     json: false,
-    method: "GET",
+    method: RouteMethod.GET,
     viewPath,
+    hasLoader: !!controller,
   };
-}
+};
 
-export function get<T extends Controller>(
-  Controller: { new (): T },
-  methodName: ClassMethodNames<T>,
-) {
+export const get: EndpointRoute = (
+  Controller,
+  methodName,
+): EndpointRouteDefinition => {
   return {
-    exec: async (ctx: RouterContext<any[]>) => {
+    kind: "ENDPOINT",
+    exec: async (ctx: RouterContext<unknown[]>) => {
       const { params } = ctx;
       const controllerInstance = new Controller();
       const method = controllerInstance[methodName];
+      let data = {};
       if (typeof method === "function") {
-        return { data: await method({ params }) };
+        data = (await method({ params })) as typeof data;
       }
+      return { data };
     },
     json: true,
-    method: "GET",
+    method: RouteMethod.GET,
   };
-}
+};
 
-export function post<T extends Controller>(
-  Controller: { new (): T },
-  methodName: ClassMethodNames<T>,
-) {
+export const post: EndpointRoute = (
+  Controller,
+  methodName,
+): EndpointRouteDefinition => {
   return {
-    exec: async (ctx: RouterContext<any[]>) => {
-      const { params, req } = ctx;
-      (req as any).params = params;
+    kind: "ENDPOINT",
+    exec: async (ctx: RouterContext<unknown[]>) => {
+      const { params } = ctx;
 
       const instance = new Controller();
       const method = instance[methodName];
+      let data = {};
       if (typeof method === "function") {
-        return { data: await method(req) };
+        data = (await method({ params })) as typeof data;
       }
+      return { data };
     },
     json: true,
-    method: "POST",
+    method: RouteMethod.POST,
   };
-}
+};
 
 export const Route = {
   view,

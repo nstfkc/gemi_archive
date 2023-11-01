@@ -1,11 +1,10 @@
 import { Route } from "@/lib/server/Route";
 
-import { HomeController } from "./controllers/HomeController";
 import { AboutController } from "./controllers/AboutController";
 import { AuthController } from "./controllers/AuthController";
 
 export const routes = {
-  "/": Route.view("Home", [HomeController, "index"]),
+  "/": Route.view("Home"),
   "/about": Route.view("About", [AboutController, "index"]),
 
   "/auth/login": [

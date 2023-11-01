@@ -9,7 +9,7 @@ declare const window: {
 } & Window;
 
 interface ServerData {
-  routeViewMap: Record<string, { viewPath: string }>;
+  routeViewMap: Record<string, { viewPath: string; hasLoader: boolean }>;
   currentRoute: string;
   routeData: Record<string, Readonly<unknown>>;
 }
@@ -32,14 +32,18 @@ const App = () => {
     <RouterProvider
       initialPath={currentRoute}
       initialRouteData={routeData[currentRoute]}
-      routes={Object.entries(routeViewMap).map(([path, { viewPath }]) => {
-        const Component = lazyViews[`/app/views/${viewPath}.tsx`];
-        return {
-          Component,
-          loader: () => fetch(`/__json/${path}`).then((res) => res.json()),
-          path,
-        };
-      })}
+      routes={Object.entries(routeViewMap).map(
+        ([path, { viewPath, hasLoader }]) => {
+          const Component = lazyViews[`/app/views/${viewPath}.tsx`];
+          return {
+            Component,
+            loader: hasLoader
+              ? () => fetch(`/__json${path}`).then((res) => res.json())
+              : null
+            path,
+          };
+        },
+      )}
     />
   );
 };
