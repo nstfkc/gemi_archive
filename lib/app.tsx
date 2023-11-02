@@ -39,7 +39,7 @@ const App = () => {
             Component,
             loader: hasLoader
               ? () => fetch(`/__json${path}`).then((res) => res.json())
-              : null
+              : null,
             path,
           };
         },
