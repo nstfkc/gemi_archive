@@ -30,9 +30,11 @@ You can define your handler using `Route` class. The most basic route handler is
 import { Route } from "@/lib/http/Route"
 
 export const api = {
-  "/greeting": Route.get(() => {
-    return { message: "Hello" }
-  })
+  public: {
+    "/greeting": Route.get(() => {
+      return { message: "Hello" }
+    })
+  }
 }
 ```
 
