@@ -50,12 +50,12 @@ export async function createServer(root = process.cwd()) {
       );
 
       const router = bootstrap(template) as Router;
-      router(req, res, next);
+      return router(req, res, next);
     } catch (error) {
       const e = error as Error;
       vite.ssrFixStacktrace(e);
       console.log(e.stack);
-      res.status(500).end(e.stack);
+      return res.status(500).end(e.stack);
     }
   });
 
@@ -63,7 +63,7 @@ export async function createServer(root = process.cwd()) {
 }
 
 createServer().then(({ app }) => {
-  return app.listen(5173, () => {
+  app.listen(5173, () => {
     console.log("http://localhost:5173");
   });
 });

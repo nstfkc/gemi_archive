@@ -11,12 +11,11 @@ const dbDir = path.join(rootDir, "db");
 export default defineConfig({
   build: {
     ssr: true,
-    outDir: "dist/lib/server",
+    outDir: "dist/server",
     rollupOptions: {
-      input: "/server/dev.ts",
+      input: "/server/prod.ts",
     },
   },
-
   resolve: {
     alias: {
       "@/lib": libDir,
