@@ -1,12 +1,14 @@
 import { Link } from "@/lib/client/router";
 
-export default function Login() {
+const Login = () => {
   return (
     <div>
       <div>Login!</div>
       <div>
-        <Link to="/">Home</Link>
+        <Link href="/">Home</Link>
       </div>
     </div>
   );
-}
+};
+
+export default Login;

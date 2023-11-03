@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "bun server/dev.js",
+    "dev": "bun server/dev.ts",
     "test": "vitest",
     "prisma": "prisma",
     "db:generate": "prisma generate --schema=./db/schema.prisma",

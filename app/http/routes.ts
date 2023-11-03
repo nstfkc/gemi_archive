@@ -9,7 +9,7 @@ export const api = {
 
 export const web = {
   "/": Route.view("Home", () => {
-    return { message: "Hello Enes Tufekci" };
+    return { message: "Hello World" };
   }),
   "/about": Route.view("About", [AboutController, "index"]),
   "/auth/login": Route.view("auth/Login", [AuthController, "loginView"]),

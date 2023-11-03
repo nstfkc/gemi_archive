@@ -9,7 +9,7 @@ const About = (props: { data: AboutData }) => {
     <div>
       <div className="text-red-400">{props.data.message}</div>
       <div>
-        <Link to="/">Home Route</Link>
+        <Link href="/">Home Route</Link>
       </div>
     </div>
   );
