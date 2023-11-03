@@ -15,6 +15,7 @@ const Home = (props: { data: HomeData }) => {
       </div>
       <div>
         <Link href="/auth/login">Login</Link>
+        <Link href="/account">Account</Link>
       </div>
     </div>
   );

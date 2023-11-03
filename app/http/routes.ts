@@ -2,15 +2,26 @@ import { Route } from "@/lib/server/Route";
 
 import { AboutController } from "./controllers/AboutController";
 import { AuthController } from "./controllers/AuthController";
+import { AccountController } from "./controllers/AccountController";
 
 export const api = {
-  "/auth/register": Route.post(AuthController, "register"),
+  public: {
+    "/auth/register": Route.post(AuthController, "register"),
+  },
+  private: {
+    "/account": Route.get(AccountController, "index"),
+  },
 };
 
 export const web = {
-  "/": Route.view("Home", () => {
-    return { message: "Hello World" };
-  }),
-  "/about": Route.view("About", [AboutController, "index"]),
-  "/auth/login": Route.view("auth/Login", [AuthController, "loginView"]),
+  public: {
+    "/": Route.view("Home", () => {
+      return { message: "Hello World" };
+    }),
+    "/about": Route.view("About", [AboutController, "index"]),
+    "/auth/login": Route.view("auth/Login", [AuthController, "loginView"]),
+  },
+  private: {
+    "/account": Route.view("Account"),
+  },
 };
