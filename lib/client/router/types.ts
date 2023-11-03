@@ -1,3 +1,3 @@
-import { routes } from "@/app/http/routes";
+import { web } from "@/app/http/routes";
 
-export type Routes = typeof routes;
+export type Routes = typeof web;

@@ -1,16 +1,15 @@
 import { Request, Response } from "express";
 import { Controller } from "./Controller";
 
-interface RouterContext<T> {
+interface RouterContext {
   req: Request;
   res: Response;
-  params: T;
 }
 
 type RouteKind = "VIEW" | "ENDPOINT";
 enum RouteMethod {
-  GET = "GET",
-  POST = "POST",
+  GET = "get",
+  POST = "post",
 }
 
 interface RouteDefinition {
@@ -21,9 +20,7 @@ type MaybePromise<T> = Promise<T> | T;
 
 interface ViewRouteDefinition extends RouteDefinition {
   kind: "VIEW";
-  exec: (
-    ctx: RouterContext<unknown[]>,
-  ) => Promise<{ data: unknown; viewPath: string }>;
+  exec: (ctx: RouterContext) => Promise<{ data: unknown; viewPath: string }>;
   viewPath: string;
   hasLoader: boolean;
   method: RouteMethod.GET;
@@ -57,7 +54,7 @@ type ClassMethodNames<T> = {
 export const view: ViewRoute = (viewPath, controller): ViewRouteDefinition => {
   return {
     kind: "VIEW",
-    exec: async (ctx: RouterContext<unknown[]>) => {
+    exec: async (ctx: RouterContext) => {
       if (!controller) {
         return { data: {}, viewPath };
       }
@@ -65,13 +62,13 @@ export const view: ViewRoute = (viewPath, controller): ViewRouteDefinition => {
         return { data: await controller(ctx.req, ctx.res), viewPath };
       }
       const [Controller, methodName] = controller;
-      const { req, res, params } = ctx;
+      const { req, res } = ctx;
       const instance = new Controller();
       const method = instance[methodName];
 
       let data = {};
       if (typeof method === "function") {
-        data = (await method({ params })) as typeof data;
+        data = (await method({ req, res })) as typeof data;
       }
 
       let result = {};
@@ -94,13 +91,12 @@ export const get: EndpointRoute = (
 ): EndpointRouteDefinition => {
   return {
     kind: "ENDPOINT",
-    exec: async (ctx: RouterContext<unknown[]>) => {
-      const { params } = ctx;
+    exec: async (ctx: RouterContext) => {
       const controllerInstance = new Controller();
       const method = controllerInstance[methodName];
       let data = {};
       if (typeof method === "function") {
-        data = (await method({ params })) as typeof data;
+        data = (await method({ params: ctx.req.params })) as typeof data;
       }
       return { data };
     },
@@ -115,7 +111,7 @@ export const post: EndpointRoute = (
 ): EndpointRouteDefinition => {
   return {
     kind: "ENDPOINT",
-    exec: async (ctx: RouterContext<unknown[]>) => {
+    exec: async (ctx: RouterContext) => {
       const instance = new Controller();
       const method = instance[methodName];
       let data = {};

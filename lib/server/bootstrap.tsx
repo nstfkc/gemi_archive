@@ -1,122 +1,81 @@
-import "reflect-metadata";
-import type { Response, Request } from "express";
+import { Router } from "express";
+
 import { renderToString } from "react-dom/server";
 
-import { routes } from "@/app/http/routes";
-import { createRouteMatcher } from "./helpers/routeMatcher";
-import { storage } from "./storage";
+import { api, web } from "@/app/http/routes";
 
-const views: Record<string, { default: <T>(p: T) => JSX.Element }> =
-  import.meta.glob(["../../app/views/**/*", "!**/components/*"], {
-    eager: true,
+const views = import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
+  eager: true,
+});
+
+const routeViewMap = Object.fromEntries(
+  Object.entries(web).map(([key, routeList]) => {
+    return [
+      key,
+      { viewPath: routeList.viewPath, hasLoader: routeList.hasLoader },
+    ];
+  }),
+);
+
+export function bootstrap(template: string) {
+  const router = Router();
+
+  Object.entries(api).forEach(([path, handler]) => {
+    router[handler.method](path, async (req, res) => {
+      const { data } = await handler.exec({ req, res });
+      res.json(data);
+    });
   });
 
-interface Ctx {
-  res: Response;
-  req: Request;
-}
-
-export async function bootstrap(ctx: Ctx) {
-  const { req, res } = ctx;
-
-  const routeMatcher = createRouteMatcher(routes);
-  const isJSONRequest = req.originalUrl.startsWith("/__json");
-  const { match, params } = routeMatcher(
-    req.originalUrl.split("?")[0].replace("/__json", "").replace("//", "/"),
-  );
-
-  const matchedRoutes = Array.isArray(routes[match])
-    ? routes[match]
-    : [routes[match]];
-
-  const route = matchedRoutes.find((r) => r.method === req.method);
-
-  if (typeof route.exec !== "function") {
-    return res.send("404");
-  }
-
-  const { viewPath, data } = await storage.run(
-    { request: req, response: res },
-    async () => {
-      return await route.exec({
+  Object.entries(web).forEach(([path, handler]) => {
+    router.get(`/__json${path}`, async (req, res) => {
+      const { data } = await handler.exec({
         req,
         res,
-        params,
       });
-    },
-  );
+      res.json(data);
+    });
 
-  if (isJSONRequest || route.json) {
-    return {
-      isJSONRequest: true,
-      serverData: {
-        data,
-      },
-      render: () => "",
-    };
-  }
+    router.get(path, async (req, res) => {
+      const { data, viewPath } = await handler.exec({
+        req,
+        res,
+      });
 
-  if (!viewPath) {
-    return {
-      render: () => "",
-      serverData: { data: {} },
-    };
-  }
+      const serverData = {
+        routeViewMap,
+        routeData: { [path]: data },
+        routes: Object.keys(web),
+        currentRoute: path,
+      };
 
-  if (data.redirect) {
-    return {
-      serverData: {
-        redirect: data.redirect,
-        status: 304,
-      },
-    };
-  }
+      let Children = () => (
+        <>
+          <div>404</div>
+        </>
+      );
 
-  const routeViewMap = Object.fromEntries(
-    Object.entries(routes).map(([key, routeList]) => {
-      if (Array.isArray(routeList)) {
-        const result = routeList
-          .filter((route) => route.kind === "VIEW")
-          .find((routeDefinition) => {
-            if (routeDefinition.kind === "VIEW") {
-              return {
-                viewPath: routeDefinition.viewPath,
-                hasLoader: routeDefinition.hasLoader,
-              };
-            }
-          });
-        if (result?.kind === "VIEW") {
-          return [
-            key,
-            { viewPath: result.viewPath, hasLoader: result.hasLoader },
-          ];
-        }
-      } else {
-        if (routeList.kind === "VIEW") {
-          return [
-            key,
-            { viewPath: routeList.viewPath, hasLoader: routeList.hasLoader },
-          ];
-        }
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/no-unsafe-assignment
+        Children = views[`/app/views/${viewPath}.tsx`].default;
+      } catch (err) {
+        console.log(err);
+        Children = () => <div>Cannot find {viewPath} view</div>;
       }
-      return [];
-    }),
-  );
 
-  const Children = views[`../../app/views/${viewPath}.tsx`].default;
+      const scripts = `<script>window.serverData = '${JSON.stringify(
+        serverData,
+      )}';</script>`;
 
-  return {
-    isJSONRequest: false,
-    serverData: {
-      routeViewMap,
-      routeData: { [match]: data },
-      routes: Object.keys(routes),
-      currentRoute: match,
-    },
-    render: () => {
-      return renderToString(<Children data={data} />);
-    },
-  };
+      const appHtml = renderToString(<Children data={data} />);
+
+      const html = template
+        .replace(`<!--app-html-->`, appHtml)
+        .replace(`<!--server-data-->`, scripts);
+
+      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    });
+  });
+
+  return router;
 }
-
-export default bootstrap;

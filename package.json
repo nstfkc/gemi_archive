@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "bun server.js",
+    "dev": "bun server/dev.ts",
     "test": "vitest",
     "prisma": "prisma",
     "db:generate": "prisma generate --schema=./db/schema.prisma",
@@ -12,7 +12,7 @@
     "build": "bun run build:client && npm run build:server",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build -c vite.config.server.js",
-    "serve": "NODE_ENV=production node server",
+    "serve": "NODE_ENV=production node dist/server/prod",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -56,6 +56,7 @@
     "serve-static": "^1.15.0",
     "tailwindcss": "^3.3.5",
     "tslib": "^2.6.2",
+    "tsup": "^7.2.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",
     "vitest": "^0.34.6"

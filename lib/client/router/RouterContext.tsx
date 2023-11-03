@@ -91,19 +91,21 @@ export const RouterProvider = (props: RouterProviderProps) => {
   );
 };
 
-interface LinkProps extends ComponentProps<"a"> {
-  to: keyof Routes;
+interface LinkProps extends Omit<ComponentProps<"a">, "href"> {
+  href: keyof Routes;
 }
 
 export const Link = (props: LinkProps) => {
+  const { href, onClick = () => {}, ...rest } = props;
   const { history, routes, routeDataRef } = useContext(RouterContext);
   return (
     <a
-      href={props.to}
+      href={href}
       onClick={(e) => {
         e.preventDefault();
+        onClick(e);
         let loader = () => Promise.resolve({} as unknown);
-        const route = routes.find((route) => route.path === props.to);
+        const route = routes.find((route) => route.path === href);
         if (route && typeof route.loader === "function") {
           loader = route.loader;
         }
@@ -113,11 +115,12 @@ export const Link = (props: LinkProps) => {
               history.push(data.redirect);
             } else {
               routeDataRef.current?.set(route?.path!, data as any);
-              history.push(props.to);
+              history.push(href);
             }
           })
           .catch(console.log);
       }}
+      {...rest}
     >
       {props.children}
     </a>
