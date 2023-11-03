@@ -42,7 +42,6 @@ export async function createServer(
     ).createServer({
       root,
       logLevel: isTest ? "error" : "info",
-      plugins: [typescript()],
       server: {
         middlewareMode: true,
         watch: {

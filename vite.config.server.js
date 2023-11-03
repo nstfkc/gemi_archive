@@ -9,7 +9,6 @@ const appDir = path.join(rootDir, "app");
 const dbDir = path.join(rootDir, "db");
 
 export default defineConfig({
-  plugins: [typescript()],
   build: {
     ssr: true,
     outDir: "dist/lib/server",
