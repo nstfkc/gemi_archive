@@ -7,7 +7,7 @@ interface HomeData {
 const Home = (props: { data: HomeData }) => {
   return (
     <div>
-      {props.data.message}
+      {props.data.message}!!!
       <div>
         <Link to="/about">About 2</Link>
       </div>

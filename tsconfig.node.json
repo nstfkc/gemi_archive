@@ -3,7 +3,7 @@
     "target": "ES2022",
     "composite": true,
     "skipLibCheck": true,
-    "module": "ESNext",
+    "module": "esnext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true

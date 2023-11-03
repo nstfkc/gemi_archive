@@ -3,7 +3,7 @@
     "target": "ES2022",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
+    "module": "esnext",
     "skipLibCheck": true,
 
     "moduleResolution": "node",
@@ -24,6 +24,6 @@
     },
     "types": ["vite/client", "./types.d.ts"]
   },
-  "include": ["app", "lib"],
+  "include": ["app", "lib", "server"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

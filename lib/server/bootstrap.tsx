@@ -1,122 +1,77 @@
-import "reflect-metadata";
-import type { Response, Request } from "express";
+import type { Express, Request, Response } from "express";
 import { renderToString } from "react-dom/server";
 
-import { routes } from "@/app/http/routes";
-import { createRouteMatcher } from "./helpers/routeMatcher";
+import { api, web } from "@/app/http/routes";
 import { storage } from "./storage";
 
-const views: Record<string, { default: <T>(p: T) => JSX.Element }> =
-  import.meta.glob(["../../app/views/**/*", "!**/components/*"], {
-    eager: true,
-  });
+const routeViewMap = Object.fromEntries(
+  Object.entries(web).map(([key, routeList]) => {
+    return [
+      key,
+      { viewPath: routeList.viewPath, hasLoader: routeList.hasLoader },
+    ];
+  }),
+);
 
-interface Ctx {
-  res: Response;
-  req: Request;
-}
-
-export async function bootstrap(ctx: Ctx) {
-  const { req, res } = ctx;
-
-  const routeMatcher = createRouteMatcher(routes);
-  const isJSONRequest = req.originalUrl.startsWith("/__json");
-  const { match, params } = routeMatcher(
-    req.originalUrl.split("?")[0].replace("/__json", "").replace("//", "/"),
-  );
-
-  const matchedRoutes = Array.isArray(routes[match])
-    ? routes[match]
-    : [routes[match]];
-
-  const route = matchedRoutes.find((r) => r.method === req.method);
-
-  if (typeof route.exec !== "function") {
-    return res.send("404");
-  }
-
-  const { viewPath, data } = await storage.run(
-    { request: req, response: res },
-    async () => {
-      return await route.exec({
-        req,
-        res,
-        params,
-      });
-    },
-  );
-
-  if (isJSONRequest || route.json) {
-    return {
-      isJSONRequest: true,
-      serverData: {
-        data,
-      },
-      render: () => "",
-    };
-  }
-
-  if (!viewPath) {
-    return {
-      render: () => "",
-      serverData: { data: {} },
-    };
-  }
-
-  if (data.redirect) {
-    return {
-      serverData: {
-        redirect: data.redirect,
-        status: 304,
-      },
-    };
-  }
-
-  const routeViewMap = Object.fromEntries(
-    Object.entries(routes).map(([key, routeList]) => {
-      if (Array.isArray(routeList)) {
-        const result = routeList
-          .filter((route) => route.kind === "VIEW")
-          .find((routeDefinition) => {
-            if (routeDefinition.kind === "VIEW") {
-              return {
-                viewPath: routeDefinition.viewPath,
-                hasLoader: routeDefinition.hasLoader,
-              };
-            }
-          });
-        if (result?.kind === "VIEW") {
-          return [
-            key,
-            { viewPath: result.viewPath, hasLoader: result.hasLoader },
-          ];
-        }
-      } else {
-        if (routeList.kind === "VIEW") {
-          return [
-            key,
-            { viewPath: routeList.viewPath, hasLoader: routeList.hasLoader },
-          ];
-        }
-      }
-      return [];
-    }),
-  );
-
-  const Children = views[`../../app/views/${viewPath}.tsx`].default;
-
-  return {
-    isJSONRequest: false,
-    serverData: {
+const handleView =
+  (path: keyof typeof web, html: string) =>
+  async (req: Request, res: Response) => {
+    const handler = web[path];
+    const { data, viewPath } = await handler.exec({
+      req,
+      res,
+      params: req.params as any,
+    });
+    const serverData = {
       routeViewMap,
-      routeData: { [match]: data },
-      routes: Object.keys(routes),
-      currentRoute: match,
-    },
-    render: () => {
-      return renderToString(<Children data={data} />);
-    },
-  };
-}
+      routeData: { [path]: data },
+      routes: Object.keys(web),
+      currentRoute: path,
+    };
+    const Children = (await import(`../../app/views/${viewPath}.tsx`)).default;
+    const scripts = `<script>window.serverData = '${JSON.stringify(
+      serverData,
+    )}';</script>`;
 
-export default bootstrap;
+    const appHtml = renderToString(<Children data={data} />);
+
+    return html
+      .replace(`<!--app-html-->`, appHtml)
+      .replace(`<!--server-data-->`, scripts);
+  };
+
+/* export const viewDataHandler = (req: Request) => {
+ *   const { data } = await handler.exec({
+ *     req,
+ *     res,
+ *     params: req.params as any,
+ *   });
+ *   res.json(data);
+ * };
+ *  */
+
+const webPaths = Object.keys(web);
+
+export default {
+  webPaths,
+  handleView,
+};
+
+/* export async function bootstrap(
+ *   app: Express,
+ *   getTemplate: (url: string) => Promise<string>,
+ *   cb: (e: Error) => void,
+ * ) {
+ *   Object.entries(web).forEach(([path, handler]) => {
+ *     app.get(path, async (req, res) => {
+ *       const viewHandler = handleView(req, res);
+ *
+ *       res.status(200).set({ "Content-Type": "text/html" }).end(html);
+ *     });
+ *     app.get(`/__json${path}`, async (req, res) => {
+ *
+ *     });
+ *   });
+ * }
+ *
+ * export default bootstrap; */

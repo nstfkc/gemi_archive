@@ -9,8 +9,8 @@ interface RouterContext<T> {
 
 type RouteKind = "VIEW" | "ENDPOINT";
 enum RouteMethod {
-  GET = "GET",
-  POST = "POST",
+  GET = "get",
+  POST = "post",
 }
 
 interface RouteDefinition {
