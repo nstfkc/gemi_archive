@@ -1,4 +1,9 @@
-import { Router, type Request, type Response } from "express";
+import {
+  Router,
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import { renderToString } from "react-dom/server";
 import { api, web } from "@/app/http/routes";
 
@@ -77,40 +82,74 @@ const routeViewMap = Object.fromEntries([
   }),
 ]);
 
+const viewRouteAuthMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (req.cookies["auth"] === "true") {
+    next();
+  } else {
+    res.redirect("/auth/login");
+  }
+};
+
+const viewJsonRouteAuthMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (req.cookies["auth"] === "true") {
+    next();
+  } else {
+    res.json({ redirect: "/auth/login" });
+  }
+};
+
+const apiRouteAuthMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (req.cookies["auth"] === "true") {
+    next();
+  } else {
+    res.json({ success: false, error: { message: "Not authorized" } });
+  }
+};
+
 export function bootstrap(template: string) {
   const router = Router();
 
-  const publicRouter = Router();
-  const privateRouter = Router();
-
-  privateRouter.use((req, res, next) => {
-    if (req.cookies["auth"] === "true") {
-      next();
-    } else {
-      res.redirect("/auth/login");
-    }
-  });
-
   Object.entries(api.public).forEach(([path, handler]) => {
-    publicRouter[handler.method](`/api${path}`, apiHandler(path, handler));
+    router[handler.method](`/api${path}`, apiHandler(path, handler));
   });
 
   Object.entries(api.private).forEach(([path, handler]) => {
-    privateRouter[handler.method](`/api${path}`, apiHandler(path, handler));
+    router[handler.method](
+      `/api${path}`,
+      apiRouteAuthMiddleware,
+      apiHandler(path, handler),
+    );
   });
 
   Object.entries(web.public).forEach(([path, handler]) => {
-    publicRouter.get(`/__json${path}`, viewDataHandler(path, handler));
-    publicRouter.get(path, viewHandler(path, handler, template));
+    router.get(`/__json${path}`, viewDataHandler(path, handler));
+    router.get(path, viewHandler(path, handler, template));
   });
 
   Object.entries(web.private).forEach(([path, handler]) => {
-    privateRouter.get(`/__json${path}`, viewDataHandler(path, handler));
-    privateRouter.get(path, viewHandler(path, handler, template));
+    router.get(
+      `/__json${path}`,
+      viewJsonRouteAuthMiddleware,
+      viewDataHandler(path, handler),
+    );
+    router.get(
+      path,
+      viewRouteAuthMiddleware,
+      viewHandler(path, handler, template),
+    );
   });
-
-  router.use(publicRouter);
-  router.use(privateRouter);
 
   return router;
 }

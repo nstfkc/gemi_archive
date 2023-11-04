@@ -19,9 +19,10 @@ export interface Ctx {
 }
 
 interface ViewRouteDefinition<Data> {
-  exec: (ctx: Ctx) => Promise<{ data: Data; viewPath: string }>;
+  exec: (ctx: Ctx) => Promise<{ data: Data }>;
   hasLoader: boolean;
   method: RouteMethod.GET;
+  viewPath: string;
 }
 
 interface ApiRouteDefinition<Data> {
@@ -97,10 +98,11 @@ export class Route {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-        return { data: data as any, viewPath };
+        return { data: data as any };
       },
       method: RouteMethod.GET,
       hasLoader: !!handler,
+      viewPath,
     };
   };
 

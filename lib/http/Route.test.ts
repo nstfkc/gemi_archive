@@ -21,9 +21,6 @@ const web = {
     "/": Route.view("Home"),
     "/posts": Route.view("Posts"),
     "/post/:postId": Route.view("Posts", [PostControler, "show"]),
-    "/about": Route.view("About", (ctx) => {
-      return { data: { companyName: "Acme inc." } };
-    }),
   },
   private: {
     "/account": Route.view("Account", [AccountController, "index"]),
@@ -32,7 +29,7 @@ const web = {
 
 const api = {
   private: {
-    "/account": Route.get(AccountController, "index"),
+    "/account": Route.get([AccountController, "index"]),
   },
 };
 
