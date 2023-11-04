@@ -1,66 +1,117 @@
 import { Request, Response } from "express";
+import { Controller } from "./Controller";
 
-type MaybePromise<T> = Promise<T> | T;
-type RouteKind = "VIEW" | "ENDPOINT";
+// type MaybePromise<T> = Promise<T> | T;
+
+type UnwrapPromise<T> = T extends Promise<infer R> ? R : T;
+
 enum RouteMethod {
-  GET = "GET",
-  POST = "POST",
+  GET = "get",
+  POST = "post",
+  PATCH = "patch",
+  PUT = "put",
+  DELETE = "delete",
 }
 
-interface RouteDefinition {
-  kind: RouteKind;
-}
-
-interface RouterContext<T> {
+export interface Ctx {
   req: Request;
   res: Response;
-  params: T;
 }
 
-interface ViewRouteDefinition extends RouteDefinition {
-  kind: "VIEW";
-  exec: (
-    ctx: RouterContext<unknown[]>,
-  ) => Promise<{ data: unknown; viewPath: string }>;
-  viewPath: string;
+interface ViewRouteDefinition<Data> {
+  exec: (ctx: Ctx) => Promise<{ data: Data; viewPath: string }>;
   hasLoader: boolean;
   method: RouteMethod.GET;
-  json: false;
 }
 
-type Req = "req";
-type Res = "res";
+interface ApiRouteDefinition<Data> {
+  exec: (ctx: Ctx) => Promise<{ data: Data }>;
+  method: RouteMethod;
+}
 
 type ClassMethodNames<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
+  [K in keyof T]: T[K] extends (...args: any[]) => unknown ? K : never;
 }[keyof T];
 
-type ViewRouteHandler = <T extends Controller, K extends ClassMethodNames<T>>(
+type ViewRouteHandler = <
+  T extends Controller,
+  K extends ClassMethodNames<T>,
+  Data = InstanceType<{ new (): T }>[K] extends (ctx: Ctx) => infer R
+    ? UnwrapPromise<R>
+    : never,
+>(
   viewPath: string,
-  controller?:
-    | [{ new (): T }, K]
-    | ((req: Request, res: Response) => MaybePromise<unknown>),
-) => ViewRouteDefinition;
+  controller?: [{ new (): T }, K],
+) => ViewRouteDefinition<Data>;
 
-type RouteHandler = () => unknown;
-type RouteMiddleware = () => unknown;
-type RouteGroup = () => unknown;
+type ApiRouteHandler = <
+  T extends Controller,
+  K extends ClassMethodNames<T>,
+  Data = InstanceType<{ new (): T }>[K] extends (ctx: Ctx) => infer R
+    ? UnwrapPromise<R>
+    : never,
+>(
+  controller: [{ new (): T }, K] | (<Data>(ctx: Ctx) => Data),
+) => ApiRouteDefinition<Data>;
+
+const createApiHandler = (method: RouteMethod): ApiRouteHandler => {
+  return (handler) => {
+    return {
+      exec: async (ctx) => {
+        if (typeof handler === "function") {
+          const data = await handler(ctx);
+          return { data };
+        }
+        const [C, methodName] = handler;
+        const controllerInstance = new C();
+        let data = {};
+
+        const method = controllerInstance[methodName];
+        if (typeof method === "function") {
+          data = (await method({ params: ctx.req.params })) as typeof data;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
+        return { data } as any;
+      },
+      method,
+    };
+  };
+};
 
 export class Route {
-  static view: ViewRouteHandler = () => {};
+  static view: ViewRouteHandler = (viewPath, handler) => {
+    return {
+      exec: async (ctx: Ctx) => {
+        if (!handler) {
+          return { data: {} as never, viewPath };
+        }
+        const [Controller, methodName] = handler;
+        const { req, res } = ctx;
+        const instance = new Controller();
+        const method = instance[methodName];
 
-  static get = () => {};
-  static post = () => {};
-  static patch = () => {};
-  static put = () => {};
-  static delete = () => {};
+        let data = {};
+        if (typeof method === "function") {
+          data = (await method({ req, res })) as typeof data;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+        return { data: data as any, viewPath };
+      },
+      method: RouteMethod.GET,
+      hasLoader: !!handler,
+    };
+  };
+
+  static get = createApiHandler(RouteMethod.GET);
+  static post = createApiHandler(RouteMethod.POST);
+  static patch = createApiHandler(RouteMethod.PATCH);
+  static put = createApiHandler(RouteMethod.PUT);
+  static delete = createApiHandler(RouteMethod.DELETE);
 
   static middleware = () => {
     return Route;
   };
-  static group = () => {};
+  // static group = () => {};
 }
-
-Route.view("Test");
-Route.view("Test", (req, res) => {});

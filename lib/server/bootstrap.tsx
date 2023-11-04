@@ -73,10 +73,7 @@ const routeViewMap = Object.fromEntries([
     ];
   }),
   ...Object.entries(web.private).map(([key, routeList]) => {
-    return [
-      key,
-      { viewPath: routeList.viewPath, hasLoader: routeList.hasLoader },
-    ];
+    return [key, { viewPath: routeList.viewPath, hasLoader: true }];
   }),
 ]);
 
