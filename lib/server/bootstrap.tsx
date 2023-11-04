@@ -4,8 +4,11 @@ import {
   type Response,
   type NextFunction,
 } from "express";
+import { verify } from "jsonwebtoken";
 import { renderToString } from "react-dom/server";
 import { api, web } from "@/app/http/routes";
+import { RouterContext } from "../http/RouterContext";
+import { AuthContext } from "../http/AuthContext";
 
 const views = import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
   eager: true,
@@ -120,6 +123,19 @@ const apiRouteAuthMiddleware = (
 
 export function bootstrap(template: string) {
   const router = Router();
+
+  router.use(
+    (req, res, next) => {
+      RouterContext.run({ request: req, response: res }, next);
+    },
+    (req, _res, next) => {
+      const token = String(
+        req.headers?.authorization ?? req.cookies["authorization"],
+      );
+      const user = { id: "1234" };
+      AuthContext.run({ user }, next);
+    },
+  );
 
   Object.entries(api.public).forEach(([path, handler]) => {
     router[handler.method](`/api${path}`, apiHandler(path, handler));
