@@ -16,6 +16,7 @@ export const api = {
   public: {
     "/test": Route.get([TestController, "index"]),
     "/auth/register": Route.post([AuthController, "register"]),
+    "/auth/login": Route.post([AuthController, "login"]),
   },
   private: {
     "/account": Route.get([AccountController, "index"]),

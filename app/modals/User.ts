@@ -1,5 +1,6 @@
 // @ts-expect-error
 import { prisma } from "@/db/orm";
+import { Auth } from "@/lib/http/Auth";
 
 export async function encrypt(str: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -119,7 +120,12 @@ class BaseUser extends Modal {
     super();
   }
 
-  static findFirst = prisma.user.findFirst;
+  static findFirst = async (...args) => {
+    console.log(Auth.user());
+    const result = await prisma.user.findFirst(...args);
+    await prisma.$disconnect();
+    return result;
+  };
   static findFirstOrThrow = prisma.user.findFirstOrThrow;
   static findMany = prisma.user.findMany;
 

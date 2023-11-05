@@ -125,7 +125,7 @@ export function bootstrap(template: string) {
   const router = Router();
 
   router.use(
-    (req, res, next) => {
+    async (req, res, next) => {
       RouterContext.run({ request: req, response: res }, next);
     },
     (req, _res, next) => {

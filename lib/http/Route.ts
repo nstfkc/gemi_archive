@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Controller } from "./Controller";
+import { RouterContext } from "./RouterContext";
 
 // type MaybePromise<T> = Promise<T> | T;
 
@@ -70,7 +71,8 @@ const createApiHandler = (method: RouteMethod): ApiRouteHandler => {
 
         const method = controllerInstance[methodName];
         if (typeof method === "function") {
-          data = (await method({ params: ctx.req.params })) as typeof data;
+          RouterContext.enterWith({ request: ctx.req, response: ctx.res });
+          data = (await method(ctx)) as typeof data;
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
         return { data } as any;
@@ -94,7 +96,7 @@ export class Route {
 
         let data = {};
         if (typeof method === "function") {
-          data = (await method({ req, res })) as typeof data;
+          data = (await method(ctx)) as typeof data;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any

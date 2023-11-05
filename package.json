@@ -8,6 +8,7 @@
     "test": "vitest",
     "prisma": "prisma",
     "db:generate": "prisma generate --schema=./db/schema.prisma",
+    "db:studio": "prisma studio --schema=./db/schema.prisma",
     "db:push": "prisma db push --schema=./db/schema.prisma",
     "build": "bun run build:client && npm run build:server",
     "build:client": "vite build --outDir dist/client",

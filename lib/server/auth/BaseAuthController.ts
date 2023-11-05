@@ -8,6 +8,8 @@ import { setCookie } from "../helpers/cookie";
 import { createRequest } from "../createRequest";
 
 import * as z from "zod";
+import { RouterContext } from "@/lib/http/RouterContext";
+import { Auth } from "@/lib/http/Auth";
 
 const loginRequest = createRequest({
   email: z.string().email(),
@@ -22,11 +24,14 @@ interface RegisterParams {
 
 export class BaseAuthController extends Controller {
   login = loginRequest.next(async ({ email, password }) => {
+    await new Promise((res) => setTimeout(res, 1000));
+
     const user = await User.findFirst({
       where: { email },
       include: { accounts: true },
     });
 
+    console.log(Auth.user());
     const passwordMatches =
       user?.password && (await decrypt(password, user.password));
 
@@ -38,7 +43,7 @@ export class BaseAuthController extends Controller {
     } else {
       const token = jwt.sign(
         {
-          userId: user.id,
+          user,
           // TODO: A user can have multiple accounts accross multiple organisations
           // But for now we only allow one account, therefore we hardcode the account
           role: user.accounts[0].role,
@@ -49,7 +54,8 @@ export class BaseAuthController extends Controller {
 
       const now = Date.now();
 
-      setCookie("Authorization", `Bearer ${token}`, {
+      // TODO: Get cookie name from config
+      setCookie("Authorization", token, {
         expires: addDays(now, 1),
         path: "/",
         httpOnly: true,
@@ -62,8 +68,9 @@ export class BaseAuthController extends Controller {
     }
   });
 
-  register = async (request: Request<RegisterParams>) => {
-    const { email, name, password } = request.body;
+  register = async (ctx) => {
+    const { email, name, password } = ctx.req.body;
+    console.log({ email, name, password });
     const encryptedPassword = await encrypt(password);
 
     try {

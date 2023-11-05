@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path, { join } from "node:path";
 import express, { Router } from "express";
 import cookieParser from "cookie-parser";
-import { json } from "body-parser";
+import bodyParser from "body-parser";
 
 const rootDir = path.resolve(process.cwd());
 const libDir = path.join(rootDir, "lib");
@@ -12,7 +12,7 @@ const dbDir = path.join(rootDir, "db");
 export async function createServer(root = process.cwd()) {
   const app = express();
   app.use(cookieParser());
-  app.use(json());
+  app.use(bodyParser.json());
 
   const vite = await (
     await import("vite")
