@@ -123,27 +123,33 @@ const apiRouteAuthMiddleware = (
   }
 };
 
-export function bootstrap(template: string) {
-  return (ctx) => {
+export function bootstrap(template: (url: string) => Promise<string>) {
+  const app = new Hono();
+  app.get("/test", async (ctx) => {
     const serverData = {
       routeViewMap,
-      routeData: { ["/"]: { message: "hello world 1" } },
+      routeData: { ["/"]: { message: "hello world 12" } },
       routes: Object.keys(web),
       currentRoute: "/",
     };
     const Children = views["/app/views/Home.tsx"].default;
-    console.log(Children);
     const scripts = `<script>window.serverData = '${JSON.stringify(
       serverData,
     )}';</script>`;
 
     const apphtml = renderToString(<Children data={{}} />);
-
-    const html = template
+    const t = await template(ctx.req.url);
+    const html = t
       .replace(`<!--app-html-->`, apphtml)
       .replace(`<!--server-data-->`, scripts);
 
     return ctx.html(html);
+  });
+
+  app.get("/", (ctx) => ctx.text("hi /"));
+
+  return (ctx, next) => {
+    return app.routes.find((r) => r.path === ctx.req.path);
   };
 
   /* const router = Router();
