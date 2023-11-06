@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Context } from "hono";
+
 import { Controller } from "./Controller";
 import { RouterContext } from "./RouterContext";
 
@@ -14,20 +15,15 @@ enum RouteMethod {
   DELETE = "delete",
 }
 
-export interface Ctx {
-  req: Request;
-  res: Response;
-}
-
 interface ViewRouteDefinition<Data> {
-  exec: (ctx: Ctx) => Promise<{ data: Data }>;
+  exec: (ctx: Context) => Promise<{ data: Data }>;
   hasLoader: boolean;
   method: RouteMethod.GET;
   viewPath: string;
 }
 
 interface ApiRouteDefinition<Data> {
-  exec: (ctx: Ctx) => Promise<{ data: Data }>;
+  exec: (ctx: Context) => Promise<{ data: Data }>;
   method: RouteMethod;
 }
 
@@ -39,7 +35,7 @@ type ClassMethodNames<T> = {
 type ViewRouteHandler = <
   T extends Controller,
   K extends ClassMethodNames<T>,
-  Data = InstanceType<{ new (): T }>[K] extends (ctx: Ctx) => infer R
+  Data = InstanceType<{ new (): T }>[K] extends (ctx: Context) => infer R
     ? UnwrapPromise<R>
     : never,
 >(
@@ -50,11 +46,11 @@ type ViewRouteHandler = <
 type ApiRouteHandler = <
   T extends Controller,
   K extends ClassMethodNames<T>,
-  Data = InstanceType<{ new (): T }>[K] extends (ctx: Ctx) => infer R
+  Data = InstanceType<{ new (): T }>[K] extends (ctx: Context) => infer R
     ? UnwrapPromise<R>
     : never,
 >(
-  controller: [{ new (): T }, K] | (<Data>(ctx: Ctx) => Data),
+  controller: [{ new (): T }, K] | (<Data>(ctx: Context) => Data),
 ) => ApiRouteDefinition<Data>;
 
 const createApiHandler = (method: RouteMethod): ApiRouteHandler => {
@@ -71,7 +67,7 @@ const createApiHandler = (method: RouteMethod): ApiRouteHandler => {
 
         const method = controllerInstance[methodName];
         if (typeof method === "function") {
-          RouterContext.enterWith({ request: ctx.req, response: ctx.res });
+          // RouterContext.enterWith({ request: ctx.req, response: ctx.res });
           data = (await method(ctx)) as typeof data;
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
@@ -85,12 +81,11 @@ const createApiHandler = (method: RouteMethod): ApiRouteHandler => {
 export class Route {
   static view: ViewRouteHandler = (viewPath, handler) => {
     return {
-      exec: async (ctx: Ctx) => {
+      exec: async (ctx: Context) => {
         if (!handler) {
           return { data: {} as never, viewPath };
         }
         const [Controller, methodName] = handler;
-        const { req, res } = ctx;
         const instance = new Controller();
         const method = instance[methodName];
 

@@ -9,6 +9,9 @@ const appDir = path.join(rootDir, "app");
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    ssrEmitAssets: true,
+  },
   resolve: {
     alias: {
       "@/lib": libDir,

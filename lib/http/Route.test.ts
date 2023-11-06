@@ -1,17 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { Controller } from "./Controller";
-import { Route, Ctx } from "./Route";
+import { Route, Context } from "./Route";
 
 class PostControler extends Controller {
   list = () => {};
 
-  show = (ctx: Ctx) => {
+  show = (ctx: Context) => {
     return { data: { id: ctx.req.params.postId } };
   };
 }
 
 class AccountController extends Controller {
-  index = (_ctx: Ctx) => {
+  index = (_ctx: Context) => {
     return { account: { id: "1234" } };
   };
 }

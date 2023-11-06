@@ -1,4 +1,5 @@
-import { Hono } from "hono";
+import { Hono, Handler } from "hono";
+import { getCookie } from "hono/cookie";
 
 import {
   Router,
@@ -16,19 +17,13 @@ const views = import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
   eager: true,
 });
 
-const viewHandler = (path: string, handler: any, template: string) => {
-  return async (req: Request, res: Response) => {
-    const { data, viewPath } = await handler.exec({
-      req,
-      res,
-    });
-
-    const serverData = {
-      routeViewMap,
-      routeData: { [path]: data },
-      routes: Object.keys(web),
-      currentRoute: path,
-    };
+const viewHandler = (
+  path: string,
+  handler: any,
+  getTemplate: (url: string) => Promise<string>,
+): Handler => {
+  return async (ctx) => {
+    const { data, viewPath } = await handler.exec(ctx);
 
     let Children = () => (
       <>
@@ -44,34 +39,39 @@ const viewHandler = (path: string, handler: any, template: string) => {
       Children = () => <div>Cannot find {viewPath} view</div>;
     }
 
-    const scripts = `<script>window.serverdata = '${json.stringify(
-      serverdata,
+    const serverData = {
+      routeViewMap,
+      routeData: { [path]: data },
+      routes: Object.keys(web),
+      currentRoute: path,
+    };
+
+    const scripts = `<script>window.serverData = '${JSON.stringify(
+      serverData,
     )}';</script>`;
 
-    const apphtml = rendertostring(<children data={data} />);
-
-    const html = template
+    const apphtml = renderToString(<Children data={data} />);
+    console.log(apphtml);
+    const t = await getTemplate(ctx.req.url);
+    const html = t
       .replace(`<!--app-html-->`, apphtml)
       .replace(`<!--server-data-->`, scripts);
 
-    res.status(200).set({ "content-type": "text/html" }).end(html);
+    return ctx.html(html);
   };
 };
 
-const viewDataHandler = (_path: string, handler: any) => {
-  return async (req: Request, res: Response) => {
-    const { data } = await handler.exec({
-      req,
-      res,
-    });
-    res.json(data);
+const viewDataHandler = (_path: string, handler: any): Handler => {
+  return async (ctx) => {
+    const { data } = await handler.exec(ctx);
+    return ctx.json(data);
   };
 };
 
-const apiHandler = (_path: string, handler: any) => {
-  return async (req: Request, res: Response) => {
-    const { data } = await handler.exec({ req, res });
-    res.json(data);
+const apiHandler = (_path: string, handler: any): Handler => {
+  return async (ctx) => {
+    const { data } = await handler.exec(ctx);
+    return ctx.json(data);
   };
 };
 
@@ -87,115 +87,68 @@ const routeViewMap = Object.fromEntries([
   }),
 ]);
 
-const viewRouteAuthMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  if (req.cookies["auth"] === "true") {
+const viewRouteAuthMiddleware: Handler = (ctx, next) => {
+  if (getCookie(ctx, "auth") === "true") {
     next();
   } else {
-    res.redirect("/auth/login");
+    return ctx.redirect("/auth/login");
   }
 };
 
-const viewJsonRouteAuthMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  if (req.cookies["auth"] === "true") {
+const viewJsonRouteAuthMiddleware: Handler = (ctx, next) => {
+  if (getCookie(ctx, "auth") === "true") {
     next();
   } else {
-    res.json({ redirect: "/auth/login" });
+    return ctx.json({ redirect: "/auth/login" });
   }
 };
 
-const apiRouteAuthMiddleware = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  if (req.cookies["auth"] === "true") {
+const apiRouteAuthMiddleware: Handler = (ctx, next) => {
+  if (getCookie(ctx, "auth") === "true") {
     next();
   } else {
-    res.json({ success: false, error: { message: "Not authorized" } });
+    return ctx.json({ success: false, error: { message: "Not authorized" } });
   }
 };
 
-export function bootstrap(template: (url: string) => Promise<string>) {
+export function bootstrap(template: (url: string) => Promise<string>): Handler {
   const app = new Hono();
-  app.get("/test", async (ctx) => {
-    const serverData = {
-      routeViewMap,
-      routeData: { ["/"]: { message: "hello world 12" } },
-      routes: Object.keys(web),
-      currentRoute: "/",
-    };
-    const Children = views["/app/views/Home.tsx"].default;
-    const scripts = `<script>window.serverData = '${JSON.stringify(
-      serverData,
-    )}';</script>`;
 
-    const apphtml = renderToString(<Children data={{}} />);
-    const t = await template(ctx.req.url);
-    const html = t
-      .replace(`<!--app-html-->`, apphtml)
-      .replace(`<!--server-data-->`, scripts);
-
-    return ctx.html(html);
+  Object.entries(api.public).forEach(([path, handler]) => {
+    app[handler.method](`/api${path}`, apiHandler(path, handler));
   });
 
-  app.get("/", (ctx) => ctx.text("hi /"));
+  Object.entries(api.private).forEach(([path, handler]) => {
+    app[handler.method](
+      `/api${path}`,
+      apiRouteAuthMiddleware,
+      apiHandler(path, handler),
+    );
+  });
 
-  return (ctx, next) => {
-    return app.routes.find((r) => r.path === ctx.req.path);
+  Object.entries(web.public).forEach(([path, handler]) => {
+    app.get(`/__json${path}`, viewDataHandler(path, handler));
+    app.get(path, viewHandler(path, handler, template));
+  });
+
+  Object.entries(web.private).forEach(([path, handler]) => {
+    app.get(
+      `/__json${path}`,
+      viewJsonRouteAuthMiddleware,
+      viewDataHandler(path, handler),
+    );
+    app.get(
+      path,
+      viewRouteAuthMiddleware,
+      viewHandler(path, handler, template),
+    );
+  });
+
+  /* console.log(app.routes); */
+
+  return (ctx) => {
+    const route = app.routes.find((r) => r.path === ctx.req.path);
+    console.log({ path: ctx.req.path, route });
+    return route;
   };
-
-  /* const router = Router();
-
-   * router.use(
-   *   async (req, res, next) => {
-   *     RouterContext.run({ request: req, response: res }, next);
-   *   },
-   *   (req, _res, next) => {
-   *     const token = String(
-   *       req.headers?.authorization ?? req.cookies["authorization"],
-   *     );
-   *     const user = { id: "1234" };
-   *     AuthContext.run({ user }, next);
-   *   },
-   * );
-
-   * Object.entries(api.public).forEach(([path, handler]) => {
-   *   router[handler.method](`/api${path}`, apiHandler(path, handler));
-   * });
-
-   * Object.entries(api.private).forEach(([path, handler]) => {
-   *   router[handler.method](
-   *     `/api${path}`,
-   *     apiRouteAuthMiddleware,
-   *     apiHandler(path, handler),
-   *   );
-   * });
-
-   * Object.entries(web.public).forEach(([path, handler]) => {
-   *   router.get(`/__json${path}`, viewDataHandler(path, handler));
-   *   router.get(path, viewHandler(path, handler, template));
-   * });
-
-   * Object.entries(web.private).forEach(([path, handler]) => {
-   *   router.get(
-   *     `/__json${path}`,
-   *     viewJsonRouteAuthMiddleware,
-   *     viewDataHandler(path, handler),
-   *   );
-   *   router.get(
-   *     path,
-   *     viewRouteAuthMiddleware,
-   *     viewHandler(path, handler, template),
-   *   );
-   * });
-
-   * return router; */
 }

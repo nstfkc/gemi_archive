@@ -8,7 +8,7 @@ const Home = (props: { data: HomeData }) => {
   return (
     <div>
       {props.data.message}
-      <div className="bg-red-100">
+      <div className="bg-blue-100">
         <Link href="/about" className="font-bold">
           About
         </Link>

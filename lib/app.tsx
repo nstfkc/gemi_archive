@@ -2,8 +2,6 @@ import { ComponentType, lazy } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { RouterProvider } from "@/lib/client/router";
 
-import "@/app/global.css";
-
 declare const window: {
   serverData: string;
 } & Window;
@@ -29,7 +27,6 @@ const App = () => {
     window.serverData,
   ) as ServerData;
 
-  console.log({ routeViewMap, currentRoute, routeData });
   return (
     <RouterProvider
       initialPath={currentRoute}
