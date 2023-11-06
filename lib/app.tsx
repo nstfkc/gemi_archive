@@ -2,7 +2,7 @@ import { ComponentType, lazy } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { RouterProvider } from "@/lib/client/router";
 
-import "@/app/global.css";
+/* import "@/app/global.css"; */
 
 declare const window: {
   serverData: string;
@@ -28,6 +28,8 @@ const App = () => {
   const { routeViewMap, currentRoute, routeData } = JSON.parse(
     window.serverData,
   ) as ServerData;
+
+  console.log({ routeViewMap, currentRoute, routeData });
   return (
     <RouterProvider
       initialPath={currentRoute}

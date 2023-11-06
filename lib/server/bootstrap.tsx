@@ -1,3 +1,5 @@
+import { Hono } from "hono";
+
 import {
   Router,
   type Request,
@@ -42,17 +44,17 @@ const viewHandler = (path: string, handler: any, template: string) => {
       Children = () => <div>Cannot find {viewPath} view</div>;
     }
 
-    const scripts = `<script>window.serverData = '${JSON.stringify(
-      serverData,
+    const scripts = `<script>window.serverdata = '${json.stringify(
+      serverdata,
     )}';</script>`;
 
-    const appHtml = renderToString(<Children data={data} />);
+    const apphtml = rendertostring(<children data={data} />);
 
     const html = template
-      .replace(`<!--app-html-->`, appHtml)
+      .replace(`<!--app-html-->`, apphtml)
       .replace(`<!--server-data-->`, scripts);
 
-    res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    res.status(200).set({ "content-type": "text/html" }).end(html);
   };
 };
 
@@ -122,50 +124,72 @@ const apiRouteAuthMiddleware = (
 };
 
 export function bootstrap(template: string) {
-  const router = Router();
+  return (ctx) => {
+    const serverData = {
+      routeViewMap,
+      routeData: { ["/"]: { message: "hello world 1" } },
+      routes: Object.keys(web),
+      currentRoute: "/",
+    };
+    const Children = views["/app/views/Home.tsx"].default;
+    console.log(Children);
+    const scripts = `<script>window.serverData = '${JSON.stringify(
+      serverData,
+    )}';</script>`;
 
-  router.use(
-    async (req, res, next) => {
-      RouterContext.run({ request: req, response: res }, next);
-    },
-    (req, _res, next) => {
-      const token = String(
-        req.headers?.authorization ?? req.cookies["authorization"],
-      );
-      const user = { id: "1234" };
-      AuthContext.run({ user }, next);
-    },
-  );
+    const apphtml = renderToString(<Children data={{}} />);
 
-  Object.entries(api.public).forEach(([path, handler]) => {
-    router[handler.method](`/api${path}`, apiHandler(path, handler));
-  });
+    const html = template
+      .replace(`<!--app-html-->`, apphtml)
+      .replace(`<!--server-data-->`, scripts);
 
-  Object.entries(api.private).forEach(([path, handler]) => {
-    router[handler.method](
-      `/api${path}`,
-      apiRouteAuthMiddleware,
-      apiHandler(path, handler),
-    );
-  });
+    return ctx.html(html);
+  };
 
-  Object.entries(web.public).forEach(([path, handler]) => {
-    router.get(`/__json${path}`, viewDataHandler(path, handler));
-    router.get(path, viewHandler(path, handler, template));
-  });
+  /* const router = Router();
 
-  Object.entries(web.private).forEach(([path, handler]) => {
-    router.get(
-      `/__json${path}`,
-      viewJsonRouteAuthMiddleware,
-      viewDataHandler(path, handler),
-    );
-    router.get(
-      path,
-      viewRouteAuthMiddleware,
-      viewHandler(path, handler, template),
-    );
-  });
+   * router.use(
+   *   async (req, res, next) => {
+   *     RouterContext.run({ request: req, response: res }, next);
+   *   },
+   *   (req, _res, next) => {
+   *     const token = String(
+   *       req.headers?.authorization ?? req.cookies["authorization"],
+   *     );
+   *     const user = { id: "1234" };
+   *     AuthContext.run({ user }, next);
+   *   },
+   * );
 
-  return router;
+   * Object.entries(api.public).forEach(([path, handler]) => {
+   *   router[handler.method](`/api${path}`, apiHandler(path, handler));
+   * });
+
+   * Object.entries(api.private).forEach(([path, handler]) => {
+   *   router[handler.method](
+   *     `/api${path}`,
+   *     apiRouteAuthMiddleware,
+   *     apiHandler(path, handler),
+   *   );
+   * });
+
+   * Object.entries(web.public).forEach(([path, handler]) => {
+   *   router.get(`/__json${path}`, viewDataHandler(path, handler));
+   *   router.get(path, viewHandler(path, handler, template));
+   * });
+
+   * Object.entries(web.private).forEach(([path, handler]) => {
+   *   router.get(
+   *     `/__json${path}`,
+   *     viewJsonRouteAuthMiddleware,
+   *     viewDataHandler(path, handler),
+   *   );
+   *   router.get(
+   *     path,
+   *     viewRouteAuthMiddleware,
+   *     viewHandler(path, handler, template),
+   *   );
+   * });
+
+   * return router; */
 }
