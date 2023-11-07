@@ -28,6 +28,7 @@ export async function main() {
     },
     build: {
       ssrManifest: true,
+      manifest: true,
       ssrEmitAssets: true,
     },
     appType: "custom",
@@ -64,7 +65,6 @@ export async function main() {
       const { bootstrap } = await vite.ssrLoadModule(
         "/lib/server/bootstrap.tsx",
       );
-      console.log(vite.moduleGraph);
       const router = bootstrap(template);
 
       return await router.fetch(ctx.req.raw);

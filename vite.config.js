@@ -11,6 +11,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     ssrEmitAssets: true,
+    manifest: true,
   },
   resolve: {
     alias: {
