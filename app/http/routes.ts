@@ -1,3 +1,5 @@
+import { Context } from "hono";
+
 import { Route } from "@/lib/http/Route";
 import { Auth } from "@/lib/http/Auth";
 
@@ -21,16 +23,16 @@ class Modal extends Base {
 
 class TestController extends Modal {
   protected policies = [1, 2];
-  index = () => {
-    console.log(Auth.user());
-    this.create();
+  index = (ctx: Context) => {
+    const p = ctx.req.param("id");
+    console.log(p);
     return { data: "hi" };
   };
 }
 
 export const api = {
   public: {
-    "/test": Route.get([TestController, "index"]),
+    "/test/:id?": Route.get([TestController, "index"]),
     "/auth/register": Route.post([AuthController, "register"]),
     "/auth/login": Route.post([AuthController, "login"]),
   },

@@ -1,4 +1,4 @@
-import { Hono, Context, Handler } from "hono";
+import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 
 import { readFileSync } from "node:fs";
@@ -27,6 +27,7 @@ export async function main() {
       },
     },
     build: {
+      ssrManifest: true,
       ssrEmitAssets: true,
     },
     appType: "custom",
@@ -43,22 +44,12 @@ export async function main() {
     console.log(path);
   });
 
-  const getTemplate = (url: string) =>
-    vite.transformIndexHtml(
-      url,
-      readFileSync(path.resolve(join(rootDir, "index.html")), "utf-8"),
-    );
-
   const app = new Hono();
 
   app.use(
     "*",
     async (ctx, next) => {
-      const res = await fetch(`http://localhost:5174/${ctx.req.path}`, {
-        headers: {
-          ...(ctx.req.url.includes(".css") ? { accept: "text/css" } : {}),
-        },
-      });
+      const res = await fetch(`http://localhost:5174/${ctx.req.path}`, {});
       if (res.ok) {
         return res;
       } else {
@@ -66,10 +57,15 @@ export async function main() {
       }
     },
     async (ctx) => {
+      const template = await vite.transformIndexHtml(
+        ctx.req.url,
+        readFileSync(path.resolve(join(rootDir, "index.html")), "utf-8"),
+      );
       const { bootstrap } = await vite.ssrLoadModule(
         "/lib/server/bootstrap.tsx",
       );
-      const router = bootstrap(getTemplate);
+      console.log(vite.moduleGraph);
+      const router = bootstrap(template);
 
       return await router.fetch(ctx.req.raw);
     },

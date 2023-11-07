@@ -2,6 +2,8 @@ import { ComponentType, lazy } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { RouterProvider } from "@/lib/client/router";
 
+import "@/app/global.css";
+
 declare const window: {
   serverData: string;
 } & Window;

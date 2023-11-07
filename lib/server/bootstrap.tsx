@@ -17,11 +17,7 @@ const views = import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
   eager: true,
 });
 
-const viewHandler = (
-  path: string,
-  handler: any,
-  getTemplate: (url: string) => Promise<string>,
-): Handler => {
+const viewHandler = (path: string, handler: any, template: string): Handler => {
   return async (ctx) => {
     const { data } = await handler.exec(ctx);
 
@@ -51,8 +47,8 @@ const viewHandler = (
     )}';</script>`;
 
     const apphtml = renderToString(<Children data={data} />);
-    const t = await getTemplate(ctx.req.url);
-    const html = t
+
+    const html = template
       .replace(`<!--app-html-->`, apphtml)
       .replace(`<!--server-data-->`, scripts);
 
@@ -116,7 +112,7 @@ const apiRouteAuthMiddleware =
     }
   };
 
-export function bootstrap(template: (url: string) => Promise<string>) {
+export function bootstrap(template: string) {
   const app = new Hono();
 
   app.all((ctx, next) => {
