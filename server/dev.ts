@@ -50,7 +50,7 @@ export async function main() {
   app.use(
     "*",
     async (ctx, next) => {
-      const res = await fetch(`http://localhost:5174/${ctx.req.path}`, {});
+      const res = await fetch(`http://localhost:5174/${ctx.req.path}`);
       if (res.ok) {
         return res;
       } else {
@@ -65,7 +65,23 @@ export async function main() {
       const { bootstrap } = await vite.ssrLoadModule(
         "/lib/server/bootstrap.tsx",
       );
-      const router = bootstrap(template);
+
+      const styles = [];
+
+      for (const [file, modules] of vite.moduleGraph.fileToModulesMap) {
+        for (const mod of modules) {
+          if (mod.file.includes(".css")) {
+            const { default: css } = await vite.ssrLoadModule(file);
+            styles.push(
+              `<style type="text/css" data-vite-dev-id="${mod.file}">${css}</style>`,
+            );
+          }
+        }
+      }
+
+      const router = bootstrap(
+        template.replace("<!--css-entry-->", styles.join("\n")),
+      );
 
       return await router.fetch(ctx.req.raw);
     },
