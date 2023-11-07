@@ -23,7 +23,7 @@ const viewHandler = (
   getTemplate: (url: string) => Promise<string>,
 ): Handler => {
   return async (ctx) => {
-    const { data, viewPath } = await handler.exec(ctx);
+    const { data } = await handler.exec(ctx);
 
     let Children = () => (
       <>
@@ -33,10 +33,10 @@ const viewHandler = (
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/no-unsafe-assignment
-      Children = views[`/app/views/${viewPath}.tsx`].default;
+      Children = views[`/app/views/${handler.viewPath}.tsx`].default;
     } catch (err) {
       console.log(err);
-      Children = () => <div>Cannot find {viewPath} view</div>;
+      Children = () => <div>Cannot find {handler.viewPath} view</div>;
     }
 
     const serverData = {
@@ -51,7 +51,6 @@ const viewHandler = (
     )}';</script>`;
 
     const apphtml = renderToString(<Children data={data} />);
-    console.log(apphtml);
     const t = await getTemplate(ctx.req.url);
     const html = t
       .replace(`<!--app-html-->`, apphtml)
@@ -87,32 +86,44 @@ const routeViewMap = Object.fromEntries([
   }),
 ]);
 
-const viewRouteAuthMiddleware: Handler = (ctx, next) => {
-  if (getCookie(ctx, "auth") === "true") {
-    next();
-  } else {
-    return ctx.redirect("/auth/login");
-  }
-};
+const viewRouteAuthMiddleware =
+  (handler: Handler): Handler =>
+  (ctx, next) => {
+    if (getCookie(ctx, "auth") === "true") {
+      return handler(ctx, next);
+    } else {
+      return ctx.redirect("/auth/login");
+    }
+  };
 
-const viewJsonRouteAuthMiddleware: Handler = (ctx, next) => {
-  if (getCookie(ctx, "auth") === "true") {
-    next();
-  } else {
-    return ctx.json({ redirect: "/auth/login" });
-  }
-};
+const viewJsonRouteAuthMiddleware =
+  (handler: Handler): Handler =>
+  (ctx, next) => {
+    if (getCookie(ctx, "auth") === "true") {
+      return handler(ctx, next);
+    } else {
+      return ctx.json({ redirect: "/auth/login" });
+    }
+  };
 
-const apiRouteAuthMiddleware: Handler = (ctx, next) => {
-  if (getCookie(ctx, "auth") === "true") {
-    next();
-  } else {
-    return ctx.json({ success: false, error: { message: "Not authorized" } });
-  }
-};
+const apiRouteAuthMiddleware =
+  (handler: Handler): Handler =>
+  (ctx, next) => {
+    if (getCookie(ctx, "auth") === "true") {
+      return handler(ctx, next);
+    } else {
+      return ctx.json({ success: false, error: { message: "Not authorized" } });
+    }
+  };
 
-export function bootstrap(template: (url: string) => Promise<string>): Handler {
+export function bootstrap(template: (url: string) => Promise<string>) {
   const app = new Hono();
+
+  app.all((ctx, next) => {
+    return RouterContext.run({ ctx }, async () => {
+      await next();
+    });
+  });
 
   Object.entries(api.public).forEach(([path, handler]) => {
     app[handler.method](`/api${path}`, apiHandler(path, handler));
@@ -121,8 +132,7 @@ export function bootstrap(template: (url: string) => Promise<string>): Handler {
   Object.entries(api.private).forEach(([path, handler]) => {
     app[handler.method](
       `/api${path}`,
-      apiRouteAuthMiddleware,
-      apiHandler(path, handler),
+      apiRouteAuthMiddleware(apiHandler(path, handler)),
     );
   });
 
@@ -134,21 +144,13 @@ export function bootstrap(template: (url: string) => Promise<string>): Handler {
   Object.entries(web.private).forEach(([path, handler]) => {
     app.get(
       `/__json${path}`,
-      viewJsonRouteAuthMiddleware,
-      viewDataHandler(path, handler),
+      viewJsonRouteAuthMiddleware(viewDataHandler(path, handler)),
     );
     app.get(
       path,
-      viewRouteAuthMiddleware,
-      viewHandler(path, handler, template),
+      viewRouteAuthMiddleware(viewHandler(path, handler, template)),
     );
   });
 
-  /* console.log(app.routes); */
-
-  return (ctx) => {
-    const route = app.routes.find((r) => r.path === ctx.req.path);
-    console.log({ path: ctx.req.path, route });
-    return route;
-  };
+  return app;
 }

@@ -1,3 +1,4 @@
+import { RouterContext } from "@/lib/http/RouterContext";
 import { Controller } from "@/lib/server/Controller";
 
 // function Guarded() {
@@ -23,6 +24,7 @@ import { Controller } from "@/lib/server/Controller";
 
 export class HomeController extends Controller {
   index() {
+    const ctx = RouterContext.getStore()?.ctx;
     return { message: "hello world" };
   }
 }

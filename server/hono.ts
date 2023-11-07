@@ -39,6 +39,10 @@ export async function main() {
     },
   });
 
+  vite.watcher.on("change", (path) => {
+    console.log(path);
+  });
+
   const getTemplate = (url: string) =>
     vite.transformIndexHtml(
       url,
@@ -61,25 +65,17 @@ export async function main() {
         await next();
       }
     },
-    async (ctx, next) => {
+    async (ctx) => {
       const { bootstrap } = await vite.ssrLoadModule(
         "/lib/server/bootstrap.tsx",
       );
-      const router: (ctx: Context) => { handler: Handler } =
-        bootstrap(getTemplate);
-      const route = router(ctx);
-      if (route) {
-        return await route.handler(ctx, next);
-      }
-      await next();
+      const router = bootstrap(getTemplate);
+
+      return await router.fetch(ctx.req.raw);
     },
-    (ctx) => ctx.html("404"),
   );
 
   await vite.listen(5174);
-
-  vite.ws.on("*", console.log);
-  vite.httpServer?.on("*", console.log);
 
   serve({
     fetch: app.fetch,
