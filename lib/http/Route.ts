@@ -91,7 +91,7 @@ export class Route {
 
         let data = {};
         if (typeof method === "function") {
-          data = (await method(ctx)) as typeof data;
+          data = await method.call(instance, ctx);
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any

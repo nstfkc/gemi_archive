@@ -21,10 +21,20 @@ import { Controller } from "@/lib/server/Controller";
 //     return guarded as T;
 //   };
 // }
+//
+
+class Test {
+  test() {
+    console.log("hi");
+  }
+
+  run() {
+    this.test();
+  }
+}
 
 export class HomeController extends Controller {
   index() {
-    const ctx = RouterContext.getStore()?.ctx;
     return { message: "hello world" };
   }
 }
