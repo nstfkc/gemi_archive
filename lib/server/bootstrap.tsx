@@ -1,12 +1,6 @@
 import { Hono, Handler } from "hono";
 import { getCookie } from "hono/cookie";
 
-import {
-  Router,
-  type Request,
-  type Response,
-  type NextFunction,
-} from "express";
 import { verify } from "jsonwebtoken";
 import { renderToString } from "react-dom/server";
 import { api, web } from "@/app/http/routes";
@@ -75,10 +69,10 @@ const apiRouteAuthMiddleware =
 
 export function bootstrap(template: string) {
   const app = new Hono();
-  Object.entries(web.public).forEach(([path, handler]) => {
+  Object.entries(web.public).forEach(([path, route]) => {
     app.get(path, async (ctx) => {
-      const { data, render } = await handler.handler(ctx, path, template);
-      if (ctx.req.param("__json") === "true") {
+      const { data, render } = await route.handler(ctx, path, template);
+      if (ctx.req.query("__json") === "true") {
         return ctx.json(data);
       }
       const html = render(data, path, template, routeViewMap);

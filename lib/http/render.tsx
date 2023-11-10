@@ -1,26 +1,30 @@
 import { renderToString } from "react-dom/server";
-import { web } from "../../app/http/routes";
-import { views } from "./views";
+
+const views: Record<string, { default: <T>(data: T) => JSX.Element }> =
+  import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
+    eager: true,
+  });
 
 export function render(viewPath: string) {
-  return (
-    data: any,
+  return function <Data>(
+    data: Data,
     path: string,
     template: string,
     routeViewMap: Record<string, string>,
-  ): string => {
-    let Children = (_data: any) => <></>;
+  ): string {
+    let Children = (_props: { data: Data }) => <></>;
     try {
       Children = views[`/app/views/${viewPath}.tsx`].default;
     } catch (err) {
       console.log(err);
+      // eslint-disable-next-line react/display-name
       Children = () => <div>Cannot find {viewPath} view</div>;
     }
 
     const serverData = {
       routeViewMap,
       routeData: { [path]: data },
-      routes: Object.keys(web),
+      routes: Object.keys(routeViewMap),
       currentRoute: path,
     };
 

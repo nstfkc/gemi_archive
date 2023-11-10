@@ -5,6 +5,7 @@ import { Route } from "@/lib/http/Route";
 // import { AuthController } from "./controllers/AuthController";
 // import { AccountController } from "./controllers/AccountController";
 import { HomeController } from "./controllers/HomeController";
+import { AboutController } from "./controllers/AboutController";
 
 export const api = {
   public: {
@@ -20,7 +21,7 @@ export const api = {
 export const web = {
   public: {
     "/": Route.view("Home", [HomeController, "index"]),
-    // "/about": Route.view("About", [AboutController, "index"]),
+    "/about": Route.view("About", [AboutController, "index"]),
     // "/auth/login": Route.view("auth/Login", [AuthController, "loginView"]),
   },
   private: {
