@@ -26,8 +26,18 @@ export const web = {
     "/product": Route.viewGroup(
       Route.layout("PublicLayout", [PublicLayoutController, "index"]),
       {
-        "/:productId": Route.view("Home", [HomeController, "index"]),
-        "/:productId/edit": Route.view("Home", [HomeController, "index"]),
+        "/:productId": Route.viewGroup(
+          Route.layout("PublicLayout", [PublicLayoutController, "index"]),
+          {
+            "/edit": Route.view("Home", [HomeController, "index"]),
+            "/test": Route.viewGroup(
+              Route.layout("PublicLayout", [PublicLayoutController, "index"]),
+              {
+                "/:id": Route.view("Home", [HomeController, "index"]),
+              },
+            ),
+          },
+        ),
       },
     ),
     // "/auth/login": Route.view("auth/Login", [AuthController, "loginView"]),

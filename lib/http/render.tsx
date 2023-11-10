@@ -52,7 +52,11 @@ export function render<Data>(config: {
     .replace(`<!--server-data-->`, scripts);
 }
 
-export function renderLayout<Data>(viewPath: string, data: Data) {
+export function renderLayout<Data>(
+  viewPath: string,
+  data: Data,
+  layout: (children: JSX.Element) => JSX.Element,
+) {
   let Layout = (props: PropsWithChildren<{ data: Data }>) => (
     <>{props.children}</>
   );
@@ -65,7 +69,7 @@ export function renderLayout<Data>(viewPath: string, data: Data) {
   }
 
   // eslint-disable-next-line react/display-name
-  return (children: React.JSX.Element) => {
-    return <Layout data={data}>{children}</Layout>;
-  };
+
+  return (children: JSX.Element) =>
+    layout(<Layout data={data}>{children}</Layout>);
 }

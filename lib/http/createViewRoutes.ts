@@ -1,11 +1,15 @@
 import { Hono } from "hono";
-import { type ViewRoute, type ViewRouteGroup } from "./Route";
+import {
+  type ViewRoute,
+  type ViewRouteGroup,
+  type LayoutGetter,
+} from "./Route";
 
 export function createViewRoutes<
   T extends ViewRoute<any> | ViewRouteGroup<any>,
 >(
   app: Hono,
-  config: { template: string; routeViewMap: any; layoutGetter?: any },
+  config: { template: string; routeViewMap: any; layoutGetter?: LayoutGetter },
   routes: Record<string, T>,
 ) {
   Object.entries(routes).forEach(([path, route]) => {

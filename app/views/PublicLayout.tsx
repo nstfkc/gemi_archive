@@ -3,7 +3,7 @@ import { PropsWithChildren } from "react";
 const PublicLayout = (props: PropsWithChildren) => {
   return (
     <div>
-      <h1>Public layout</h1>
+      <h1>{props.data.title}</h1>
       {props.children}
     </div>
   );

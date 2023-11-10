@@ -79,14 +79,17 @@ const createApiHandler = (method: RouteMethod): ApiRouteHandler => {
   };
 };
 
+export type LayoutGetter = (
+  ctx: Context,
+  parentLayoutGetter?: LayoutGetter,
+) => Promise<(children: JSX.Element) => JSX.Element>;
+
 interface ViewRouteConfig {
   path: string;
   template: string;
   routeViewMap: Record<string, string>;
   createViewRoutes: CreateViewRoutes;
-  layoutGetter: (
-    ctx: Context,
-  ) => Promise<(children: JSX.Element) => JSX.Element>;
+  layoutGetter: LayoutGetter;
 }
 
 export interface ViewRoute<_Data> {
@@ -108,6 +111,7 @@ export interface ViewLayout<_T> {
   hasLoader: boolean;
   handler: (
     ctx: Context,
+    layoutGetter: LayoutGetter,
   ) => Promise<(children: React.JSX.Element) => React.JSX.Element>;
 }
 
@@ -167,7 +171,7 @@ export class Route {
     return {
       viewPath,
       hasLoader: !!handler,
-      handler: async (ctx: Context) => {
+      handler: async (ctx: Context, parentLayoutGetter: LayoutGetter) => {
         let data = {} as Data;
         if (handler) {
           const [Controller, methodName] = handler;
@@ -175,7 +179,8 @@ export class Route {
           const method = instance[methodName];
           data = await method.call(instance, ctx);
         }
-        return renderLayout(viewPath, data);
+        const parentLayout = await parentLayoutGetter(ctx);
+        return renderLayout(viewPath, data, parentLayout);
       },
     };
   };
@@ -198,7 +203,7 @@ export class Route {
           {
             routeViewMap,
             template,
-            layoutGetter: layout.handler,
+            layoutGetter: (ctx) => layout.handler(ctx, layoutGetter),
           },
           routes as any,
         );
