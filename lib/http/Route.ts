@@ -1,7 +1,6 @@
 import { Context } from "hono";
-
 import { Controller } from "./Controller";
-// import { RouterContext } from "./RouterContext";
+import { render } from "./render";
 
 // type MaybePromise<T> = Promise<T> | T;
 
@@ -78,28 +77,52 @@ const createApiHandler = (method: RouteMethod): ApiRouteHandler => {
   };
 };
 
-export class Route {
-  static view: ViewRouteHandler = (viewPath, handler) => {
-    return {
-      exec: async (ctx: Context) => {
-        if (!handler) {
-          return { data: {} as never, viewPath };
-        }
-        const [Controller, methodName] = handler;
-        const instance = new Controller();
-        const method = instance[methodName];
+interface ViewRoute<Data> {
+  hasLoader: boolean;
+  handler: (
+    ctx: Context,
+    path: string,
+    template: string,
+  ) => Promise<{
+    data: Data;
+    render: (
+      data: any,
+      path: string,
+      template: string,
+      routeViewMap: Record<string, string>,
+    ) => string;
+  }>;
+  viewPath: string;
+}
 
-        let data = {};
-        if (typeof method === "function") {
+export class Route {
+  static view = <
+    T extends Controller,
+    K extends ClassMethodNames<T>,
+    Data = InstanceType<{ new (): T }>[K] extends (ctx: Context) => infer R
+      ? R
+      : never,
+  >(
+    viewPath: string,
+    handler?: [{ new (): T }, K],
+  ): ViewRoute<Data> => {
+    return {
+      viewPath,
+      hasLoader: !!handler,
+      handler: async (ctx: Context) => {
+        let data = {} as Data;
+        if (handler) {
+          const [Controller, methodName] = handler;
+          const instance = new Controller();
+          const method = instance[methodName];
           data = await method.call(instance, ctx);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-        return { data: data as any };
+        return {
+          data,
+          render: render(viewPath),
+        };
       },
-      method: RouteMethod.GET,
-      hasLoader: !!handler,
-      viewPath,
     };
   };
 

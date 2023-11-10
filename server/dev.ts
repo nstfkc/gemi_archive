@@ -41,7 +41,7 @@ export async function main() {
     },
   });
 
-  vite.watcher.on("change", (path) => {
+  vite.watcher.on("change", async (path) => {
     console.log(path);
   });
 
