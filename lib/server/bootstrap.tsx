@@ -71,12 +71,7 @@ export function bootstrap(template: string) {
   const app = new Hono();
   Object.entries(web.public).forEach(([path, route]) => {
     app.get(path, async (ctx) => {
-      const { data, render } = await route.handler(ctx, path, template);
-      if (ctx.req.query("__json") === "true") {
-        return ctx.json(data);
-      }
-      const html = render(data, path, template, routeViewMap);
-      return ctx.html(html);
+      return await route.handler(ctx, { path, routeViewMap, template });
     });
   });
 

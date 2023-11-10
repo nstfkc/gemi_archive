@@ -77,24 +77,17 @@ const createApiHandler = (method: RouteMethod): ApiRouteHandler => {
   };
 };
 
-interface ViewRoute<Data> {
-  hasLoader: boolean;
-  handler: (
-    ctx: Context,
-    path: string,
-    template: string,
-  ) => Promise<{
-    data: Data;
-    render: (
-      data: any,
-      path: string,
-      template: string,
-      routeViewMap: Record<string, string>,
-    ) => string;
-  }>;
-  viewPath: string;
+interface ViewRouteConfig {
+  path: string;
+  template: string;
+  routeViewMap: Record<string, string>;
 }
 
+interface ViewRoute<Data> {
+  hasLoader: boolean;
+  handler: (ctx: Context, config: ViewRouteConfig) => Promise<Response>;
+  viewPath: string;
+}
 export class Route {
   static view = <
     T extends Controller,
@@ -109,7 +102,8 @@ export class Route {
     return {
       viewPath,
       hasLoader: !!handler,
-      handler: async (ctx: Context) => {
+      handler: async (ctx: Context, config: ViewRouteConfig) => {
+        const { path, routeViewMap, template } = config;
         let data = {} as Data;
         if (handler) {
           const [Controller, methodName] = handler;
@@ -117,11 +111,11 @@ export class Route {
           const method = instance[methodName];
           data = await method.call(instance, ctx);
         }
-
-        return {
-          data,
-          render: render(viewPath),
-        };
+        if (ctx.req.query("__json") === "true") {
+          return ctx.json(data);
+        }
+        const html = render(viewPath, data, path, template, routeViewMap);
+        return ctx.html(html);
       },
     };
   };
