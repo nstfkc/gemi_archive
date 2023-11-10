@@ -19,27 +19,27 @@ export const api = {
   },
 };
 
+const layout = Route.layout("PublicLayout", [PublicLayoutController, "index"]);
+const products = Route.viewGroup(
+  Route.layout("PublicLayout", [PublicLayoutController, "index"]),
+  {
+    "/edit": Route.view("Home", [HomeController, "index"]),
+    "/test": Route.viewGroup(
+      Route.layout("PublicLayout", [PublicLayoutController, "index"]),
+      {
+        "/:id": Route.view("Home", [HomeController, "index"]),
+      },
+    ),
+  },
+);
+
 export const web = {
   public: {
     "/": Route.view("Home", [HomeController, "index"]),
     "/about": Route.view("About", [AboutController, "index"]),
-    "/product": Route.viewGroup(
-      Route.layout("PublicLayout", [PublicLayoutController, "index"]),
-      {
-        "/:productId": Route.viewGroup(
-          Route.layout("PublicLayout", [PublicLayoutController, "index"]),
-          {
-            "/edit": Route.view("Home", [HomeController, "index"]),
-            "/test": Route.viewGroup(
-              Route.layout("PublicLayout", [PublicLayoutController, "index"]),
-              {
-                "/:id": Route.view("Home", [HomeController, "index"]),
-              },
-            ),
-          },
-        ),
-      },
-    ),
+    "/product": Route.viewGroup(layout, {
+      "/:productId": products,
+    }),
     // "/auth/login": Route.view("auth/Login", [AuthController, "loginView"]),
   },
   private: {

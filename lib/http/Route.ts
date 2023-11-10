@@ -110,8 +110,9 @@ export interface ViewLayout<_T> {
   viewPath: string;
   hasLoader: boolean;
   handler: (
-    ctx: Context,
     layoutGetter: LayoutGetter,
+  ) => (
+    ctx: Context,
   ) => Promise<(children: React.JSX.Element) => React.JSX.Element>;
 }
 
@@ -133,14 +134,18 @@ export class Route {
       handler: (app: Hono, config: ViewRouteConfig) => {
         app.get(config.path, async (ctx) => {
           const { path, routeViewMap, template, layoutGetter } = config;
-          let data = {} as Data;
+          let dataPromise = Promise.resolve({} as Data);
           if (handler) {
             const [Controller, methodName] = handler;
             const instance = new Controller();
             const method = instance[methodName];
-            data = await method.call(instance, ctx);
+            dataPromise = method.call(instance, ctx);
           }
-          const layout = await layoutGetter(ctx);
+          const [data, layout] = await Promise.all([
+            dataPromise,
+            layoutGetter(ctx),
+          ]);
+
           if (ctx.req.query("__json") === "true") {
             return ctx.json(data);
           }
@@ -171,16 +176,21 @@ export class Route {
     return {
       viewPath,
       hasLoader: !!handler,
-      handler: async (ctx: Context, parentLayoutGetter: LayoutGetter) => {
-        let data = {} as Data;
-        if (handler) {
-          const [Controller, methodName] = handler;
-          const instance = new Controller();
-          const method = instance[methodName];
-          data = await method.call(instance, ctx);
-        }
-        const parentLayout = await parentLayoutGetter(ctx);
-        return renderLayout(viewPath, data, parentLayout);
+      handler: (parentLayoutGetter: LayoutGetter) => {
+        return async (ctx: Context) => {
+          let dataPromise = Promise.resolve({} as Data);
+          if (handler) {
+            const [Controller, methodName] = handler;
+            const instance = new Controller();
+            const method = instance[methodName];
+            dataPromise = method.call(instance, ctx);
+          }
+          const [data, parentLayout] = await Promise.all([
+            dataPromise,
+            parentLayoutGetter(ctx),
+          ]);
+          return renderLayout(viewPath, data, parentLayout);
+        };
       },
     };
   };
@@ -203,7 +213,7 @@ export class Route {
           {
             routeViewMap,
             template,
-            layoutGetter: (ctx) => layout.handler(ctx, layoutGetter),
+            layoutGetter: layout.handler(layoutGetter),
           },
           routes as any,
         );

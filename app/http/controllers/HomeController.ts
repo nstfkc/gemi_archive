@@ -1,7 +1,7 @@
 import { Controller } from "@/lib/http/Controller";
 
 export class HomeController extends Controller {
-  index() {
+  async index() {
     return { message: "Hello" };
   }
 }
