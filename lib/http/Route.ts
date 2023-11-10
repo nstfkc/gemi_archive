@@ -1,6 +1,8 @@
-import { Context } from "hono";
+import { Context, Hono } from "hono";
 import { Controller } from "./Controller";
-import { render } from "./render";
+import { render, renderLayout } from "./render";
+import React from "react";
+import { CreateViewRoutes } from "./createViewRoutes";
 
 // type MaybePromise<T> = Promise<T> | T;
 
@@ -81,13 +83,34 @@ interface ViewRouteConfig {
   path: string;
   template: string;
   routeViewMap: Record<string, string>;
+  createViewRoutes: CreateViewRoutes;
+  layoutGetter: (
+    ctx: Context,
+  ) => Promise<(children: JSX.Element) => JSX.Element>;
 }
 
-interface ViewRoute<Data> {
+export interface ViewRoute<_Data> {
+  kind: "view";
   hasLoader: boolean;
-  handler: (ctx: Context, config: ViewRouteConfig) => Promise<Response>;
+  handler: (app: Hono, config: ViewRouteConfig) => void;
   viewPath: string;
 }
+
+export interface ViewRouteGroup<T> {
+  kind: "group";
+  layoutPath: string;
+  routes: T;
+  handler: (app: Hono, config: any) => void;
+}
+
+export interface ViewLayout<_T> {
+  viewPath: string;
+  hasLoader: boolean;
+  handler: (
+    ctx: Context,
+  ) => Promise<(children: React.JSX.Element) => React.JSX.Element>;
+}
+
 export class Route {
   static view = <
     T extends Controller,
@@ -100,10 +123,51 @@ export class Route {
     handler?: [{ new (): T }, K],
   ): ViewRoute<Data> => {
     return {
+      kind: "view",
       viewPath,
       hasLoader: !!handler,
-      handler: async (ctx: Context, config: ViewRouteConfig) => {
-        const { path, routeViewMap, template } = config;
+      handler: (app: Hono, config: ViewRouteConfig) => {
+        app.get(config.path, async (ctx) => {
+          const { path, routeViewMap, template, layoutGetter } = config;
+          let data = {} as Data;
+          if (handler) {
+            const [Controller, methodName] = handler;
+            const instance = new Controller();
+            const method = instance[methodName];
+            data = await method.call(instance, ctx);
+          }
+          const layout = await layoutGetter(ctx);
+          if (ctx.req.query("__json") === "true") {
+            return ctx.json(data);
+          }
+          const html = render({
+            viewPath,
+            data,
+            path,
+            template,
+            routeViewMap,
+            layout,
+          });
+          return ctx.html(html);
+        });
+      },
+    };
+  };
+
+  static layout = <
+    T extends Controller,
+    K extends ClassMethodNames<T>,
+    Data = InstanceType<{ new (): T }>[K] extends (ctx: Context) => infer R
+      ? R
+      : never,
+  >(
+    viewPath: string,
+    handler?: [{ new (): T }, K],
+  ): ViewLayout<Data> => {
+    return {
+      viewPath,
+      hasLoader: !!handler,
+      handler: async (ctx: Context) => {
         let data = {} as Data;
         if (handler) {
           const [Controller, methodName] = handler;
@@ -111,11 +175,34 @@ export class Route {
           const method = instance[methodName];
           data = await method.call(instance, ctx);
         }
-        if (ctx.req.query("__json") === "true") {
-          return ctx.json(data);
-        }
-        const html = render(viewPath, data, path, template, routeViewMap);
-        return ctx.html(html);
+        return renderLayout(viewPath, data);
+      },
+    };
+  };
+
+  static viewGroup = <T, R extends string, U = Record<R, ViewRoute<T>>>(
+    layout: ViewLayout<any>,
+    routes: U,
+  ): ViewRouteGroup<U> => {
+    return {
+      kind: "group",
+      layoutPath: layout.viewPath,
+      routes,
+      handler: (app: Hono, config: ViewRouteConfig) => {
+        const { createViewRoutes, layoutGetter, path, routeViewMap, template } =
+          config;
+
+        const group = new Hono();
+        createViewRoutes(
+          group,
+          {
+            routeViewMap,
+            template,
+            layoutGetter: layout.handler,
+          },
+          routes as any,
+        );
+        app.route(path, group);
       },
     };
   };

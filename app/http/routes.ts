@@ -6,6 +6,7 @@ import { Route } from "@/lib/http/Route";
 // import { AccountController } from "./controllers/AccountController";
 import { HomeController } from "./controllers/HomeController";
 import { AboutController } from "./controllers/AboutController";
+import { PublicLayoutController } from "./controllers/PublicLayoutController";
 
 export const api = {
   public: {
@@ -22,6 +23,13 @@ export const web = {
   public: {
     "/": Route.view("Home", [HomeController, "index"]),
     "/about": Route.view("About", [AboutController, "index"]),
+    "/product": Route.viewGroup(
+      Route.layout("PublicLayout", [PublicLayoutController, "index"]),
+      {
+        "/:productId": Route.view("Home", [HomeController, "index"]),
+        "/:productId/edit": Route.view("Home", [HomeController, "index"]),
+      },
+    ),
     // "/auth/login": Route.view("auth/Login", [AuthController, "loginView"]),
   },
   private: {
