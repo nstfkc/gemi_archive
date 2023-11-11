@@ -144,6 +144,7 @@ export class Route {
             layout: layout.wrapper,
             layoutData: layout.data,
           });
+
           return ctx.html(html);
         });
       },

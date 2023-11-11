@@ -66,6 +66,18 @@ const App = () => {
 
   return (
     <RouterProvider
+      routes={[
+        {
+          path: "/",
+          layout: ["PublicLayout"],
+          loader: () => fetch(`/?__json=true`).then((res) => res.json()),
+        },
+        {
+          path: "/about",
+          layout: ["PublicLayout"],
+          loader: () => fetch(`/about?__json=true`).then((res) => res.json()),
+        },
+      ]}
       initialPath={currentRoute}
       initialRouteData={routeData[currentRoute]}
       initialLayoutData={layoutData}
@@ -79,21 +91,13 @@ const App = () => {
             path={path}
             key={path}
           >
-            {Object.entries(routes).map(([subPath, { view, hasLoader }]) => {
+            {Object.entries(routes).map(([subPath, { view }]) => {
               const Component = lazyViews[`/app/views/${view}.tsx`];
               return (
                 <Route
                   key={subPath}
                   path={`${path}${subPath}`.replace("//", "/")}
                   Component={Component}
-                  loader={
-                    hasLoader
-                      ? () =>
-                          fetch(`${path}${subPath}?__json=true`).then((res) =>
-                            res.json(),
-                          )
-                      : null
-                  }
                 />
               );
             })}

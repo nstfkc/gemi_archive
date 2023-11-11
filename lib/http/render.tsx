@@ -41,8 +41,6 @@ export function render<Data>(config: {
     layoutData,
   };
 
-  console.log(layout.toString());
-
   const scripts = `<script>window.serverData = '${JSON.stringify(
     serverData,
   )}';</script>`;
@@ -56,7 +54,7 @@ export function render<Data>(config: {
 
 export function renderLayout<Data>(
   viewPath: string,
-  data: Data,
+  data: Record<string, Data>,
   wrapper: (children: JSX.Element) => JSX.Element,
 ) {
   let Layout = (props: PropsWithChildren<{ data: Data }>) => (
@@ -74,7 +72,7 @@ export function renderLayout<Data>(
 
   return {
     wrapper: (children: JSX.Element) =>
-      wrapper(<Layout data={data}>{children}</Layout>),
+      wrapper(<Layout data={data[viewPath]}>{children}</Layout>),
     data,
   };
 }
