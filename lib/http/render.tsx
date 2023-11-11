@@ -41,6 +41,8 @@ export function render<Data>(config: {
     layoutData,
   };
 
+  console.log(layout.toString());
+
   const scripts = `<script>window.serverData = '${JSON.stringify(
     serverData,
   )}';</script>`;

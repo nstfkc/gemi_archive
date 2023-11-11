@@ -4,6 +4,7 @@ import {
   ComponentProps,
   ComponentType,
   LazyExoticComponent,
+  PropsWithChildren,
   RefObject,
   createContext,
   useContext,
@@ -38,25 +39,33 @@ export const Route = (props: RouteProps) => {
   return <Component data={routeDataRef.current?.get(props.path)} />;
 };
 
-export const Layout = (props: RouteProps) => {
+interface LayoutProps {
+  Component: LazyExoticComponent<ComponentType<any>>;
+  path: string;
+  layoutName: string;
+}
+
+export const Layout = (props: PropsWithChildren<LayoutProps>) => {
   const { Component } = props;
-  const { location, routeDataRef, history } = useContext(RouterContext);
+  const { location, layoutDataRef, history } = useContext(RouterContext);
+  console.log(location.pathname, props.path);
   if (location.pathname !== props.path) {
     return null;
   }
-  const data = routeDataRef.current?.get(props.path);
+  const data = layoutDataRef.current?.get(props.layoutName);
   if (data?.redirect) {
     history.push(data.redirect);
     return <></>;
   }
-  return <Component data={routeDataRef.current?.get(props.path)} />;
+  return <Component data={data}>{props.children}</Component>;
 };
 
 interface RouterContextValue {
   location: Location;
   history: History;
-  routes: RouteDefinition[];
+  /* routes: RouteDefinition[]; */
   routeDataRef: RefObject<Map<string, Readonly<any>>>;
+  layoutDataRef: RefObject<Map<string, Readonly<any>>>;
 }
 const RouterContext = createContext({} as RouterContextValue);
 
@@ -68,17 +77,31 @@ if (!import.meta.env.SSR) {
 
 interface RouterProviderProps {
   initialPath: string;
-  routes: RouteDefinition[];
-  layouts: Record<string, LazyExoticComponent<ComponentType<any>>>;
+  /* routes: RouteDefinition[]; */
   initialRouteData: Readonly<any>;
+  initialLayoutData: Readonly<any>;
 }
 
-export const RouterProvider = (props: RouterProviderProps) => {
-  const { initialPath, routes } = props;
+export const RouterProvider = (
+  props: PropsWithChildren<RouterProviderProps>,
+) => {
+  const { initialPath } = props;
   const routeDataRef = useRef(
     (() => {
       const map = new Map<string, Readonly<any>>();
       map.set(initialPath, props.initialRouteData);
+      return map;
+    })(),
+  );
+
+  const layoutDataRef = useRef(
+    (() => {
+      const map = new Map<string, Readonly<any>>();
+      for (const [layoutName, data] of Object.entries(
+        props.initialLayoutData,
+      )) {
+        map.set(layoutName, data);
+      }
       return map;
     })(),
   );
@@ -99,29 +122,11 @@ export const RouterProvider = (props: RouterProviderProps) => {
 
   return (
     <RouterContext.Provider
-      value={{ location, history, routes, layouts, routeDataRef }}
+      value={{ location, history, routeDataRef, layoutDataRef }}
     >
-      {routes.map(({ Component, path }) => (
-        <Route path={path} Component={Component} key={path} />
-      ))}
+      {props.children}
     </RouterContext.Provider>
   );
-};
-
-const routeManifest = {
-  "/": {
-    layout: "PublicLayout",
-    routes: {
-      "/": {
-        view: "Home",
-        hasLoader: true,
-      },
-      "/about": {
-        view: "About",
-        hasLoader: true,
-      },
-    },
-  },
 };
 
 interface LinkProps extends Omit<ComponentProps<"a">, "href"> {
@@ -130,32 +135,35 @@ interface LinkProps extends Omit<ComponentProps<"a">, "href"> {
 
 export const Link = (props: LinkProps) => {
   const { href, onClick = () => {}, ...rest } = props;
-  const { history, routes, routeDataRef } = useContext(RouterContext);
-  return (
-    <a
-      href={href}
-      onClick={(e) => {
-        e.preventDefault();
-        onClick(e);
-        let loader = () => Promise.resolve({} as unknown);
-        const route = routes.find((route) => route.path === href);
-        if (route && typeof route.loader === "function") {
-          loader = route.loader;
-        }
-        loader()
-          .then((data) => {
-            if (data.redirect) {
-              history.push(data.redirect);
-            } else {
-              routeDataRef.current?.set(route?.path!, data as any);
-              history.push(href);
-            }
-          })
-          .catch(console.log);
-      }}
-      {...rest}
-    >
-      {props.children}
-    </a>
-  );
+
+  return <a {...props} />;
+
+  /* const { history, routes, routeDataRef } = useContext(RouterContext);
+   * return (
+   *   <a
+   *     href={href}
+   *     onClick={(e) => {
+   *       e.preventDefault();
+   *       onClick(e);
+   *       let loader = () => Promise.resolve({} as unknown);
+   *       const route = routes.find((route) => route.path === href);
+   *       if (route && typeof route.loader === "function") {
+   *         loader = route.loader;
+   *       }
+   *       loader()
+   *         .then((data) => {
+   *           if (data.redirect) {
+   *             history.push(data.redirect);
+   *           } else {
+   *             routeDataRef.current?.set(route?.path!, data as any);
+   *             history.push(href);
+   *           }
+   *         })
+   *         .catch(console.log);
+   *     }}
+   *     {...rest}
+   *   >
+   *     {props.children}
+   *   </a>
+   * ); */
 };

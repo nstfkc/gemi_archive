@@ -27,6 +27,7 @@ export async function main() {
       },
     },
     build: {
+      minify: false,
       ssrManifest: true,
       manifest: true,
       ssrEmitAssets: true,

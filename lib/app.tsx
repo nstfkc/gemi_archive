@@ -1,6 +1,6 @@
 import { ComponentType, lazy } from "react";
 import { hydrateRoot } from "react-dom/client";
-import { RouterProvider } from "@/lib/client/router";
+import { RouterProvider, Route, Layout } from "@/lib/client/router";
 
 import "@/app/global.css";
 
@@ -15,6 +15,7 @@ interface ServerData {
   >;
   currentRoute: string;
   routeData: Record<string, Readonly<unknown>>;
+  layoutData: Record<string, Readonly<unknown>>;
 }
 
 const views = import.meta.glob([
@@ -26,9 +27,40 @@ const lazyViews = Object.fromEntries(
   Object.entries(views).map(([key, loaderFn]) => [key, lazy(loaderFn)]),
 );
 
+const routeManifest = {
+  "/": {
+    layout: "PublicLayout",
+    routes: {
+      "/": {
+        view: "Home",
+        hasLoader: true,
+      },
+      "/about": {
+        view: "About",
+        hasLoader: true,
+      },
+    },
+  },
+};
+
+/* const routes = Object.entries(routeViewMap).map(
+ *   ([path, { viewPath, hasLoader }]) => {
+ *     const Component = lazyViews[`/app/views/${viewPath}.tsx`];
+ *     return {
+ *       Component,
+ *       loader: hasLoader
+ *         ? () => fetch(`${path}?__json=true`).then((res) => res.json())
+ *         : null,
+ *       path,
+ *     };
+ *   },
+ * );
+ *
+ *  */
+
 // eslint-disable-next-line react-refresh/only-export-components
 const App = () => {
-  const { routeViewMap, currentRoute, routeData } = JSON.parse(
+  const { currentRoute, routeData, layoutData } = JSON.parse(
     window.serverData,
   ) as ServerData;
 
@@ -36,25 +68,39 @@ const App = () => {
     <RouterProvider
       initialPath={currentRoute}
       initialRouteData={routeData[currentRoute]}
-      layouts={Object.fromEntries(
-        Object.entries(routeViewMap).map(([path, { layout }]) => [
-          path,
-          lazyViews[`/app/views/${layout}.tsx`],
-        ]),
-      )}
-      routes={Object.entries(routeViewMap).map(
-        ([path, { viewPath, hasLoader }]) => {
-          const Component = lazyViews[`/app/views/${viewPath}.tsx`];
-          return {
-            Component,
-            loader: hasLoader
-              ? () => fetch(`${path}?__json=true`).then((res) => res.json())
-              : null,
-            path,
-          };
-        },
-      )}
-    />
+      initialLayoutData={layoutData}
+    >
+      {Object.entries(routeManifest).map(([path, { layout, routes }]) => {
+        const LayoutComponent = lazyViews[`/app/views/${layout}.tsx`];
+        return (
+          <Layout
+            Component={LayoutComponent}
+            layoutName={layout}
+            path={path}
+            key={path}
+          >
+            {Object.entries(routes).map(([subPath, { view, hasLoader }]) => {
+              const Component = lazyViews[`/app/views/${view}.tsx`];
+              return (
+                <Route
+                  key={subPath}
+                  path={`${path}${subPath}`.replace("//", "/")}
+                  Component={Component}
+                  loader={
+                    hasLoader
+                      ? () =>
+                          fetch(`${path}${subPath}?__json=true`).then((res) =>
+                            res.json(),
+                          )
+                      : null
+                  }
+                />
+              );
+            })}
+          </Layout>
+        );
+      })}
+    </RouterProvider>
   );
 };
 
