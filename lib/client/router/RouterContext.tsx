@@ -7,6 +7,7 @@ import {
   PropsWithChildren,
   RefObject,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -27,20 +28,39 @@ interface RouteProps {
   path: string;
 }
 
-export const Route = (props: RouteProps) => {
+export const Route = (props: PropsWithChildren<RouteProps>) => {
   const { Component, level } = props;
   const { location, routeDataRef } = useContext(RouterContext);
 
-  const shouldRender =
-    level === 0
-      ? location.pathname === props.path
-      : location.pathname.startsWith(props.path);
+  const shouldRender = useCallback(
+    (location: Location) =>
+      level === 0
+        ? location.pathname === props.path
+        : location.pathname.startsWith(props.path),
+    [level, props.path],
+  );
 
-  if (!shouldRender) {
+  const [render, setRender] = useState(shouldRender(location));
+
+  useEffect(() => {
+    console.log("mounted");
+    history.listen((update) => {
+      setRender(shouldRender(update.location));
+    });
+    return () => {
+      console.log("unmounted");
+    };
+  }, [shouldRender]);
+
+  if (!render) {
     return null;
   }
 
-  return <Component data={routeDataRef.current?.get(props.path)} />;
+  return (
+    <Component data={routeDataRef.current?.get(props.path)}>
+      {props.children}
+    </Component>
+  );
 };
 
 interface LayoutProps {

@@ -43,21 +43,6 @@ const routeManifest = {
   },
 };
 
-/* const routes = Object.entries(routeViewMap).map(
- *   ([path, { viewPath, hasLoader }]) => {
- *     const Component = lazyViews[`/app/views/${viewPath}.tsx`];
- *     return {
- *       Component,
- *       loader: hasLoader
- *         ? () => fetch(`${path}?__json=true`).then((res) => res.json())
- *         : null,
- *       path,
- *     };
- *   },
- * );
- *
- *  */
-
 // eslint-disable-next-line react-refresh/only-export-components
 const App = () => {
   const { currentRoute, routeData, layoutData } = JSON.parse(
