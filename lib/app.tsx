@@ -9,7 +9,10 @@ declare const window: {
 } & Window;
 
 interface ServerData {
-  routeViewMap: Record<string, { viewPath: string; hasLoader: boolean }>;
+  routeViewMap: Record<
+    string,
+    { viewPath: string; hasLoader: boolean; layout: string }
+  >;
   currentRoute: string;
   routeData: Record<string, Readonly<unknown>>;
 }
@@ -33,6 +36,12 @@ const App = () => {
     <RouterProvider
       initialPath={currentRoute}
       initialRouteData={routeData[currentRoute]}
+      layouts={Object.fromEntries(
+        Object.entries(routeViewMap).map(([path, { layout }]) => [
+          path,
+          lazyViews[`/app/views/${layout}.tsx`],
+        ]),
+      )}
       routes={Object.entries(routeViewMap).map(
         ([path, { viewPath, hasLoader }]) => {
           const Component = lazyViews[`/app/views/${viewPath}.tsx`];

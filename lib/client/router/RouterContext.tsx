@@ -38,6 +38,20 @@ export const Route = (props: RouteProps) => {
   return <Component data={routeDataRef.current?.get(props.path)} />;
 };
 
+export const Layout = (props: RouteProps) => {
+  const { Component } = props;
+  const { location, routeDataRef, history } = useContext(RouterContext);
+  if (location.pathname !== props.path) {
+    return null;
+  }
+  const data = routeDataRef.current?.get(props.path);
+  if (data?.redirect) {
+    history.push(data.redirect);
+    return <></>;
+  }
+  return <Component data={routeDataRef.current?.get(props.path)} />;
+};
+
 interface RouterContextValue {
   location: Location;
   history: History;
@@ -55,6 +69,7 @@ if (!import.meta.env.SSR) {
 interface RouterProviderProps {
   initialPath: string;
   routes: RouteDefinition[];
+  layouts: Record<string, LazyExoticComponent<ComponentType<any>>>;
   initialRouteData: Readonly<any>;
 }
 
@@ -83,12 +98,30 @@ export const RouterProvider = (props: RouterProviderProps) => {
   }, []);
 
   return (
-    <RouterContext.Provider value={{ location, history, routes, routeDataRef }}>
+    <RouterContext.Provider
+      value={{ location, history, routes, layouts, routeDataRef }}
+    >
       {routes.map(({ Component, path }) => (
         <Route path={path} Component={Component} key={path} />
       ))}
     </RouterContext.Provider>
   );
+};
+
+const routeManifest = {
+  "/": {
+    layout: "PublicLayout",
+    routes: {
+      "/": {
+        view: "Home",
+        hasLoader: true,
+      },
+      "/about": {
+        view: "About",
+        hasLoader: true,
+      },
+    },
+  },
 };
 
 interface LinkProps extends Omit<ComponentProps<"a">, "href"> {

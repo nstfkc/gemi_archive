@@ -63,7 +63,7 @@ export async function main() {
         readFileSync(path.resolve(join(rootDir, "index.html")), "utf-8"),
       );
       const { bootstrap } = await vite.ssrLoadModule(
-        "/lib/server/bootstrap.tsx",
+        "/lib/server/bootstrap.ts",
       );
 
       const styles = [];
