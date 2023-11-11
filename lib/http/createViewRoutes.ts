@@ -12,13 +12,19 @@ export function createViewRoutes<
   config: { template: string; routeViewMap: any; layoutGetter?: LayoutGetter },
   routes: Record<string, T>,
 ) {
+  const defaultLayoutGetter: LayoutGetter = (_ctx) => {
+    return Promise.resolve({
+      wrapper: (children) => children,
+      data: {},
+    });
+  };
   Object.entries(routes).forEach(([path, route]) => {
     route.handler(app, {
       path,
       routeViewMap: config.routeViewMap,
       template: config.template,
       createViewRoutes,
-      layoutGetter: config.layoutGetter ?? ((ctx: Hono) => (c) => c),
+      layoutGetter: config.layoutGetter ?? defaultLayoutGetter,
     });
   });
 }

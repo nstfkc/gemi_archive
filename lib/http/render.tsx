@@ -55,7 +55,7 @@ export function render<Data>(config: {
 export function renderLayout<Data>(
   viewPath: string,
   data: Data,
-  layout: (children: JSX.Element) => JSX.Element,
+  wrapper: (children: JSX.Element) => JSX.Element,
 ) {
   let Layout = (props: PropsWithChildren<{ data: Data }>) => (
     <>{props.children}</>
@@ -70,6 +70,9 @@ export function renderLayout<Data>(
 
   // eslint-disable-next-line react/display-name
 
-  return (children: JSX.Element) =>
-    layout(<Layout data={data}>{children}</Layout>);
+  return {
+    wrapper: (children: JSX.Element) =>
+      wrapper(<Layout data={data}>{children}</Layout>),
+    data,
+  };
 }

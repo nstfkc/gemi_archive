@@ -16,13 +16,6 @@ enum RouteMethod {
   DELETE = "delete",
 }
 
-interface ViewRouteDefinition<Data> {
-  exec: (ctx: Context) => Promise<{ data: Data }>;
-  hasLoader: boolean;
-  method: RouteMethod.GET;
-  viewPath: string;
-}
-
 interface ApiRouteDefinition<Data> {
   exec: (ctx: Context) => Promise<{ data: Data }>;
   method: RouteMethod;
@@ -32,17 +25,6 @@ type ClassMethodNames<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [K in keyof T]: T[K] extends (...args: any[]) => unknown ? K : never;
 }[keyof T];
-
-type ViewRouteHandler = <
-  T extends Controller,
-  K extends ClassMethodNames<T>,
-  Data = InstanceType<{ new (): T }>[K] extends (ctx: Context) => infer R
-    ? UnwrapPromise<R>
-    : never,
->(
-  viewPath: string,
-  controller?: [{ new (): T }, K],
-) => ViewRouteDefinition<Data>;
 
 type ApiRouteHandler = <
   T extends Controller,
@@ -82,7 +64,10 @@ const createApiHandler = (method: RouteMethod): ApiRouteHandler => {
 export type LayoutGetter = (
   ctx: Context,
   parentLayoutGetter?: LayoutGetter,
-) => Promise<(children: JSX.Element) => JSX.Element>;
+) => Promise<{
+  wrapper: (children: JSX.Element) => JSX.Element;
+  data: unknown;
+}>;
 
 interface ViewRouteConfig {
   path: string;
@@ -106,14 +91,13 @@ export interface ViewRouteGroup<T> {
   handler: (app: Hono, config: any) => void;
 }
 
-export interface ViewLayout<_T> {
+export interface ViewLayout<T> {
   viewPath: string;
   hasLoader: boolean;
-  handler: (
-    layoutGetter: LayoutGetter,
-  ) => (
-    ctx: Context,
-  ) => Promise<(children: React.JSX.Element) => React.JSX.Element>;
+  handler: (layoutGetter: LayoutGetter) => (ctx: Context) => Promise<{
+    wrapper: (children: React.JSX.Element) => React.JSX.Element;
+    data: { [key: string]: T };
+  }>;
 }
 
 export class Route {
@@ -139,7 +123,9 @@ export class Route {
             const [Controller, methodName] = handler;
             const instance = new Controller();
             const method = instance[methodName];
-            dataPromise = method.call(instance, ctx);
+            if (typeof method === "function") {
+              dataPromise = method.call(instance, ctx);
+            }
           }
           const [data, layout] = await Promise.all([
             dataPromise,
@@ -155,7 +141,8 @@ export class Route {
             path,
             template,
             routeViewMap,
-            layout,
+            layout: layout.wrapper,
+            layoutData: layout.data,
           });
           return ctx.html(html);
         });
@@ -183,13 +170,19 @@ export class Route {
             const [Controller, methodName] = handler;
             const instance = new Controller();
             const method = instance[methodName];
-            dataPromise = method.call(instance, ctx);
+            if (typeof method === "function") {
+              dataPromise = method.call(instance, ctx);
+            }
           }
           const [data, parentLayout] = await Promise.all([
             dataPromise,
             parentLayoutGetter(ctx),
           ]);
-          return renderLayout(viewPath, data, parentLayout);
+          return renderLayout(
+            viewPath,
+            { [viewPath]: data },
+            parentLayout.wrapper,
+          );
         };
       },
     };
