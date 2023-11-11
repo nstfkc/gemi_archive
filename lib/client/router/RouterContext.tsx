@@ -18,17 +18,25 @@ interface RouteDefinition {
   loader: (() => Promise<unknown>) | null;
   path: string;
   layout: string[];
+  level: number;
 }
 
 interface RouteProps {
+  level: number;
   Component: LazyExoticComponent<ComponentType<any>>;
   path: string;
 }
 
 export const Route = (props: RouteProps) => {
-  const { Component } = props;
+  const { Component, level } = props;
   const { location, routeDataRef } = useContext(RouterContext);
-  if (location.pathname !== props.path) {
+
+  const shouldRender =
+    level === 0
+      ? location.pathname === props.path
+      : location.pathname.startsWith(props.path);
+
+  if (!shouldRender) {
     return null;
   }
 

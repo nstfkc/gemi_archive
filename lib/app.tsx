@@ -68,11 +68,13 @@ const App = () => {
     <RouterProvider
       routes={[
         {
+          level: 0,
           path: "/",
           layout: ["PublicLayout"],
           loader: () => fetch(`/?__json=true`).then((res) => res.json()),
         },
         {
+          level: 0,
           path: "/about",
           layout: ["PublicLayout"],
           loader: () => fetch(`/about?__json=true`).then((res) => res.json()),
@@ -95,6 +97,7 @@ const App = () => {
               const Component = lazyViews[`/app/views/${view}.tsx`];
               return (
                 <Route
+                  level={0}
                   key={subPath}
                   path={`${path}${subPath}`.replace("//", "/")}
                   Component={Component}
