@@ -11,14 +11,14 @@ export function render<Data>(config: {
   data: Data;
   path: string;
   template: string;
-  routeViewMap: Record<string, string>;
+  routeManifest: Record<string, any>;
   layout?: (children: JSX.Element) => JSX.Element;
   layoutData?: unknown;
 }) {
   const {
     data,
     path,
-    routeViewMap,
+    routeManifest,
     template,
     viewPath,
     layout = (children) => <>{children}</>,
@@ -34,9 +34,8 @@ export function render<Data>(config: {
   }
 
   const serverData = {
-    routeViewMap,
+    routeManifest,
     routeData: { [path]: data },
-    routes: Object.keys(routeViewMap),
     currentRoute: path,
     layoutData,
   };

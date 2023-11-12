@@ -8,16 +8,14 @@ import {
 } from "@/lib/client/router";
 
 import "@/app/global.css";
+import { RouteManifest } from "./types/global";
 
 declare const window: {
   serverData: string;
 } & Window;
 
 interface ServerData {
-  routeViewMap: Record<
-    string,
-    { viewPath: string; hasLoader: boolean; layout: string }
-  >;
+  routeManifest: RouteManifest;
   currentRoute: string;
   routeData: Record<string, Readonly<unknown>>;
   layoutData: Record<string, Readonly<unknown>>;
@@ -32,75 +30,7 @@ const lazyViews = Object.fromEntries(
   Object.entries(views).map(([key, loaderFn]) => [key, lazy(loaderFn)]),
 );
 
-const routeManifest = {
-  "/": {
-    layout: {
-      view: "PublicLayout",
-      hasLoader: true,
-    },
-    routes: {
-      "/": {
-        view: "Home",
-        hasLoader: true,
-      },
-      "/about": {
-        view: "About",
-        hasLoader: true,
-      },
-      "/product": {
-        layout: {
-          view: "ProductLayout",
-          hasLoader: false,
-        },
-        routes: {
-          "/": {
-            view: "Product",
-            hasLoader: true,
-          },
-          "/edit": {
-            view: "ProductEdit",
-            hasLoader: true,
-          },
-        },
-      },
-      "/dashboard": {
-        layout: {
-          view: "DashboardLayout",
-          hasLoader: false,
-        },
-        routes: {
-          "/": {
-            view: "Dashboard",
-            hasLoader: true,
-          },
-          "/account": {
-            view: "Account",
-            hasLoader: true,
-          },
-        },
-      },
-    },
-  },
-};
-
-type Route =
-  | {
-      layout: {
-        view: string;
-        hasLoader: boolean;
-      };
-      routes: Record<string, Route>;
-    }
-  | {
-      view: string;
-      hasLoader: boolean;
-    };
-
-const renderRoutes = (
-  routes: Record<string, Route>,
-  level = 0,
-  parentPath = "",
-) => {
+const renderRoutes = (routes: RouteManifest, level = 0, parentPath = "") => {
   return Object.entries(routes).map(([path, route]) => {
     if ("layout" in route) {
       const { view } = route.layout;
@@ -136,16 +66,18 @@ const renderRoutes = (
   });
 };
 
-function getFlatRouteDefinitions(): RouteDefinition[] {
+function getFlatRouteDefinitions(
+  routeManifest: RouteManifest,
+): RouteDefinition[] {
   const flatten = (
-    routes: Record<string, Route>,
+    routeManifest: RouteManifest,
     output: RouteDefinition[] = [],
     level = 0,
     prevLayouts: string[],
     prevPath = "",
   ) => {
     let out = [...output];
-    for (const [path, route] of Object.entries(routes)) {
+    for (const [path, route] of Object.entries(routeManifest)) {
       if ("layout" in route) {
         const { layout, routes: subRoutes } = route;
         out = flatten(
@@ -177,13 +109,13 @@ function getFlatRouteDefinitions(): RouteDefinition[] {
 
 // eslint-disable-next-line react-refresh/only-export-components
 const App = () => {
-  const { currentRoute, routeData, layoutData } = JSON.parse(
+  const { currentRoute, routeData, layoutData, routeManifest } = JSON.parse(
     window.serverData,
   ) as ServerData;
 
   return (
     <RouterProvider
-      routes={getFlatRouteDefinitions()}
+      routes={getFlatRouteDefinitions(routeManifest)}
       initialPath={currentRoute}
       initialRouteData={routeData[currentRoute]}
       initialLayoutData={layoutData}

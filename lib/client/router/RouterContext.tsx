@@ -52,13 +52,9 @@ export const Route = (props: PropsWithChildren<RouteProps>) => {
   const [render, setRender] = useState(shouldRender(location));
 
   useEffect(() => {
-    console.log("mounted");
     history.listen((update) => {
       setRender(shouldRender(update.location));
     });
-    return () => {
-      console.log("unmounted");
-    };
   }, [shouldRender]);
 
   if (!render) {

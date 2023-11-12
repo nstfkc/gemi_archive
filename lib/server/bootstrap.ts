@@ -2,42 +2,36 @@ import { Hono } from "hono";
 
 import { api, web } from "@/app/http/routes";
 import { createViewRoutes } from "../http/createViewRoutes";
+import { RouteManifest } from "../types/global";
 
-function createRouteViewMap(
-  routes: typeof web.public,
-  parentPath = "",
-  layout: any = null,
-  prevResult: any = null,
-) {
-  let out = { ...prevResult };
+const createRouteManifest = (routes: typeof web.public): RouteManifest => {
+  const out = {};
 
-  for (const [key, routeList] of Object.entries(routes)) {
-    if (routeList.kind === "group") {
-      out = {
-        ...out,
-        ...createRouteViewMap(
-          routeList.routes,
-          `${parentPath}${key}`.replace(/\/$/, ""),
-          routeList.layoutPath,
-          out,
-        ),
+  for (let [path, section] of Object.entries(routes)) {
+    if (section.kind === "group") {
+      out[path] = {
+        layout: {
+          view: section.layoutPath,
+          hasLoader: false,
+        },
+        routes: createRouteManifest(section.routes),
       };
     } else {
-      out[`${parentPath}${key}`] = {
-        viewPath: routeList.viewPath,
-        hasLoader: routeList.hasLoader,
-        layout,
+      out[path] = {
+        view: section.viewPath,
+        hasLoader: section.hasLoader,
       };
     }
   }
 
   return out;
-}
+};
 
 export function bootstrap(template: string) {
   const app = new Hono();
-  const routeViewMap = createRouteViewMap(web.public);
-  createViewRoutes(app, { template, routeViewMap }, web.public);
+  const routeManifest = createRouteManifest(web.public);
+
+  createViewRoutes(app, { template, routeManifest }, web.public);
 
   return app;
 }

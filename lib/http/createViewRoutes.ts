@@ -9,7 +9,7 @@ export function createViewRoutes<
   T extends ViewRoute<any> | ViewRouteGroup<any>,
 >(
   app: Hono,
-  config: { template: string; routeViewMap: any; layoutGetter?: LayoutGetter },
+  config: { template: string; routeManifest: any; layoutGetter?: LayoutGetter },
   routes: Record<string, T>,
 ) {
   const defaultLayoutGetter: LayoutGetter = (_ctx) => {
@@ -21,7 +21,7 @@ export function createViewRoutes<
   Object.entries(routes).forEach(([path, route]) => {
     route.handler(app, {
       path,
-      routeViewMap: config.routeViewMap,
+      routeManifest: config.routeManifest,
       template: config.template,
       createViewRoutes,
       layoutGetter: config.layoutGetter ?? defaultLayoutGetter,
