@@ -9,6 +9,7 @@ import { AboutController } from "./controllers/AboutController";
 import { PublicLayoutController } from "./controllers/PublicLayoutController";
 import { DashboardController } from "./controllers/DashboardController";
 import { AccountController } from "./controllers/AccountController";
+import { ProductController } from "./controllers/ProductController";
 
 export const api = {
   public: {
@@ -45,6 +46,10 @@ export const web = {
         "/dashboard": Route.viewGroup(Route.layout("DashboardLayout"), {
           "/": Route.view("Dashboard", [DashboardController, "index"]),
           "/account": Route.view("Account", [AccountController, "index"]),
+        }),
+        "/product": Route.viewGroup(Route.layout("ProductLayout"), {
+          "/": Route.view("Product", [ProductController, "index"]),
+          "/edit": Route.view("Account", [ProductController, "edit"]),
         }),
       },
     ),

@@ -47,6 +47,22 @@ const routeManifest = {
         view: "About",
         hasLoader: true,
       },
+      "/product": {
+        layout: {
+          view: "ProductLayout",
+          hasLoader: false,
+        },
+        routes: {
+          "/": {
+            view: "Product",
+            hasLoader: true,
+          },
+          "/edit": {
+            view: "ProductEdit",
+            hasLoader: true,
+          },
+        },
+      },
       "/dashboard": {
         layout: {
           view: "DashboardLayout",

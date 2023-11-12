@@ -13,6 +13,9 @@ const Dashboard = () => {
       <div>
         <Link href="/">Home Link</Link>
       </div>
+      <div>
+        <Link href="/product">Products</Link>
+      </div>
     </div>
   );
 };
