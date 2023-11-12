@@ -5,7 +5,14 @@ interface ParamsData {
 }
 
 const Params = (props: { data: ParamsData }) => {
-  return <div>Params</div>;
+  return (
+    <div>
+      <div>Params View</div>
+      <div>
+        <pre>{JSON.stringify(props, null, 2)}</pre>
+      </div>
+    </div>
+  );
 };
 
 export default Params;

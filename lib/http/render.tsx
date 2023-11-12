@@ -14,6 +14,8 @@ export function render<Data>(config: {
   routeManifest: Record<string, any>;
   layout?: (children: JSX.Element) => JSX.Element;
   layoutData?: unknown;
+  params: Record<string, string>;
+  url: string;
 }) {
   const {
     data,
@@ -23,6 +25,8 @@ export function render<Data>(config: {
     viewPath,
     layout = (children) => <>{children}</>,
     layoutData = {},
+    params,
+    url,
   } = config;
   let Children = (_props: { data: Data }) => <></>;
   try {
@@ -37,14 +41,18 @@ export function render<Data>(config: {
     routeManifest,
     routeData: { [path]: data },
     currentRoute: path,
+    currentUrl: url,
     layoutData,
+    params,
   };
 
   const scripts = `<script>window.serverData = '${JSON.stringify(
     serverData,
   )}';</script>`;
 
-  const apphtml = renderToString(layout(<Children data={data} />));
+  const apphtml = renderToString(
+    layout(<Children router={{ match: path, params }} data={data} />),
+  );
 
   return template
     .replace(`<!--app-html-->`, apphtml)

@@ -17,6 +17,7 @@ declare const window: {
 interface ServerData {
   routeManifest: RouteManifest;
   currentRoute: string;
+  currentUrl: string;
   routeData: Record<string, Readonly<unknown>>;
   layoutData: Record<string, Readonly<unknown>>;
 }
@@ -109,14 +110,14 @@ function getFlatRouteDefinitions(
 
 // eslint-disable-next-line react-refresh/only-export-components
 const App = () => {
-  const { currentRoute, routeData, layoutData, routeManifest } = JSON.parse(
-    window.serverData,
-  ) as ServerData;
+  const { currentRoute, routeData, layoutData, routeManifest, currentUrl } =
+    JSON.parse(window.serverData) as ServerData;
 
   return (
     <RouterProvider
       routes={getFlatRouteDefinitions(routeManifest)}
       initialPath={currentRoute}
+      initialUrl={currentUrl}
       initialRouteData={routeData[currentRoute]}
       initialLayoutData={layoutData}
     >

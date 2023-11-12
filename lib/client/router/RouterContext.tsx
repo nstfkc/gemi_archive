@@ -14,6 +14,7 @@ import {
   useState,
 } from "react";
 import { createBrowserHistory, History, Location } from "history";
+import { createRouteMatcher } from "./routeMatcher";
 
 export const Outlet = () => {
   return <div>HI</div>;
@@ -33,36 +34,20 @@ interface RouteProps {
 }
 
 export const Route = (props: PropsWithChildren<RouteProps>) => {
-  const { Component, level } = props;
-  const { location, routes, routeDataRef } = useContext(RouterContext);
+  const { Component } = props;
+  const { routeDataRef, routerState } = useContext(RouterContext);
 
-  const shouldRender = useCallback(
-    (location: Location) => {
-      level === 0
-        ? location.pathname === props.path
-        : location.pathname.startsWith(props.path);
-      const currentRoute = [...routes]
-        .reverse()
-        .find((route) => location.pathname.startsWith(route.path));
-      return currentRoute && currentRoute.path === props.path;
-    },
-    [level, props.path, routes],
-  );
-
-  const [render, setRender] = useState(shouldRender(location));
-
-  useEffect(() => {
-    history.listen((update) => {
-      setRender(shouldRender(update.location));
-    });
-  }, [shouldRender]);
+  const render = routerState.match === props.path;
 
   if (!render) {
     return null;
   }
 
   return (
-    <Component data={routeDataRef.current?.get(props.path)}>
+    <Component
+      router={routerState}
+      data={routeDataRef.current?.get(props.path)}
+    >
       {props.children}
     </Component>
   );
@@ -94,6 +79,10 @@ interface RouterContextValue {
   routes: RouteDefinition[];
   routeDataRef: RefObject<Map<string, Readonly<any>>>;
   layoutDataRef: RefObject<Map<string, Readonly<any>>>;
+  routerState: {
+    match: string;
+    params: Record<string, string>;
+  };
 }
 const RouterContext = createContext({} as RouterContextValue);
 
@@ -105,6 +94,7 @@ if (!import.meta.env.SSR) {
 
 interface RouterProviderProps {
   initialPath: string;
+  initialUrl: string;
   routes: RouteDefinition[];
   initialRouteData: Readonly<any>;
   initialLayoutData: Readonly<any>;
@@ -113,7 +103,7 @@ interface RouterProviderProps {
 export const RouterProvider = (
   props: PropsWithChildren<RouterProviderProps>,
 ) => {
-  const { initialPath, routes } = props;
+  const { initialPath, initialUrl, routes } = props;
   const routeDataRef = useRef(
     (() => {
       const map = new Map<string, Readonly<any>>();
@@ -134,23 +124,35 @@ export const RouterProvider = (
     })(),
   );
 
+  const routeMatcher = createRouteMatcher(routes.map((route) => route.path));
+
   const [location, setLocation] = useState<Location>({
     hash: "",
     key: "",
-    pathname: initialPath,
+    pathname: initialUrl,
     search: "",
     state: {},
   });
 
+  const [routerState, setRouterState] = useState(routeMatcher(initialUrl));
+
   useEffect(() => {
     history.listen((update) => {
       setLocation({ ...update.location });
+      setRouterState(routeMatcher(update.location.pathname));
     });
   }, []);
 
   return (
     <RouterContext.Provider
-      value={{ location, history, routes, routeDataRef, layoutDataRef }}
+      value={{
+        location,
+        history,
+        routes,
+        routeDataRef,
+        layoutDataRef,
+        routerState,
+      }}
     >
       {props.children}
     </RouterContext.Provider>

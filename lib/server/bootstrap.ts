@@ -6,7 +6,12 @@ import { createViewRoutes } from "../http/createViewRoutes";
 export function bootstrap(template: string) {
   const app = new Hono();
 
-  createViewRoutes(app, { template, routeManifest: web.manifest }, web.routes);
+  createViewRoutes(
+    app,
+    "/",
+    { template, routeManifest: web.manifest },
+    web.routes,
+  );
 
   return app;
 }

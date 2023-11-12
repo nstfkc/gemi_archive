@@ -71,6 +71,7 @@ export type LayoutGetter = (
 
 interface ViewRouteConfig {
   path: string;
+  parentPath: string;
   template: string;
   routeManifest: Record<string, any>;
   createViewRoutes: CreateViewRoutes;
@@ -116,8 +117,9 @@ export class Route {
       viewPath,
       hasLoader: !!handler,
       handler: (app: Hono, config: ViewRouteConfig) => {
-        app.get(config.path, async (ctx) => {
-          const { path, routeManifest, template, layoutGetter } = config;
+        const { path, routeManifest, template, layoutGetter, parentPath } =
+          config;
+        app.get(path, async (ctx) => {
           let dataPromise = Promise.resolve({} as Data);
           if (handler) {
             const [Controller, methodName] = handler;
@@ -138,7 +140,9 @@ export class Route {
           const html = render({
             viewPath,
             data,
-            path: [path, ctx.req.path].join("").replace("//", "/"),
+            path: [parentPath, path].join("").replace("//", "/"),
+            params: ctx.req.param() as Record<string, string>,
+            url: ctx.req.path,
             template,
             routeManifest,
             layout: layout.wrapper,
@@ -204,11 +208,13 @@ export class Route {
           path,
           routeManifest,
           template,
+          parentPath,
         } = config;
 
         const group = new Hono();
         createViewRoutes(
           group,
+          [parentPath, path].join("").replace("//", "/"),
           {
             routeManifest,
             template,
