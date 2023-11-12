@@ -4,6 +4,7 @@ import { createRouteMatcher } from "./routeMatcher";
 test("matches routes", () => {
   const routeMatcher = createRouteMatcher([
     "/",
+    "/:id",
     "/foo/:id",
     "/bar/:id/baz",
     "/foo/:id/baz/:optional?",
@@ -12,6 +13,9 @@ test("matches routes", () => {
 
   expect(routeMatcher("/").match).toEqual("/");
   expect(routeMatcher("/").params).toEqual({});
+
+  expect(routeMatcher("/s123").match).toEqual("/:id");
+  expect(routeMatcher("/s123").params).toEqual({ id: "s123" });
 
   expect(routeMatcher("/foo/1234").match).toEqual("/foo/:id");
   expect(routeMatcher("/foo/1234").params).toStrictEqual({ id: "1234" });

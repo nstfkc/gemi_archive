@@ -12,18 +12,12 @@ export function createRouteMatcher(routes: string[]) {
       };
     }
 
-    const [, firstSegment, ...urlSegments] = url.split("/");
-    console.log({ firstSegment, urlSegments });
+    const [, firstSegment] = url.split("/");
 
     const firstSegmentMatches = routes.filter((key) => {
-      // const optionalParamsLength = key
-      //   .split("/")
-      //   .filter((segment) => segment.includes("?")).length;
-
-      const startsWith = key.startsWith(`/${firstSegment}`);
+      const startsWith =
+        key.startsWith(`/${firstSegment}`) || key.split("/")[1].includes(":");
       const lengthMatches = key.split("/").length >= url.split("/").length;
-
-      console.log(key, { startsWith, lengthMatches });
 
       return startsWith && lengthMatches;
     });
@@ -35,9 +29,9 @@ export function createRouteMatcher(routes: string[]) {
     for (const segment of matchSegments) {
       if (segment.includes(":")) {
         const idx = matchSegments.indexOf(segment);
-        if (urlSegments[idx - 2]) {
+        if (url.split("/")[idx]) {
           params[segment.replace(":", "").replace("?", "")] =
-            urlSegments[idx - 2];
+            url.split("/")[idx];
         }
       }
     }
