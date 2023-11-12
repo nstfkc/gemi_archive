@@ -181,7 +181,7 @@ export class Route {
           ]);
           return renderLayout(
             viewPath,
-            { [viewPath]: data },
+            { [viewPath]: data, ...parentLayout.data },
             parentLayout.wrapper,
           );
         };

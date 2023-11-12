@@ -1,4 +1,4 @@
-import { Controller } from "@/lib/server/Controller";
+import { Controller } from "@/lib/http/Controller";
 
 export class AccountController extends Controller {
   index = () => {

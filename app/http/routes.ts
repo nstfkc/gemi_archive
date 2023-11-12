@@ -7,6 +7,8 @@ import { Route } from "@/lib/http/Route";
 import { HomeController } from "./controllers/HomeController";
 import { AboutController } from "./controllers/AboutController";
 import { PublicLayoutController } from "./controllers/PublicLayoutController";
+import { DashboardController } from "./controllers/DashboardController";
+import { AccountController } from "./controllers/AccountController";
 
 export const api = {
   public: {
@@ -40,6 +42,10 @@ export const web = {
       {
         "/": Route.view("Home", [HomeController, "index"]),
         "/about": Route.view("About", [AboutController, "index"]),
+        "/dashboard": Route.viewGroup(Route.layout("DashboardLayout"), {
+          "/": Route.view("Dashboard", [DashboardController, "index"]),
+          "/account": Route.view("Account", [AccountController, "index"]),
+        }),
       },
     ),
   },

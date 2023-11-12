@@ -1,1 +1,1 @@
-export { Link, RouterProvider, Route, Layout } from "./RouterContext";
+export { Link, RouterProvider, Route, Layout, Outlet } from "./RouterContext";

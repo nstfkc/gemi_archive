@@ -39,9 +39,24 @@ const routeManifest = {
         view: "About",
         hasLoader: true,
       },
+      "/dashboard": {
+        layout: "DashboardLayout",
+        routes: {
+          "/": {
+            view: "Dashboard",
+            hasLoader: true,
+          },
+          "/account": {
+            view: "Account",
+            hasLoader: true,
+          },
+        },
+      },
     },
   },
 };
+
+const renderRoutes = () => {};
 
 // eslint-disable-next-line react-refresh/only-export-components
 const App = () => {

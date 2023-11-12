@@ -15,6 +15,10 @@ import {
 } from "react";
 import { createBrowserHistory, History, Location } from "history";
 
+export const Outlet = () => {
+  return <div>HI</div>;
+};
+
 interface RouteDefinition {
   loader: (() => Promise<unknown>) | null;
   path: string;
