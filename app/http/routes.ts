@@ -1,6 +1,6 @@
 // import { Context } from "hono";
 
-import { Route } from "@/lib/http/Route";
+import { Route, ViewRoute, ViewRouteGroup } from "@/lib/http/Route";
 
 // import { AuthController } from "./controllers/AuthController";
 // import { AccountController } from "./controllers/AccountController";
@@ -10,6 +10,7 @@ import { PublicLayoutController } from "./controllers/PublicLayoutController";
 import { DashboardController } from "./controllers/DashboardController";
 import { AccountController } from "./controllers/AccountController";
 import { ProductController } from "./controllers/ProductController";
+import { RouteManifest } from "@/lib/types/global";
 
 export const api = {
   public: {
@@ -36,25 +37,56 @@ export const api = {
 //   },
 // );
 
-export const web = {
-  public: {
-    "/": Route.viewGroup(
-      Route.layout("PublicLayout", [PublicLayoutController, "index"]),
-      {
-        "/": Route.view("Home", [HomeController, "index"]),
-        "/about": Route.view("About", [AboutController, "index"]),
-        "/dashboard": Route.viewGroup(Route.layout("DashboardLayout"), {
-          "/": Route.view("Dashboard", [DashboardController, "index"]),
-          "/account": Route.view("Account", [AccountController, "index"]),
-        }),
-        "/product": Route.viewGroup(Route.layout("ProductLayout"), {
-          "/": Route.view("Product", [ProductController, "index"]),
-          "/edit": Route.view("Account", [ProductController, "edit"]),
-        }),
-      },
-    ),
-  },
-  private: {
-    // "/account": Route.view("Account"),
-  },
-};
+type WebRoutes<T> = Record<string, ViewRoute<T> | ViewRouteGroup<T>>;
+
+function createWebRoutes<T>(routes: WebRoutes<T>) {
+  const createRouteManifest = <U>(
+    _routes: Record<string, ViewRoute<U> | ViewRouteGroup<T>> = routes,
+  ): RouteManifest => {
+    const out: RouteManifest = {};
+
+    for (const [path, section] of Object.entries(_routes)) {
+      if (section.kind === "group") {
+        out[path] = {
+          layout: {
+            view: section.layoutPath,
+            hasLoader: !!section.handler,
+          },
+          routes: createRouteManifest(section.routes ?? {}),
+        };
+      }
+
+      if (section.kind === "view") {
+        out[path] = {
+          view: section.viewPath,
+          hasLoader: section.hasLoader,
+        };
+      }
+    }
+
+    return out;
+  };
+
+  return {
+    routes,
+    manifest: createRouteManifest(routes),
+  };
+}
+
+export const web = createWebRoutes({
+  "/": Route.viewGroup(
+    Route.layout("PublicLayout", [PublicLayoutController, "index"]),
+    {
+      "/": Route.view("Home", [HomeController, "index"]),
+      "/about": Route.view("About", [AboutController, "index"]),
+      "/dashboard": Route.viewGroup(Route.layout("DashboardLayout"), {
+        "/": Route.view("Dashboard", [DashboardController, "index"]),
+        "/account": Route.view("Account", [AccountController, "index"]),
+      }),
+      "/product": Route.viewGroup(Route.layout("ProductLayout"), {
+        "/": Route.view("Product", [ProductController, "index"]),
+        "/edit": Route.view("Account", [ProductController, "edit"]),
+      }),
+    },
+  ),
+});

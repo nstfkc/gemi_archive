@@ -110,7 +110,7 @@ export class Route {
   >(
     viewPath: string,
     handler?: [{ new (): T }, K],
-  ): ViewRoute<Data> => {
+  ): ViewRoute<UnwrapPromise<Data>> => {
     return {
       kind: "view",
       viewPath,
@@ -160,7 +160,7 @@ export class Route {
   >(
     viewPath: string,
     handler?: [{ new (): T }, K],
-  ): ViewLayout<Data> => {
+  ): ViewLayout<UnwrapPromise<Data>> => {
     return {
       viewPath,
       hasLoader: !!handler,
