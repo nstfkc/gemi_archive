@@ -78,6 +78,8 @@ export const web = createWebRoutes({
     Route.layout("PublicLayout", [PublicLayoutController, "index"]),
     {
       "/": Route.view("Home", [HomeController, "index"]),
+      "/params/:test": Route.view("Params", [HomeController, "index"]),
+      "/params/:test/edit": Route.view("Params", [HomeController, "index"]),
       "/about": Route.view("About", [AboutController, "index"]),
       "/dashboard": Route.viewGroup(Route.layout("DashboardLayout"), {
         "/": Route.view("Dashboard", [DashboardController, "index"]),
