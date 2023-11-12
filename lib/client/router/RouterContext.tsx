@@ -19,7 +19,7 @@ export const Outlet = () => {
   return <div>HI</div>;
 };
 
-interface RouteDefinition {
+export interface RouteDefinition {
   loader: (() => Promise<unknown>) | null;
   path: string;
   layout: string[];
@@ -34,14 +34,19 @@ interface RouteProps {
 
 export const Route = (props: PropsWithChildren<RouteProps>) => {
   const { Component, level } = props;
-  const { location, routeDataRef } = useContext(RouterContext);
+  const { location, routes, routeDataRef } = useContext(RouterContext);
 
   const shouldRender = useCallback(
-    (location: Location) =>
+    (location: Location) => {
       level === 0
         ? location.pathname === props.path
-        : location.pathname.startsWith(props.path),
-    [level, props.path],
+        : location.pathname.startsWith(props.path);
+      const currentRoute = [...routes]
+        .reverse()
+        .find((route) => location.pathname.startsWith(route.path));
+      return currentRoute && currentRoute.path === props.path;
+    },
+    [level, props.path, routes],
   );
 
   const [render, setRender] = useState(shouldRender(location));
@@ -78,7 +83,6 @@ export const Layout = (props: PropsWithChildren<LayoutProps>) => {
   const { location, routes, layoutDataRef } = useContext(RouterContext);
 
   const currentRoute = routes.find((route) => route.path === location.pathname);
-
   if (currentRoute?.layout.includes(props.layoutName)) {
     const data = layoutDataRef.current?.get(props.layoutName);
 

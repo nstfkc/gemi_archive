@@ -1,15 +1,15 @@
 import { Link } from "@/lib/client/router";
 
 interface AccountData {
-  message: string;
+  name: string;
 }
 
 const Account = (props: { data: AccountData }) => {
   return (
     <div>
-      <div className="text-red-400">{props.data.message}</div>
+      <div className="text-red-400">{props.data.name}</div>
       <div>
-        <Link href="/">Home Route</Link>
+        <Link href="/">Home Link</Link>
       </div>
     </div>
   );

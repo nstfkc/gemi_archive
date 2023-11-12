@@ -1,6 +1,11 @@
 import { ComponentType, lazy } from "react";
 import { hydrateRoot } from "react-dom/client";
-import { RouterProvider, Route, Layout } from "@/lib/client/router";
+import {
+  RouterProvider,
+  Route,
+  Layout,
+  RouteDefinition,
+} from "@/lib/client/router";
 
 import "@/app/global.css";
 
@@ -29,7 +34,10 @@ const lazyViews = Object.fromEntries(
 
 const routeManifest = {
   "/": {
-    layout: "PublicLayout",
+    layout: {
+      view: "PublicLayout",
+      hasLoader: true,
+    },
     routes: {
       "/": {
         view: "Home",
@@ -40,7 +48,10 @@ const routeManifest = {
         hasLoader: true,
       },
       "/dashboard": {
-        layout: "DashboardLayout",
+        layout: {
+          view: "DashboardLayout",
+          hasLoader: false,
+        },
         routes: {
           "/": {
             view: "Dashboard",
@@ -56,7 +67,97 @@ const routeManifest = {
   },
 };
 
-const renderRoutes = () => {};
+type Route =
+  | {
+      layout: {
+        view: string;
+        hasLoader: boolean;
+      };
+      routes: Record<string, Route>;
+    }
+  | {
+      view: string;
+      hasLoader: boolean;
+    };
+
+const renderRoutes = (
+  routes: Record<string, Route>,
+  level = 0,
+  parentPath = "",
+) => {
+  return Object.entries(routes).map(([path, route]) => {
+    if ("layout" in route) {
+      const { view } = route.layout;
+      const Component = lazyViews[`/app/views/${view}.tsx`];
+      const layoutPath = `${
+        parentPath === "/" ? "" : parentPath
+      }/${path}`.replace("//", "/");
+      return (
+        <Layout
+          key={`${level}-${view}`}
+          path={layoutPath}
+          Component={Component}
+          layoutName={view}
+        >
+          {renderRoutes(route.routes, level + 1, layoutPath)}
+        </Layout>
+      );
+    } else {
+      const { view } = route;
+      const Component = lazyViews[`/app/views/${view}.tsx`];
+      const routePath = [parentPath, level > 0 && path === "/" ? "" : path]
+        .join("")
+        .replace("//", "/");
+      return (
+        <Route
+          key={`${level}-${path}`}
+          level={level}
+          path={routePath}
+          Component={Component}
+        />
+      );
+    }
+  });
+};
+
+function getFlatRouteDefinitions(): RouteDefinition[] {
+  const flatten = (
+    routes: Record<string, Route>,
+    output: RouteDefinition[] = [],
+    level = 0,
+    prevLayouts: string[],
+    prevPath = "",
+  ) => {
+    let out = [...output];
+    for (const [path, route] of Object.entries(routes)) {
+      if ("layout" in route) {
+        const { layout, routes: subRoutes } = route;
+        out = flatten(
+          subRoutes,
+          out,
+          level + 1,
+          [...prevLayouts, layout.view],
+          path,
+        );
+      } else {
+        const routePath = [prevPath, level > 0 && path === "/" ? "" : path]
+          .join("")
+          .replace("//", "/");
+
+        out.push({
+          layout: prevLayouts,
+          path: routePath,
+          loader: () =>
+            fetch(`${routePath}?__json=true`).then((res) => res.json()),
+          level,
+        });
+      }
+    }
+    return out;
+  };
+
+  return flatten(routeManifest, [], -1, []);
+}
 
 // eslint-disable-next-line react-refresh/only-export-components
 const App = () => {
@@ -66,47 +167,12 @@ const App = () => {
 
   return (
     <RouterProvider
-      routes={[
-        {
-          level: 0,
-          path: "/",
-          layout: ["PublicLayout"],
-          loader: () => fetch(`/?__json=true`).then((res) => res.json()),
-        },
-        {
-          level: 0,
-          path: "/about",
-          layout: ["PublicLayout"],
-          loader: () => fetch(`/about?__json=true`).then((res) => res.json()),
-        },
-      ]}
+      routes={getFlatRouteDefinitions()}
       initialPath={currentRoute}
       initialRouteData={routeData[currentRoute]}
       initialLayoutData={layoutData}
     >
-      {Object.entries(routeManifest).map(([path, { layout, routes }]) => {
-        const LayoutComponent = lazyViews[`/app/views/${layout}.tsx`];
-        return (
-          <Layout
-            Component={LayoutComponent}
-            layoutName={layout}
-            path={path}
-            key={path}
-          >
-            {Object.entries(routes).map(([subPath, { view }]) => {
-              const Component = lazyViews[`/app/views/${view}.tsx`];
-              return (
-                <Route
-                  level={0}
-                  key={subPath}
-                  path={`${path}${subPath}`.replace("//", "/")}
-                  Component={Component}
-                />
-              );
-            })}
-          </Layout>
-        );
-      })}
+      {renderRoutes(routeManifest)}
     </RouterProvider>
   );
 };

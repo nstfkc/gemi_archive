@@ -1,4 +1,4 @@
-import { Link, Outlet } from "@/lib/client/router";
+import { Link } from "@/lib/client/router";
 
 interface DashboardData {
   message: string;
@@ -6,15 +6,12 @@ interface DashboardData {
 
 const Dashboard = () => {
   return (
-    <div>
+    <div className="p-4 border-2">
       <div>
-        <div className="text-red-400">Dashboard</div>
+        <div className="text-red-400">Dashboard View</div>
       </div>
       <div>
-        <Link href="/">Home Route</Link>
-      </div>
-      <div>
-        <Outlet />
+        <Link href="/">Home Link</Link>
       </div>
     </div>
   );

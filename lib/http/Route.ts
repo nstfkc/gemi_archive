@@ -138,7 +138,7 @@ export class Route {
           const html = render({
             viewPath,
             data,
-            path,
+            path: [path, ctx.req.path].join("").replace("//", "/"),
             template,
             routeViewMap,
             layout: layout.wrapper,

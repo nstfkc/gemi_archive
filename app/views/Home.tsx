@@ -8,14 +8,14 @@ const Home = (props: { data: HomeData }) => {
   return (
     <div>
       {props.data.message}
+      <div>Home View</div>
       <div className="bg-green-100">
         <Link href="/about" className="font-bold">
           About
         </Link>
       </div>
       <div>
-        <Link href="/auth/login">Login</Link>
-        <Link href="/account">Account</Link>
+        <Link href="/dashboard/account">Dashboard</Link>
       </div>
     </div>
   );
