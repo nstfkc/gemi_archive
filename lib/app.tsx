@@ -96,8 +96,8 @@ function getFlatRouteDefinitions(
         out.push({
           layout: prevLayouts,
           path: routePath,
-          loader: () =>
-            fetch(`${routePath}?__json=true`).then((res) => res.json()),
+          loader: (path: string) =>
+            fetch(`${path}?__json=true`).then((res) => res.json()),
           level,
         });
       }

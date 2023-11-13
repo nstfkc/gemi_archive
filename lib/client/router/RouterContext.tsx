@@ -1,5 +1,3 @@
-import type { Routes } from "./types";
-
 import {
   ComponentProps,
   ComponentType,
@@ -7,7 +5,6 @@ import {
   PropsWithChildren,
   RefObject,
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -15,10 +12,6 @@ import {
 } from "react";
 import { createBrowserHistory, History, Location } from "history";
 import { createRouteMatcher } from "./routeMatcher";
-
-export const Outlet = () => {
-  return <div>HI</div>;
-};
 
 export interface RouteDefinition {
   loader: (() => Promise<unknown>) | null;
@@ -61,9 +54,9 @@ interface LayoutProps {
 
 export const Layout = (props: PropsWithChildren<LayoutProps>) => {
   const { Component } = props;
-  const { location, routes, layoutDataRef } = useContext(RouterContext);
+  const { routes, layoutDataRef, routerState } = useContext(RouterContext);
 
-  const currentRoute = routes.find((route) => route.path === location.pathname);
+  const currentRoute = routes.find((route) => route.path === routerState.match);
   if (currentRoute?.layout.includes(props.layoutName)) {
     const data = layoutDataRef.current?.get(props.layoutName);
 
@@ -79,6 +72,7 @@ interface RouterContextValue {
   routes: RouteDefinition[];
   routeDataRef: RefObject<Map<string, Readonly<any>>>;
   layoutDataRef: RefObject<Map<string, Readonly<any>>>;
+  routeMatcher: ReturnType<typeof createRouteMatcher>;
   routerState: {
     match: string;
     params: Record<string, string>;
@@ -141,7 +135,7 @@ export const RouterProvider = (
       setLocation({ ...update.location });
       setRouterState(routeMatcher(update.location.pathname));
     });
-  }, []);
+  }, [routeMatcher]);
 
   return (
     <RouterContext.Provider
@@ -152,6 +146,7 @@ export const RouterProvider = (
         routeDataRef,
         layoutDataRef,
         routerState,
+        routeMatcher,
       }}
     >
       {props.children}
@@ -160,25 +155,28 @@ export const RouterProvider = (
 };
 
 interface LinkProps extends Omit<ComponentProps<"a">, "href"> {
-  href: keyof Routes;
+  href: string;
 }
 
 export const Link = (props: LinkProps) => {
   const { href, onClick = () => {}, ...rest } = props;
 
-  const { history, routes, routeDataRef } = useContext(RouterContext);
+  const { history, routes, routeDataRef, routeMatcher } =
+    useContext(RouterContext);
+
   return (
     <a
       href={href}
       onClick={(e) => {
         e.preventDefault();
+        const { match } = routeMatcher(href);
         onClick(e);
-        let loader = () => Promise.resolve({} as unknown);
-        const route = routes.find((route) => route.path === href);
+        let loader = (_: any) => Promise.resolve({} as unknown);
+        const route = routes.find((route) => route.path === match);
         if (route && typeof route.loader === "function") {
           loader = route.loader;
         }
-        loader()
+        loader(href)
           .then((data) => {
             routeDataRef.current?.set(route?.path!, data as any);
             history.push(href);

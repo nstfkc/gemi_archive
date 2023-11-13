@@ -78,16 +78,17 @@ export const web = createWebRoutes({
     Route.layout("PublicLayout", [PublicLayoutController, "index"]),
     {
       "/": Route.view("Home", [HomeController, "index"]),
-      "/params/:test": Route.view("Params", [HomeController, "index"]),
-      "/params/:test/edit": Route.view("Params", [HomeController, "index"]),
       "/about": Route.view("About", [AboutController, "index"]),
       "/dashboard": Route.viewGroup(Route.layout("DashboardLayout"), {
         "/": Route.view("Dashboard", [DashboardController, "index"]),
         "/account": Route.view("Account", [AccountController, "index"]),
       }),
       "/product": Route.viewGroup(Route.layout("ProductLayout"), {
-        "/": Route.view("Product", [ProductController, "index"]),
-        "/edit": Route.view("Account", [ProductController, "edit"]),
+        "/:productId": Route.view("Product", [ProductController, "index"]),
+        "/:productId/edit": Route.view("ProductEdit", [
+          ProductController,
+          "edit",
+        ]),
       }),
     },
   ),

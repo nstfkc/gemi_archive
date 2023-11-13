@@ -9,7 +9,7 @@ const Product = (props: { data: ProductData }) => {
     <div>
       <div>Product View</div>
       <div>
-        <Link href="/product/edit" className="font-bold text-sm">
+        <Link href="/product/1234/edit" className="font-bold text-sm">
           {props.data.productTitle}
         </Link>
       </div>

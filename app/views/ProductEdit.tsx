@@ -10,7 +10,7 @@ const ProductEdit = (props: { data: ProductEditData }) => {
       <div>ProductEdit View</div>
       {props.data.action}
       <div>
-        <Link href="/product" className="font-bold text-sm">
+        <Link href="/product/1234" className="font-bold text-sm">
           Back to Product
         </Link>
       </div>
