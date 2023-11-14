@@ -18,5 +18,5 @@ router.use("*", serveStatic({ root: "./dist/client" }));
 
 serve({
   fetch: router.fetch,
-  port: 5173,
+  port: 3000,
 });
