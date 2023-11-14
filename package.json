@@ -13,7 +13,7 @@
     "build": "bun run build:client && npm run build:server",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build -c vite.config.server.js",
-    "serve": "NODE_ENV=production bun dist/server/prod.js",
+    "start": "NODE_ENV=production bun dist/server/prod.js",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
