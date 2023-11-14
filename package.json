@@ -10,10 +10,10 @@
     "db:generate": "prisma generate --schema=./db/schema.prisma",
     "db:studio": "prisma studio --schema=./db/schema.prisma",
     "db:push": "prisma db push --schema=./db/schema.prisma",
-    "build": "bun run build:client && npm run build:server",
+    "build": "npm run build:client && npm run build:server",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build -c vite.config.server.js",
-    "start": "NODE_ENV=production bun dist/server/prod.js",
+    "start": "NODE_ENV=production node dist/server/prod.js",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
