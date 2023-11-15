@@ -3,7 +3,7 @@ type Route =
       layout: {
         view: string;
         hasLoader: boolean;
-      };
+      } | null;
       routes: Record<string, Route>;
     }
   | {

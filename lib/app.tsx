@@ -1,4 +1,5 @@
-import { ComponentType, lazy } from "react";
+import { ComponentType, Fragment, lazy } from "react";
+
 import { hydrateRoot } from "react-dom/client";
 import {
   RouterProvider,
@@ -32,23 +33,38 @@ const lazyViews = Object.fromEntries(
 );
 
 const renderRoutes = (routes: RouteManifest, level = 0, parentPath = "") => {
-  return Object.entries(routes).map(([path, route]) => {
+  const res = Object.entries(routes).map(([path, route]) => {
     if ("layout" in route) {
-      const { view } = route.layout;
-      const Component = lazyViews[`/app/views/${view}.tsx`];
       const layoutPath = `${
         parentPath === "/" ? "" : parentPath
       }/${path}`.replace("//", "/");
-      return (
-        <Layout
-          key={`${level}-${view}`}
-          path={layoutPath}
-          Component={Component}
-          layoutName={view}
-        >
-          {renderRoutes(route.routes, level + 1, layoutPath)}
-        </Layout>
-      );
+
+      if (!route.layout) {
+        return (
+          <Layout
+            key={`${level}`}
+            path={layoutPath}
+            Component={({ children }) => <>{children}</>}
+            layoutName={""}
+          >
+            {renderRoutes(route.routes, level + 1, layoutPath)}
+          </Layout>
+        );
+      } else {
+        const { view } = route.layout;
+        const Component = lazyViews[`/app/views/${view}.tsx`];
+
+        return (
+          <Layout
+            key={`${level}-${view}`}
+            path={layoutPath}
+            Component={Component}
+            layoutName={view}
+          >
+            {renderRoutes(route.routes, level + 1, layoutPath)}
+          </Layout>
+        );
+      }
     } else {
       const { view } = route;
       const Component = lazyViews[`/app/views/${view}.tsx`];
@@ -65,6 +81,8 @@ const renderRoutes = (routes: RouteManifest, level = 0, parentPath = "") => {
       );
     }
   });
+
+  return res;
 };
 
 function getFlatRouteDefinitions(
@@ -85,7 +103,7 @@ function getFlatRouteDefinitions(
           subRoutes,
           out,
           level + 1,
-          [...prevLayouts, layout.view],
+          layout ? [...prevLayouts, layout.view] : [...prevLayouts],
           path,
         );
       } else {
@@ -112,7 +130,7 @@ function getFlatRouteDefinitions(
 const App = () => {
   const { currentRoute, routeData, layoutData, routeManifest, currentUrl } =
     JSON.parse(window.serverData) as ServerData;
-
+  const render = renderRoutes(routeManifest);
   return (
     <RouterProvider
       routes={getFlatRouteDefinitions(routeManifest)}
@@ -121,7 +139,7 @@ const App = () => {
       initialRouteData={routeData[currentRoute]}
       initialLayoutData={layoutData}
     >
-      {renderRoutes(routeManifest)}
+      {render}
     </RouterProvider>
   );
 };

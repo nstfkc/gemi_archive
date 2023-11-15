@@ -87,7 +87,7 @@ export interface ViewRoute<_Data> {
 
 export interface ViewRouteGroup<T> {
   kind: "group";
-  layoutPath: string;
+  layoutPath?: string;
   routes: T;
   handler: (app: Hono, config: any) => void;
 }
@@ -193,13 +193,20 @@ export class Route {
     };
   };
 
-  static viewGroup = <T, R extends string, U = Record<R, ViewRoute<T>>>(
-    layout: ViewLayout<any>,
-    routes: U,
-  ): ViewRouteGroup<U> => {
+  static viewGroup = <
+    T,
+    R extends string,
+    U = Record<R, ViewRoute<T>>,
+  >(params: {
+    routes: U;
+    layout?: ViewLayout<any>;
+    middlewares?: any[];
+  }): ViewRouteGroup<U> => {
+    const { middlewares: _, routes, layout } = params;
+
     return {
       kind: "group",
-      layoutPath: layout.viewPath,
+      layoutPath: layout?.viewPath,
       routes,
       handler: (app: Hono, config: ViewRouteConfig) => {
         const {
@@ -218,7 +225,7 @@ export class Route {
           {
             routeManifest,
             template,
-            layoutGetter: layout.handler(layoutGetter),
+            layoutGetter: layout?.handler(layoutGetter) ?? layoutGetter,
           },
           routes as any,
         );

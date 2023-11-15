@@ -57,7 +57,7 @@ export const Layout = (props: PropsWithChildren<LayoutProps>) => {
   const { routes, layoutDataRef, routerState } = useContext(RouterContext);
 
   const currentRoute = routes.find((route) => route.path === routerState.match);
-  if (currentRoute?.layout.includes(props.layoutName)) {
+  if ([...currentRoute?.layout, ""].includes(props.layoutName)) {
     const data = layoutDataRef.current?.get(props.layoutName);
 
     return <Component data={data}>{props.children}</Component>;

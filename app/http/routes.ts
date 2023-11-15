@@ -48,10 +48,12 @@ function createWebRoutes<T>(routes: WebRoutes<T>) {
     for (const [path, section] of Object.entries(_routes)) {
       if (section.kind === "group") {
         out[path] = {
-          layout: {
-            view: section.layoutPath,
-            hasLoader: !!section.handler,
-          },
+          layout: section.layoutPath
+            ? {
+                view: section.layoutPath,
+                hasLoader: !!section.handler,
+              }
+            : null,
           routes: createRouteManifest(section.routes ?? {}),
         };
       }
@@ -73,23 +75,30 @@ function createWebRoutes<T>(routes: WebRoutes<T>) {
   };
 }
 
+const productRoutes = Route.viewGroup({
+  middlewares: [],
+  routes: {
+    "/:productId": Route.view("Product", [ProductController, "index"]),
+    "/:productId/edit": Route.view("ProductEdit", [ProductController, "edit"]),
+  },
+});
+
+const dashboardRoutes = Route.viewGroup({
+  layout: Route.layout("DashboardLayout"),
+  routes: {
+    "/": Route.view("Dashboard", [DashboardController, "index"]),
+    "/account": Route.view("Account", [AccountController, "index"]),
+  },
+});
+
 export const web = createWebRoutes({
-  "/": Route.viewGroup(
-    Route.layout("PublicLayout", [PublicLayoutController, "index"]),
-    {
+  "/": Route.viewGroup({
+    layout: Route.layout("PublicLayout", [PublicLayoutController, "index"]),
+    routes: {
       "/": Route.view("Home", [HomeController, "index"]),
       "/about": Route.view("About", [AboutController, "index"]),
-      "/dashboard": Route.viewGroup(Route.layout("DashboardLayout"), {
-        "/": Route.view("Dashboard", [DashboardController, "index"]),
-        "/account": Route.view("Account", [AccountController, "index"]),
-      }),
-      "/product": Route.viewGroup(Route.layout("ProductLayout"), {
-        "/:productId": Route.view("Product", [ProductController, "index"]),
-        "/:productId/edit": Route.view("ProductEdit", [
-          ProductController,
-          "edit",
-        ]),
-      }),
+      "/dashboard": dashboardRoutes,
+      "/product": productRoutes,
     },
-  ),
+  }),
 });
