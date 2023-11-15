@@ -14,6 +14,7 @@ export default defineConfig({
     outDir: "dist/server",
     rollupOptions: {
       input: "/server/prod.ts",
+      external: ["bun"],
     },
   },
   resolve: {

@@ -22,7 +22,7 @@
       "@/lib/*": ["./lib/*"],
       "@/db/*": ["./db/*"]
     },
-    "types": ["vite/client", "./types.d.ts"]
+    "types": ["bun-types", "vite/client", "./types.d.ts"]
   },
   "include": ["app", "lib", "server"],
   "references": [{ "path": "./tsconfig.node.json" }]

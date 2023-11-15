@@ -1,10 +1,9 @@
+import { serve } from "bun";
 import { Hono } from "hono";
-import { serve } from "@hono/node-server";
-
 import { readFileSync } from "node:fs";
 import path, { join } from "node:path";
 
-const rootDir = path.resolve(process.cwd());
+const rootDir = process.cwd();
 const libDir = path.join(rootDir, "lib");
 const appDir = path.join(rootDir, "app");
 const dbDir = path.join(rootDir, "db");
@@ -27,7 +26,6 @@ export async function main() {
       },
     },
     build: {
-      minify: false,
       ssrManifest: true,
       manifest: true,
       ssrEmitAssets: true,
@@ -93,8 +91,6 @@ export async function main() {
   serve({
     fetch: app.fetch,
     port: 5173,
-  }).on("listening", () => {
-    console.log("Server is running");
   });
 }
 
