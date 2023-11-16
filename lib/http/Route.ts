@@ -262,7 +262,7 @@ export class Route {
         } = config;
         const groupPath = [parentPath, path].join("").replace("//", "/");
         const group = new Hono();
-        group.use(groupPath, ...renderMiddlewares(middlewares));
+        app.use(`${path}/*`, ...renderMiddlewares(middlewares));
         createViewRoutes(
           group,
           groupPath,

@@ -180,6 +180,9 @@ export const Link = (props: LinkProps) => {
           .then((data) => {
             routeDataRef.current?.set(route?.path!, data as any);
             history.push(href);
+            if (data.unauthorized === true) {
+              history.push("/auth/login");
+            }
           })
           .catch(console.log);
       }}

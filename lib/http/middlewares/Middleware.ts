@@ -4,5 +4,5 @@ export abstract class Middleware {
   abstract handle(
     ctx: Context,
     next: VoidFunction,
-  ): void | Promise<void> | Response;
+  ): Promise<void> | Promise<Response>;
 }

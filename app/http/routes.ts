@@ -5,6 +5,7 @@ import { PublicLayoutController } from "./controllers/PublicLayoutController";
 import { DashboardController } from "./controllers/DashboardController";
 import { AccountController } from "./controllers/AccountController";
 import { ProductController } from "./controllers/ProductController";
+import { AuthController } from "./controllers/AuthController";
 
 const productRoutes = Route.viewGroup({
   middlewares: [],
@@ -15,6 +16,7 @@ const productRoutes = Route.viewGroup({
 });
 
 const dashboardRoutes = Route.viewGroup({
+  middlewares: ["auth"],
   layout: Route.layout("DashboardLayout"),
   routes: {
     "/": Route.view("Dashboard", [DashboardController, "index"]),
@@ -30,6 +32,11 @@ export const web = {
       "/about": Route.view("About", [AboutController, "index"]),
       "/dashboard": dashboardRoutes,
       "/product": productRoutes,
+    },
+  }),
+  "/auth": Route.viewGroup({
+    routes: {
+      "/login": Route.view("auth/Login", [AuthController, "loginView"]),
     },
   }),
 };
