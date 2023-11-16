@@ -1,49 +1,10 @@
-import { Route, ViewRoute, ViewRouteGroup } from "@/lib/http/Route";
+import { Route } from "@/lib/http/Route";
 import { HomeController } from "./controllers/HomeController";
 import { AboutController } from "./controllers/AboutController";
 import { PublicLayoutController } from "./controllers/PublicLayoutController";
 import { DashboardController } from "./controllers/DashboardController";
 import { AccountController } from "./controllers/AccountController";
 import { ProductController } from "./controllers/ProductController";
-import { RouteManifest } from "@/lib/types/global";
-
-type WebRoutes<T> = Record<string, ViewRoute<T> | ViewRouteGroup<T>>;
-
-function createWebRoutes<T>(routes: WebRoutes<T>) {
-  const createRouteManifest = <U>(
-    _routes: Record<string, ViewRoute<U> | ViewRouteGroup<T>> = routes,
-  ): RouteManifest => {
-    const out: RouteManifest = {};
-
-    for (const [path, section] of Object.entries(_routes)) {
-      if (section.kind === "group") {
-        out[path] = {
-          layout: section.layoutPath
-            ? {
-                view: section.layoutPath,
-                hasLoader: !!section.handler,
-              }
-            : null,
-          routes: createRouteManifest(section.routes ?? {}),
-        };
-      }
-
-      if (section.kind === "view") {
-        out[path] = {
-          view: section.viewPath,
-          hasLoader: section.hasLoader,
-        };
-      }
-    }
-
-    return out;
-  };
-
-  return {
-    routes,
-    manifest: createRouteManifest(routes),
-  };
-}
 
 const productRoutes = Route.viewGroup({
   middlewares: [],
@@ -61,7 +22,7 @@ const dashboardRoutes = Route.viewGroup({
   },
 });
 
-export const web = createWebRoutes({
+export const web = {
   "/": Route.viewGroup({
     layout: Route.layout("PublicLayout", [PublicLayoutController, "index"]),
     routes: {
@@ -71,15 +32,15 @@ export const web = createWebRoutes({
       "/product": productRoutes,
     },
   }),
-});
+};
 
 export const api = {
   "/products": Route.get([ProductController, "list"]),
   "/test": Route.apiGroup({
+    middlewares: ["auth"],
     routes: {
-      "/subc": Route.get([ProductController, "list"], {
-        middlewares: [],
-      }),
+      "/enes": Route.get([ProductController, "list"]),
+      "/subc": Route.get([ProductController, "list"]),
     },
   }),
 };
