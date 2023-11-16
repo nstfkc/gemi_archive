@@ -1,47 +1,22 @@
+import { sign } from "hono/jwt";
+import { setCookie, deleteCookie } from "hono/cookie";
+import { Context } from "hono";
+
 export class BaseAuthController {
-  // login = loginRequest.next(async ({ email, password }) => {
-  //   await new Promise((res) => setTimeout(res, 1000));
+  login = async (ctx: Context) => {
+    const token = await sign({ id: 1 }, "secret");
+    setCookie(ctx, "Authorization", token, { maxAge: 1000000, path: "/" });
+    return {
+      success: true,
+    };
+  };
 
-  //   const user = await User.findFirst({
-  //     where: { email },
-  //     include: { accounts: true },
-  //   });
-
-  //   const passwordMatches =
-  //     user?.password && (await decrypt(password, user.password));
-
-  //   if (!passwordMatches) {
-  //     return {
-  //       success: false,
-  //       error: { message: "Invalid credentials" },
-  //     };
-  //   } else {
-  //     const token = jwt.sign(
-  //       {
-  //         user,
-  //         // TODO: A user can have multiple accounts accross multiple organisations
-  //         // But for now we only allow one account, therefore we hardcode the account
-  //         role: user.accounts[0].role,
-  //       },
-  //       // TODO: use env secret
-  //       "SECRET",
-  //     );
-
-  //     const now = Date.now();
-
-  //     // TODO: Get cookie name from config
-  //     setCookie("Authorization", token, {
-  //       expires: addDays(now, 1),
-  //       path: "/",
-  //       httpOnly: true,
-  //       sameSite: true,
-  //     });
-
-  //     return {
-  //       success: true,
-  //     };
-  //   }
-  // });
+  logout = (ctx: Context) => {
+    deleteCookie(ctx, "Authorization", { path: "/" });
+    return {
+      success: true,
+    };
+  };
 
   // register = async (ctx) => {
   //   const { email, name, password } = ctx.req.body;

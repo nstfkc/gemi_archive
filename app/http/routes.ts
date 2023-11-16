@@ -42,6 +42,12 @@ export const web = {
 };
 
 export const api = {
+  "/auth": Route.apiGroup({
+    routes: {
+      "/login": Route.post([AuthController, "login"]),
+      "/logout": Route.post([AuthController, "logout"]),
+    },
+  }),
   "/products": Route.get([ProductController, "list"]),
   "/test": Route.apiGroup({
     middlewares: ["auth"],
