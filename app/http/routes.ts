@@ -65,7 +65,7 @@ export const web = createWebRoutes({
   "/": Route.viewGroup({
     layout: Route.layout("PublicLayout", [PublicLayoutController, "index"]),
     routes: {
-      "/": Route.view("Home", [HomeController, "index"]),
+      "/": Route.view("Home", [HomeController, "index"], {}),
       "/about": Route.view("About", [AboutController, "index"]),
       "/dashboard": dashboardRoutes,
       "/product": productRoutes,
@@ -75,4 +75,11 @@ export const web = createWebRoutes({
 
 export const api = {
   "/products": Route.get([ProductController, "list"]),
+  "/test": Route.apiGroup({
+    routes: {
+      "/subc": Route.get([ProductController, "list"], {
+        middlewares: [],
+      }),
+    },
+  }),
 };

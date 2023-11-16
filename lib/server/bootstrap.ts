@@ -6,7 +6,7 @@ import { createApiRoutes, createViewRoutes } from "../http/createViewRoutes";
 export function bootstrap(template: string) {
   const app = new Hono();
 
-  createApiRoutes(app, "/", api);
+  createApiRoutes(app, "/api", api);
 
   createViewRoutes(
     app,

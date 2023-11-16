@@ -2,7 +2,11 @@ import { Context, Hono } from "hono";
 import { Controller } from "./Controller";
 import { render, renderLayout } from "./render";
 import React from "react";
-import { CreateViewRoutes } from "./createViewRoutes";
+import {
+  CreateApiRoutes,
+  CreateViewRoutes,
+  createApiRoutes,
+} from "./createViewRoutes";
 
 // type MaybePromise<T> = Promise<T> | T;
 
@@ -30,37 +34,35 @@ const createApiHandler =
       ? R
       : never,
   >(
-    handler?: [{ new (): T }, K],
+    handler: [{ new (): T }, K],
+    config: { middlewares: Middleware[] } = { middlewares: [] },
   ): ApiRoute<UnwrapPromise<Data>> => {
+    const { middlewares } = config;
     return {
       kind: "api",
       handler: (app, config) => {
         const { path, parentPath } = config;
-        app.on(
-          [method],
-          `${parentPath}${path}`.replace("//", "/"),
-          async (ctx) => {
-            let dataPromise = Promise.resolve({} as Data);
-            if (handler) {
-              const [Controller, methodName] = handler;
-              const instance = new Controller();
-              const method = instance[methodName];
-              if (typeof method === "function") {
-                dataPromise = method.call(instance, ctx) as Promise<
-                  Awaited<Data>
-                >;
-              }
+        app[method](`${parentPath}${path}`, ...middlewares, async (ctx) => {
+          let dataPromise = Promise.resolve({} as Data);
+          if (handler) {
+            const [Controller, methodName] = handler;
+            const instance = new Controller();
+            const method = instance[methodName];
+            if (typeof method === "function") {
+              dataPromise = method.call(instance, ctx) as Promise<
+                Awaited<Data>
+              >;
             }
-            const [data] = await Promise.all([dataPromise]);
+          }
+          const [data] = await Promise.all([dataPromise]);
 
-            return ctx.json({ data });
-          },
-        );
+          return ctx.json({ data });
+        });
       },
     };
   };
 
-interface Middleware {}
+type Middleware = (ctx: Context, next: () => Promise<void>) => Promise<void>;
 
 export type LayoutGetter = (
   ctx: Context,
@@ -79,6 +81,12 @@ interface ViewRouteConfig {
   layoutGetter: LayoutGetter;
 }
 
+interface ApiRouteConfig {
+  path: string;
+  parentPath: string;
+  createApiRoutes: CreateApiRoutes;
+}
+
 export interface ViewRoute<_Data> {
   kind: "view";
   hasLoader: boolean;
@@ -89,6 +97,12 @@ export interface ViewRoute<_Data> {
 export interface ApiRoute<_Data> {
   kind: "api";
   handler: (app: Hono, config: { path: string; parentPath: string }) => void;
+}
+
+export interface ApiRouteGroup<T> {
+  kind: "group";
+  routes: T;
+  handler: (app: Hono, config: any) => void;
 }
 
 export interface ViewRouteGroup<T> {
@@ -117,7 +131,9 @@ export class Route {
   >(
     viewPath: string,
     handler?: [{ new (): T }, K],
+    params?: { middlewares?: Middleware[] },
   ): ViewRoute<UnwrapPromise<Data>> => {
+    const { middlewares = [] } = params ?? {};
     return {
       kind: "view",
       viewPath,
@@ -125,7 +141,7 @@ export class Route {
       handler: (app: Hono, config: ViewRouteConfig) => {
         const { path, routeManifest, template, layoutGetter, parentPath } =
           config;
-        app.get(path, async (ctx) => {
+        app.get(path, ...middlewares, async (ctx) => {
           let dataPromise = Promise.resolve({} as Data);
           if (handler) {
             const [Controller, methodName] = handler;
@@ -212,7 +228,7 @@ export class Route {
     layout?: ViewLayout<unknown>;
     middlewares?: Middleware[];
   }): ViewRouteGroup<U> => {
-    const { middlewares: _, routes, layout } = params;
+    const { middlewares = [], routes, layout } = params;
 
     return {
       kind: "group",
@@ -227,11 +243,12 @@ export class Route {
           template,
           parentPath,
         } = config;
-
+        const groupPath = [parentPath, path].join("").replace("//", "/");
         const group = new Hono();
+        group.use(groupPath, ...middlewares);
         createViewRoutes(
           group,
-          [parentPath, path].join("").replace("//", "/"),
+          groupPath,
           {
             routeManifest,
             template,
@@ -244,14 +261,28 @@ export class Route {
     };
   };
 
+  static apiGroup = <T, R extends string, U = Record<R, ApiRoute<T>>>(params: {
+    routes: U;
+    middlewares?: Middleware[];
+  }): ApiRouteGroup<U> => {
+    const { middlewares = [], routes } = params;
+
+    return {
+      kind: "group",
+      routes,
+      handler: (app: Hono, config: ApiRouteConfig) => {
+        const { path, parentPath, createApiRoutes } = config;
+        const group = new Hono();
+        group.use(`${path}/*`, ...middlewares);
+        createApiRoutes(group, path, routes as any);
+        app.route(parentPath, group);
+      },
+    };
+  };
+
   static get = createApiHandler(RouteMethod.GET);
   static post = createApiHandler(RouteMethod.POST);
   static patch = createApiHandler(RouteMethod.PATCH);
   static put = createApiHandler(RouteMethod.PUT);
   static delete = createApiHandler(RouteMethod.DELETE);
-
-  static middleware = () => {
-    return Route;
-  };
-  // static group = () => {};
 }

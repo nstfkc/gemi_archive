@@ -3,6 +3,8 @@ import {
   type ViewRoute,
   type ViewRouteGroup,
   type LayoutGetter,
+  ApiRoute,
+  ApiRouteGroup,
 } from "./Route";
 
 export function createViewRoutes<
@@ -33,15 +35,18 @@ export function createViewRoutes<
 
 export type CreateViewRoutes = typeof createViewRoutes;
 
-export function createApiRoutes(
+export function createApiRoutes<T extends ApiRoute<any> | ApiRouteGroup<any>>(
   app: Hono,
   parentPath: string,
-  routes: Record<string, any>,
+  routes: Record<string, T>,
 ) {
   Object.entries(routes).forEach(([path, route]) => {
     route.handler(app, {
       path,
       parentPath,
+      createApiRoutes,
     });
   });
 }
+
+export type CreateApiRoutes = typeof createApiRoutes;
