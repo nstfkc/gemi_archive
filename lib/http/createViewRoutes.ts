@@ -32,3 +32,16 @@ export function createViewRoutes<
 }
 
 export type CreateViewRoutes = typeof createViewRoutes;
+
+export function createApiRoutes(
+  app: Hono,
+  parentPath: string,
+  routes: Record<string, any>,
+) {
+  Object.entries(routes).forEach(([path, route]) => {
+    route.handler(app, {
+      path,
+      parentPath,
+    });
+  });
+}

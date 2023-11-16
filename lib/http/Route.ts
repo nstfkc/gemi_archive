@@ -16,50 +16,51 @@ enum RouteMethod {
   DELETE = "delete",
 }
 
-interface ApiRouteDefinition<Data> {
-  exec: (ctx: Context) => Promise<{ data: Data }>;
-  method: RouteMethod;
-}
-
 type ClassMethodNames<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [K in keyof T]: T[K] extends (...args: any[]) => unknown ? K : never;
 }[keyof T];
 
-type ApiRouteHandler = <
-  T extends Controller,
-  K extends ClassMethodNames<T>,
-  Data = InstanceType<{ new (): T }>[K] extends (ctx: Context) => infer R
-    ? UnwrapPromise<R>
-    : never,
->(
-  controller: [{ new (): T }, K] | (<Data>(ctx: Context) => Data),
-) => ApiRouteDefinition<Data>;
-
-const createApiHandler = (method: RouteMethod): ApiRouteHandler => {
-  return (handler) => {
+const createApiHandler =
+  (method: RouteMethod) =>
+  <
+    T extends Controller,
+    K extends ClassMethodNames<T>,
+    Data = InstanceType<{ new (): T }>[K] extends (ctx: Context) => infer R
+      ? R
+      : never,
+  >(
+    handler?: [{ new (): T }, K],
+  ): ApiRoute<UnwrapPromise<Data>> => {
     return {
-      exec: async (ctx) => {
-        if (typeof handler === "function") {
-          const data = await handler(ctx);
-          return { data };
-        }
-        const [C, methodName] = handler;
-        const controllerInstance = new C();
-        let data = {};
+      kind: "api",
+      handler: (app, config) => {
+        const { path, parentPath } = config;
+        app.on(
+          [method],
+          `${parentPath}${path}`.replace("//", "/"),
+          async (ctx) => {
+            let dataPromise = Promise.resolve({} as Data);
+            if (handler) {
+              const [Controller, methodName] = handler;
+              const instance = new Controller();
+              const method = instance[methodName];
+              if (typeof method === "function") {
+                dataPromise = method.call(instance, ctx) as Promise<
+                  Awaited<Data>
+                >;
+              }
+            }
+            const [data] = await Promise.all([dataPromise]);
 
-        const method = controllerInstance[methodName];
-        if (typeof method === "function") {
-          // RouterContext.enterWith({ request: ctx.req, response: ctx.res });
-          data = (await method(ctx)) as typeof data;
-        }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
-        return { data } as any;
+            return ctx.json({ data });
+          },
+        );
       },
-      method,
     };
   };
-};
+
+interface Middleware {}
 
 export type LayoutGetter = (
   ctx: Context,
@@ -83,6 +84,11 @@ export interface ViewRoute<_Data> {
   hasLoader: boolean;
   handler: (app: Hono, config: ViewRouteConfig) => void;
   viewPath: string;
+}
+
+export interface ApiRoute<_Data> {
+  kind: "api";
+  handler: (app: Hono, config: { path: string; parentPath: string }) => void;
 }
 
 export interface ViewRouteGroup<T> {
@@ -126,7 +132,9 @@ export class Route {
             const instance = new Controller();
             const method = instance[methodName];
             if (typeof method === "function") {
-              dataPromise = method.call(instance, ctx);
+              dataPromise = method.call(instance, ctx) as Promise<
+                Awaited<Data>
+              >;
             }
           }
           const [data, layout] = await Promise.all([
@@ -176,7 +184,9 @@ export class Route {
             const instance = new Controller();
             const method = instance[methodName];
             if (typeof method === "function") {
-              dataPromise = method.call(instance, ctx);
+              dataPromise = method.call(instance, ctx) as Promise<
+                Awaited<Data>
+              >;
             }
           }
           const [data, parentLayout] = await Promise.all([
@@ -185,7 +195,7 @@ export class Route {
           ]);
           return renderLayout(
             viewPath,
-            { [viewPath]: data, ...parentLayout.data },
+            { [viewPath]: data, ...(parentLayout.data ?? {}) },
             parentLayout.wrapper,
           );
         };
@@ -199,8 +209,8 @@ export class Route {
     U = Record<R, ViewRoute<T>>,
   >(params: {
     routes: U;
-    layout?: ViewLayout<any>;
-    middlewares?: any[];
+    layout?: ViewLayout<unknown>;
+    middlewares?: Middleware[];
   }): ViewRouteGroup<U> => {
     const { middlewares: _, routes, layout } = params;
 
