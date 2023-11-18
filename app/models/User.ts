@@ -121,7 +121,6 @@ class BaseUser extends Modal {
   }
 
   static findFirst = async (...args) => {
-    console.log(Auth.user());
     const result = await prisma.user.findFirst(...args);
     await prisma.$disconnect();
     return result;
@@ -130,6 +129,10 @@ class BaseUser extends Modal {
   static findMany = prisma.user.findMany;
 
   static create = prisma.user.create;
+
+  save = () => {
+    prisma.user.create({ data: { name: this.name } });
+  };
 }
 
 export class User extends BaseUser {}
