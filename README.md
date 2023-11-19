@@ -1,10 +1,29 @@
-# gemi
+# Gemi
 
-MVC framework for building modern full-stack web applications. 
+Web framework for building modern full-stack web applications
 
-## Key features
+## Highlights
 
-### MVC design pattern
+Written in Typescript and only supports Typescript
+Uses MVC design pattern
+Only supports bun runtime
+Uses vite for dev server and bundling
+Uses React in the view layer
+Doesn't support RSCs and progressive enchancement (might change, low prio)
+Doesn't support serverless (might change, low prio)
+
+It comes with everything you need to build a modern web application
+
+- Routing
+- Authentication and Authorisation
+- ORM
+- Forms and HTTP client
+- Request validations
+- Notifications and Email
+- File storage
+- Job queues
+- Task scheduling
+- Events and Websockets
 
 
 ### Declarative routing and middlewares
@@ -21,8 +40,6 @@ const api = {
 
 
 ### Built in authentication 
-
-
 
 
 ``` ts
