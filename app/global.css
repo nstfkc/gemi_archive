@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .fc {
+      @apply flex justify-center items-center;
+  }
+  .fbc {
+      @apply flex justify-between items-center;
+  }
+  .fsc {
+      @apply flex justify-start items-center;
+  }
+  .fec {
+      @apply flex justify-end items-center;
+  }
+  .ff {
+      @apply flex flex-col;
+  }
+  .ffbc {
+      @apply flex flex-col justify-between items-center;
+  }
+  .ffc {
+      @apply flex flex-col justify-center items-center;
+  }
+}
