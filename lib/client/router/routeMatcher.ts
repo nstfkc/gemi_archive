@@ -8,6 +8,10 @@ export function createRouteMatcher(routes: string[]) {
     const urlSegments = url.split("/");
     const [, firstSegment] = urlSegments;
 
+    if (routes.includes(url)) {
+      return { match: url, params: {} };
+    }
+
     const firstSegmentMatches = routes.filter((key) => {
       const startsWithVariable = key.split("/")[1].includes(":");
       const startsWith = key.startsWith(`/${firstSegment}`);

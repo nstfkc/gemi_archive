@@ -1,5 +1,6 @@
 import { PropsWithChildren } from "react";
 import { renderToString } from "react-dom/server";
+import { Root } from "@/app/views/Root";
 
 const views: Record<string, { default: <T>(data: T) => JSX.Element }> =
   import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
@@ -51,7 +52,9 @@ export function render<Data>(config: {
   )}';</script>`;
 
   const apphtml = renderToString(
-    layout(<Children router={{ match: path, params }} data={data} />),
+    <Root>
+      {layout(<Children router={{ match: path, params }} data={data} />)}
+    </Root>,
   );
 
   return template

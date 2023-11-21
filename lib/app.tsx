@@ -1,4 +1,5 @@
-import { ComponentType, Fragment, lazy } from "react";
+import { ComponentType, lazy } from "react";
+import { Root } from "@/app/views/root";
 
 import { hydrateRoot } from "react-dom/client";
 import {
@@ -132,15 +133,17 @@ const App = () => {
     JSON.parse(window.serverData) as ServerData;
   const render = renderRoutes(routeManifest);
   return (
-    <RouterProvider
-      routes={getFlatRouteDefinitions(routeManifest)}
-      initialPath={currentRoute}
-      initialUrl={currentUrl}
-      initialRouteData={routeData[currentRoute]}
-      initialLayoutData={layoutData}
-    >
-      {render}
-    </RouterProvider>
+    <Root>
+      <RouterProvider
+        routes={getFlatRouteDefinitions(routeManifest)}
+        initialPath={currentRoute}
+        initialUrl={currentUrl}
+        initialRouteData={routeData[currentRoute]}
+        initialLayoutData={layoutData}
+      >
+        {render}
+      </RouterProvider>
+    </Root>
   );
 };
 
