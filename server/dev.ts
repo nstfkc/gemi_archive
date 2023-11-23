@@ -2,11 +2,15 @@ import { serve } from "bun";
 import { Hono } from "hono";
 import { readFileSync } from "node:fs";
 import path, { join } from "node:path";
+import { TypescriptParser } from "typescript-parser";
+import { parseFile, updateManifest } from "./helpers";
 
 const rootDir = process.cwd();
 const libDir = path.join(rootDir, "lib");
 const appDir = path.join(rootDir, "app");
 const dbDir = path.join(rootDir, "db");
+
+const parser = new TypescriptParser();
 
 export async function main() {
   const root = process.cwd();
@@ -40,8 +44,11 @@ export async function main() {
     },
   });
 
-  vite.watcher.on("change", async (path) => {
-    console.log(path);
+  vite.watcher.on("change", async (filePath) => {
+    if (filePath.includes("Controller")) {
+      const parsed = await parseFile(filePath);
+      updateManifest(parsed);
+    }
   });
 
   const app = new Hono();

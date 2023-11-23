@@ -5,6 +5,8 @@ import { Controller } from "./Controller";
 import { render, renderLayout } from "./render";
 import React from "react";
 import { CreateApiRoutes, CreateViewRoutes } from "./createViewRoutes";
+import { HttpRequest } from "./Request";
+import { createRequest } from "./createRequest";
 
 function renderMiddlewares(middlewares: Middleware[] = []) {
   return middlewares.map((middleware) => {
@@ -31,22 +33,36 @@ enum RouteMethod {
 }
 
 type ClassMethodNames<T> = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [K in keyof T]: T[K] extends (...args: any[]) => unknown ? K : never;
 }[keyof T];
+
+type UnwrapRequest<T extends HttpRequest> = T["fields"];
+
+type InferData<
+  T extends Controller,
+  K extends ClassMethodNames<T>,
+> = InstanceType<{ new (): T }>[K] extends (...req: any[]) => infer R
+  ? R
+  : never;
+
+type InferBody<
+  T extends Controller,
+  K extends ClassMethodNames<T>,
+> = InstanceType<{ new (): T }>[K] extends (req: infer R) => unknown
+  ? UnwrapRequest<R extends HttpRequest ? R : never>
+  : never;
 
 const createApiHandler =
   (method: RouteMethod) =>
   <
     T extends Controller,
     K extends ClassMethodNames<T>,
-    Data = InstanceType<{ new (): T }>[K] extends (ctx: Context) => infer R
-      ? R
-      : never,
+    Body = InferBody<T, K>,
+    Data = InferData<T, K>,
   >(
     handler: [{ new (): T }, K],
     config: { middlewares: Middleware[] } = { middlewares: [] },
-  ): ApiRoute<UnwrapPromise<Data>> => {
+  ): ApiRoute<Body, Data> => {
     const { middlewares } = config;
     return {
       kind: "api",
@@ -62,7 +78,12 @@ const createApiHandler =
               const instance = new Controller();
               const method = instance[methodName];
               if (typeof method === "function") {
-                dataPromise = method.call(instance, ctx) as Promise<
+                const req = createRequest(
+                  ctx,
+                  `${Controller.name}.${methodName}`,
+                );
+
+                dataPromise = method.call(instance, req) as Promise<
                   Awaited<Data>
                 >;
               }
@@ -110,7 +131,7 @@ export interface ViewRoute<_Data> {
   viewPath: string;
 }
 
-export interface ApiRoute<_Data> {
+export interface ApiRoute<_Data, _Body> {
   kind: "api";
   handler: (app: Hono, config: { path: string; parentPath: string }) => void;
 }
@@ -278,7 +299,12 @@ export class Route {
     };
   };
 
-  static apiGroup = <T, R extends string, U = Record<R, ApiRoute<T>>>(params: {
+  static apiGroup = <
+    T,
+    K,
+    R extends string,
+    U = Record<R, ApiRoute<T, K>>,
+  >(params: {
     routes: U;
     middlewares?: Middleware[];
   }): ApiRouteGroup<U> => {

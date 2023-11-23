@@ -10,6 +10,7 @@
     "db:generate": "prisma generate --schema=./db/schema.prisma",
     "db:studio": "prisma studio --schema=./db/schema.prisma",
     "db:push": "prisma db push --schema=./db/schema.prisma",
+    "prebuild": "bun ./server/pre.ts",
     "build": "bun run build:client && bun run build:server",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build -c vite.config.server.js",

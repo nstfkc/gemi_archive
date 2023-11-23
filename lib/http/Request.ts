@@ -1,20 +1,15 @@
 import { Context } from "hono";
 
-export class HttpRequest<Body, Params> {
+export class HttpRequest {
+  fields = {};
   constructor(private ctx: Context) {}
 
-  params() {
-    return this.ctx.req.param() as Params;
+  body() {
+    return this.fields;
   }
 
-  async validate<T>(schema: T) {
-    const body = (await this.ctx.req.json()) as Body;
-    try {
-      return {
-        input: schema.parse(body),
-      };
-    } catch (err) {
-      // Do something
-    }
+  async validate() {
+    const json = await this.ctx.req.json();
+    return json;
   }
 }
