@@ -1,11 +1,12 @@
 import { Form, SubmitButton, Field } from "@/lib/client/form";
 import { Input } from "../components/ui/Input";
 import { Link } from "@/lib/client/router";
+import { Logo } from "../components/Logo";
 
 const SignUpForm = () => {
   return (
     <Form action="/auth/sign-up">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-4">
         <Field label="Name" name="name">
           <Input name="name" />
         </Field>
@@ -32,7 +33,8 @@ const SignUpForm = () => {
 const SignUp = () => {
   return (
     <div className="fc min-h-screen">
-      <div className="grow max-w-xs">
+      <div className="grow max-w-sm">
+        <Logo />
         <SignUpForm />
       </div>
     </div>

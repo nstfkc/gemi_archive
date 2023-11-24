@@ -7,7 +7,7 @@ import { PropsWithChildren } from "react";
 export const Root = (props: PropsWithChildren) => {
   return (
     <FormConfig components={{ primaryButton: Button, field: Field }}>
-      <>{props.children}</>
+      <main className="">{props.children}</main>
     </FormConfig>
   );
 };

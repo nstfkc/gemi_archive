@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'Olde English';
+    src: url('OldeEnglish-Regular.woff2') format('woff2'),
+        url('OldeEnglish-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
