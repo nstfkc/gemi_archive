@@ -2,8 +2,6 @@ import { Route } from "@/lib/http/Route";
 import { HomeController } from "./controllers/HomeController";
 import { AboutController } from "./controllers/AboutController";
 import { PublicLayoutController } from "./controllers/PublicLayoutController";
-import { DashboardController } from "./controllers/DashboardController";
-import { AccountController } from "./controllers/AccountController";
 import { ProductController } from "./controllers/ProductController";
 import { AuthController } from "./controllers/AuthController";
 

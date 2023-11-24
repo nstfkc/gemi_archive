@@ -17,8 +17,8 @@ export class ProductController extends Controller {
     ];
   };
 
-  test1(request: TestRequest) {
-    return { message: "hello" };
+  async test1(request: TestRequest) {
+    return { message: await request.validate() };
   }
 
   test2(request: FooRequest) {

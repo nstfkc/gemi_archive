@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { HttpRequest } from "./Request";
+import { HttpRequest } from "./HttpRequest";
 import methodRequestMap from "./methodRequestMap.json";
 
 const reqs = import.meta.glob("../../app/http/**/*Request.ts", { eager: true });

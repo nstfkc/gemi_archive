@@ -1,3 +1,5 @@
+import * as z from "zod";
+
 import { middlewareAliases } from "@/app/http/kernel";
 
 import { Context, Hono } from "hono";
@@ -5,7 +7,7 @@ import { Controller } from "./Controller";
 import { render, renderLayout } from "./render";
 import React from "react";
 import { CreateApiRoutes, CreateViewRoutes } from "./createViewRoutes";
-import { HttpRequest } from "./Request";
+import { HttpRequest } from "./HttpRequest";
 import { createRequest } from "./createRequest";
 
 function renderMiddlewares(middlewares: Middleware[] = []) {
@@ -36,7 +38,7 @@ type ClassMethodNames<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => unknown ? K : never;
 }[keyof T];
 
-type UnwrapRequest<T extends HttpRequest> = T["fields"];
+type UnwrapRequest<T extends HttpRequest> = z.infer<T["schema"]>;
 
 type InferData<
   T extends Controller,
@@ -88,9 +90,18 @@ const createApiHandler =
                 >;
               }
             }
-            const [data] = await Promise.all([dataPromise]);
+            try {
+              const [data] = await Promise.all([dataPromise]);
 
-            return ctx.json({ data });
+              return ctx.json({ data });
+            } catch (err) {
+              if (err instanceof z.ZodError) {
+                ctx.status(403);
+                return ctx.json({ success: false, error: err });
+              }
+
+              // Do something
+            }
           },
         );
       },
