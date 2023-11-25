@@ -29,6 +29,6 @@ export const api = {
       "/sign-up": Route.post([AuthController, "signUp"]),
     },
   }),
-  "/test": Route.post([ProductController, "test1"]),
+  "/test/:id?": Route.post([ProductController, "test1"]),
   "/products": Route.get([ProductController, "list"]),
 };

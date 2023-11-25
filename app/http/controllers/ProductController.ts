@@ -1,6 +1,5 @@
 import { Controller } from "@/lib/http/Controller";
 import TestRequest from "../requests/TestRequest";
-import FooRequest from "../requests/FooRequest";
 
 export class ProductController extends Controller {
   index = () => {
@@ -18,6 +17,9 @@ export class ProductController extends Controller {
   };
 
   async test1(request: TestRequest) {
-    return { message: await request.getBody() };
+    const body = await request.getBody();
+    const query = request.getQuery();
+    const params = request.getParams();
+    return { body, query, params };
   }
 }

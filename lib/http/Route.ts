@@ -36,7 +36,9 @@ type ClassMethodNames<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => unknown ? K : never;
 }[keyof T];
 
-type UnwrapRequest<T extends HttpRequest> = ReturnType<T["getBody"]>;
+type ExtractBody<T extends HttpRequest> = ReturnType<T["getBody"]>;
+type ExtractParams<T extends HttpRequest> = ReturnType<T["getParams"]>;
+type ExtractQuery<T extends HttpRequest> = ReturnType<T["getQuery"]>;
 
 type InferData<
   T extends Controller,
@@ -49,20 +51,30 @@ type InferBody<
   T extends Controller,
   K extends ClassMethodNames<T>,
 > = InstanceType<{ new (): T }>[K] extends (req: infer R) => unknown
-  ? UnwrapRequest<R extends HttpRequest ? R : never>
+  ? UnwrapPromise<ExtractBody<R extends HttpRequest ? R : never>>
   : never;
 
+type InferRequest<
+  T extends Controller,
+  K extends ClassMethodNames<T>,
+> = InstanceType<{ new (): T }>[K] extends (req: infer R) => unknown
+  ? R extends HttpRequest
+    ? R
+    : never
+  : never;
 const createApiHandler =
   (method: RouteMethod) =>
   <
     T extends Controller,
     K extends ClassMethodNames<T>,
-    Body = InferBody<T, K>,
+    Body = UnwrapPromise<ExtractBody<InferRequest<T, K>>>,
+    Params = UnwrapPromise<ExtractParams<InferRequest<T, K>>>,
+    Query = UnwrapPromise<ExtractQuery<InferRequest<T, K>>>,
     Data = InferData<T, K>,
   >(
     handler: [{ new (): T }, K],
     config: { middlewares: Middleware[] } = { middlewares: [] },
-  ): ApiRoute<Body, Data> => {
+  ): ApiRoute<Body, Params, Query, Data> => {
     const { middlewares } = config;
     return {
       kind: "api",
@@ -157,7 +169,7 @@ export interface ViewRoute<_Data> {
   viewPath: string;
 }
 
-export interface ApiRoute<_Data, _Body> {
+export interface ApiRoute<Body, Params, Query, Data> {
   kind: "api";
   handler: (app: Hono, config: { path: string; parentPath: string }) => void;
 }
