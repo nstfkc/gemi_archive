@@ -30,6 +30,5 @@ export const api = {
     },
   }),
   "/test": Route.post([ProductController, "test1"]),
-  "/test2": Route.post([ProductController, "test2"]),
   "/products": Route.get([ProductController, "list"]),
 };

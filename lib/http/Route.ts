@@ -1,11 +1,11 @@
 import * as z from "zod";
+import React from "react";
+import { Context, Hono } from "hono";
 
 import { middlewareAliases } from "@/app/http/kernel";
 
-import { Context, Hono } from "hono";
 import { Controller } from "./Controller";
 import { render, renderLayout } from "./render";
-import React from "react";
 import { CreateApiRoutes, CreateViewRoutes } from "./createViewRoutes";
 import { HttpRequest } from "./HttpRequest";
 import { createRequest } from "./createRequest";
@@ -22,8 +22,6 @@ function renderMiddlewares(middlewares: Middleware[] = []) {
   });
 }
 
-// type MaybePromise<T> = Promise<T> | T;
-
 type UnwrapPromise<T> = T extends Promise<infer R> ? R : T;
 
 enum RouteMethod {
@@ -38,13 +36,13 @@ type ClassMethodNames<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => unknown ? K : never;
 }[keyof T];
 
-type UnwrapRequest<T extends HttpRequest> = z.infer<T["schema"]>;
+type UnwrapRequest<T extends HttpRequest> = ReturnType<T["getBody"]>;
 
 type InferData<
   T extends Controller,
   K extends ClassMethodNames<T>,
 > = InstanceType<{ new (): T }>[K] extends (...req: any[]) => infer R
-  ? R
+  ? UnwrapPromise<R>
   : never;
 
 type InferBody<
@@ -90,16 +88,33 @@ const createApiHandler =
                 >;
               }
             }
+            const contentTypeHeader = ctx.req.raw.headers.get("Content-Type");
+
+            const unsupportedContentTypes = [
+              "multipart/form-data",
+              "application/x-www-form-urlencoded",
+            ];
+
+            for (const unsupportedContentType of unsupportedContentTypes) {
+              if (contentTypeHeader?.startsWith(unsupportedContentType)) {
+                return ctx.json({
+                  success: false,
+                  error: ` ${unsupportedContentType} is not supported`,
+                });
+              }
+            }
+
             try {
               const [data] = await Promise.all([dataPromise]);
 
               return ctx.json({ data });
             } catch (err) {
+              console.log(err);
               if (err instanceof z.ZodError) {
                 ctx.status(403);
-                return ctx.json({ success: false, error: err });
               }
 
+              return ctx.json({ success: false, error: err });
               // Do something
             }
           },

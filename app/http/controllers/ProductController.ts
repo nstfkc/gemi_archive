@@ -18,10 +18,6 @@ export class ProductController extends Controller {
   };
 
   async test1(request: TestRequest) {
-    return { message: await request.validate() };
-  }
-
-  test2(request: FooRequest) {
-    return { message: "hello" };
+    return { message: await request.getBody() };
   }
 }

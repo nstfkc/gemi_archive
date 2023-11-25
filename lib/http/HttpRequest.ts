@@ -3,17 +3,22 @@ import * as z from "zod";
 import { Context } from "hono";
 
 export class HttpRequest {
-  protected schema = z.object({});
-
   constructor(private ctx: Context) {}
 
-  body() {
-    return this.schema;
+  getBody() {
+    return this.parseBody(z.object({}));
   }
 
-  async validate() {
-    const json = await this.ctx.req.json();
-    const parsed = this.schema.parse(json);
-    return parsed;
+  protected async parseBody<K extends z.ZodRawShape, T extends z.ZodObject<K>>(
+    schema: T,
+  ): Promise<z.infer<T>> {
+    const contentType = this.ctx.req.raw.headers.get("Content-Type");
+    let data = {};
+
+    if (contentType === "application/json") {
+      data = await this.ctx.req.json();
+    }
+
+    return schema.parse(data);
   }
 }
