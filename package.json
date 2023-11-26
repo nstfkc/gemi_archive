@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun server/dev.ts --hot",
-    "test": "vitest",
+    "test": "bun test",
     "prisma": "prisma",
     "db:generate": "prisma generate --schema=./db/schema.prisma",
     "db:studio": "prisma studio --schema=./db/schema.prisma",

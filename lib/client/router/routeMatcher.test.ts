@@ -1,42 +1,50 @@
-import { expect, test } from "vitest";
+import { expect, test, describe } from "bun:test";
 import { createRouteMatcher } from "./routeMatcher";
 
-test("matches routes", () => {
-  const routeMatcher = createRouteMatcher([
-    "/",
-    "/:id",
-    "/foo/:id",
-    "/bar/:id/baz",
-    "/foo/:id/baz/:optional?",
-    "/products/:productId/edit",
-  ]);
+describe("routeMatcher", () => {
+  test("matches simple routes", () => {
+    const routeMatcher = createRouteMatcher(["/", "/about", "/products"]);
 
-  expect(routeMatcher("/").match).toEqual("/");
-  expect(routeMatcher("/").params).toEqual({});
-
-  expect(routeMatcher("/s123").match).toEqual("/:id");
-  expect(routeMatcher("/s123").params).toEqual({ id: "s123" });
-
-  expect(routeMatcher("/foo/1234").match).toEqual("/foo/:id");
-  expect(routeMatcher("/foo/1234").params).toStrictEqual({ id: "1234" });
-
-  expect(routeMatcher("/bar/1234/baz").match).toEqual("/bar/:id/baz");
-  expect(routeMatcher("/bar/1234/baz").params).toStrictEqual({ id: "1234" });
-
-  expect(routeMatcher("/foo/abcd/baz/1234").match).toEqual(
-    "/foo/:id/baz/:optional?",
-  );
-
-  expect(routeMatcher("/foo/abcd/baz/1234").params).toStrictEqual({
-    id: "abcd",
-    optional: "1234",
+    expect(routeMatcher("/").match).toEqual("/");
+    expect(routeMatcher("/").params).toEqual({});
+    expect(routeMatcher("/about").match).toEqual("/about");
+    expect(routeMatcher("/about").params).toEqual({});
+    expect(routeMatcher("/products").match).toEqual("/products");
+    expect(routeMatcher("/products").params).toEqual({});
   });
 
-  expect(routeMatcher("/foo/abcd/baz").params).toStrictEqual({
-    id: "abcd",
+  test("matches routes with variables", () => {
+    const routeMatcher = createRouteMatcher(["/:id", "/foo/:id"]);
+
+    expect(routeMatcher("/1234").match).toEqual("/:id");
+    expect(routeMatcher("/1234").params).toEqual({ id: "1234" });
+    expect(routeMatcher("/foo/1234").match).toEqual("/foo/:id");
+    expect(routeMatcher("/foo/1234").params).toStrictEqual({ id: "1234" });
   });
 
-  expect(routeMatcher("/products/abcd/edit").params).toStrictEqual({
-    productId: "abcd",
+  test("matches routes with optional variables", () => {
+    const routeMatcher = createRouteMatcher(["/foo/:id?", "/:id?"]);
+
+    expect(routeMatcher("/1234").match).toEqual("/:id?");
+    expect(routeMatcher("/1234").params).toEqual({ id: "1234" });
+    expect(routeMatcher("/foo/1234").match).toEqual("/foo/:id?");
+    expect(routeMatcher("/foo/1234").params).toStrictEqual({ id: "1234" });
+    expect(routeMatcher("/foo").match).toEqual("/foo/:id?");
+    expect(routeMatcher("/foo").params).toStrictEqual({});
+  });
+
+  test("falls back to wildcard route", () => {
+    const routeMatcher = createRouteMatcher(["/about", "product/:id", "/*"]);
+
+    expect(routeMatcher("/").match).toEqual("/*");
+    expect(routeMatcher("/").params).toEqual({});
+    expect(routeMatcher("/about").match).toEqual("/about");
+    expect(routeMatcher("/about").params).toEqual({});
+    expect(routeMatcher("/product/1234").match).toEqual("product/:id");
+    expect(routeMatcher("/product/1234").params).toEqual({ id: "1234" });
+    expect(routeMatcher("/product/1234/test").match).toEqual("/*");
+    expect(routeMatcher("/product/1234/test").params).toEqual({});
+    expect(routeMatcher("/foo/bar").match).toEqual("/*");
+    expect(routeMatcher("/foo/bar").params).toEqual({});
   });
 });

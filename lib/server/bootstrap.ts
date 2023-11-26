@@ -49,7 +49,10 @@ export function bootstrap(template: string) {
   const { manifest, routes } = createWebRoutes(web);
 
   createApiRoutes(app, "/api", api);
-
+  app.all("/api/*", (ctx) => {
+    ctx.status(404);
+    return ctx.json({ error: "Not found" });
+  });
   createViewRoutes(app, "/", { template, routeManifest: manifest }, routes);
 
   app.get("__routes", (ctx) => ctx.json(app.routes));

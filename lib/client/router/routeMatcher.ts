@@ -1,41 +1,56 @@
-export function createRouteMatcher(routes: string[]) {
-  return (
-    url: string,
-  ): {
-    match: string;
-    params: Record<string, string>;
-  } => {
-    const urlSegments = url.split("/");
-    const [, firstSegment] = urlSegments;
+type RouteMatcherResult = {
+  match: string;
+  params: { [key: string]: string };
+};
 
-    if (routes.includes(url)) {
-      return { match: url, params: {} };
+type RouteMatcher = (path: string) => RouteMatcherResult;
+
+export function createRouteMatcher(routes: string[]): RouteMatcher {
+  return (path: string) => {
+    // Exact match
+    if (routes.includes(path)) {
+      return {
+        match: path,
+        params: {},
+      };
     }
 
-    const firstSegmentMatches = routes.filter((key) => {
-      const startsWithVariable = key.split("/")[1].includes(":");
-      const startsWith = key.startsWith(`/${firstSegment}`);
-      const lengthMatches = key.split("/").length >= urlSegments.length;
-
-      return (startsWith || startsWithVariable) && lengthMatches;
-    });
-
-    const match = firstSegmentMatches[0];
-    const matchSegments = match.split("/");
     const params: Record<string, string> = {};
+    // Match routes with variables
+    const route = routes.find((route) => {
+      const routeParts = route.split("/");
+      const pathParts = path.split("/");
+      if (routeParts.length !== pathParts.length) {
+        return false;
+      }
 
-    for (const segment of matchSegments) {
-      if (segment.includes(":")) {
-        const idx = matchSegments.indexOf(segment);
-        if (urlSegments[idx]) {
-          params[segment.replace(":", "").replace("?", "")] = urlSegments[idx];
+      for (let i = 0; i < routeParts.length; i++) {
+        const routePart = routeParts[i];
+        const pathPart = pathParts[i];
+
+        if (routePart.startsWith(":")) {
+          params[routePart.slice(1).replace("?", "")] = pathPart;
+          continue;
+        }
+
+        if (routePart !== pathPart) {
+          return false;
         }
       }
+
+      return true;
+    });
+
+    if (route) {
+      return {
+        match: route,
+        params,
+      };
     }
 
     return {
-      match,
-      params,
+      match: "/*",
+      params: {},
     };
   };
 }
