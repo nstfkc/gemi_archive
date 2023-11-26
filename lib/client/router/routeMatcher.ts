@@ -1,7 +1,7 @@
-type RouteMatcherResult = {
+interface RouteMatcherResult {
   match: string;
-  params: { [key: string]: string };
-};
+  params: Record<string, string>;
+}
 
 type RouteMatcher = (path: string) => RouteMatcherResult;
 
@@ -15,37 +15,62 @@ export function createRouteMatcher(routes: string[]): RouteMatcher {
       };
     }
 
-    const params: Record<string, string> = {};
-    // Match routes with variables
-    const route = routes.find((route) => {
-      const routeParts = route.split("/");
-      const pathParts = path.split("/");
-      if (routeParts.length !== pathParts.length) {
-        return false;
+    const pathSegments = path.split("/");
+
+    const sortedRoutes = routes.sort(
+      (a, b) => a.split("/").length - b.split("/").length,
+    );
+
+    const matchedResults = [];
+
+    for (const route of sortedRoutes) {
+      const routeSegments = route.split("/");
+
+      if (routeSegments.length < pathSegments.length) {
+        continue;
       }
 
-      for (let i = 0; i < routeParts.length; i++) {
-        const routePart = routeParts[i];
-        const pathPart = pathParts[i];
+      const matchSegments = [];
+      const params: Record<string, string> = {};
 
-        if (routePart.startsWith(":")) {
-          params[routePart.slice(1).replace("?", "")] = pathPart;
+      for (let i = 0; i < routeSegments.length; i++) {
+        const segment = pathSegments[i];
+        const routeSegment = routeSegments[i];
+
+        if (routeSegment === segment) {
+          matchSegments.push(routeSegment);
           continue;
         }
 
-        if (routePart !== pathPart) {
-          return false;
+        if (routeSegment.startsWith(":")) {
+          matchSegments.push(routeSegment);
+          const key = routeSegment.replace(":", "").replace("?", "");
+          if (segment) {
+            params[key] = segment;
+          }
         }
       }
 
-      return true;
+      const match = matchSegments.join("/");
+
+      if (routes.includes(match)) {
+        matchedResults.push({
+          match,
+          params,
+        });
+      }
+    }
+
+    const betterMatch = matchedResults.find((result) => {
+      return result.match.startsWith(`/${pathSegments[1]}`);
     });
 
-    if (route) {
-      return {
-        match: route,
-        params,
-      };
+    if (betterMatch) {
+      return betterMatch;
+    }
+
+    if (matchedResults[0]) {
+      return matchedResults[0];
     }
 
     return {

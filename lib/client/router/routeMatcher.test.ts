@@ -34,13 +34,13 @@ describe("routeMatcher", () => {
   });
 
   test("falls back to wildcard route", () => {
-    const routeMatcher = createRouteMatcher(["/about", "product/:id", "/*"]);
+    const routeMatcher = createRouteMatcher(["/about", "/product/:id", "/*"]);
 
     expect(routeMatcher("/").match).toEqual("/*");
     expect(routeMatcher("/").params).toEqual({});
     expect(routeMatcher("/about").match).toEqual("/about");
     expect(routeMatcher("/about").params).toEqual({});
-    expect(routeMatcher("/product/1234").match).toEqual("product/:id");
+    expect(routeMatcher("/product/1234").match).toEqual("/product/:id");
     expect(routeMatcher("/product/1234").params).toEqual({ id: "1234" });
     expect(routeMatcher("/product/1234/test").match).toEqual("/*");
     expect(routeMatcher("/product/1234/test").params).toEqual({});

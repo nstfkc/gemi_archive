@@ -19,7 +19,7 @@ export const web = {
       "/sign-up": Route.view("auth/SignUp"),
     },
   }),
-  "/:id": Route.view("Product", [ProductController, "edit"]),
+  // "/:id": Route.view("Product", [ProductController, "edit"]),
   "/*": Route.view("404"),
 };
 
