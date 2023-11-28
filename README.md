@@ -1,40 +1,29 @@
-# Gemi
+<p align="center">
+  <picture>
+    <img src="https://raw.githubusercontent.com/nstfkc/gemijs/master/logo.png" height="128">
+  </picture>
+</p>
 
-Web framework for building modern full-stack web applications
+Gemi is a full-stack MVC web application framework written in TypeScript runs on bun and uses React in the view layer.
 
-## Motivation
-Current available web frameworks in the javascript ecosystem doesn't provide useful features for application development. They are mostly focused on increasing initial page load performance via optimising hydration and javascript bundle sizes. Those features are very valuable for e-commerce like platforms but not for B2B like applications where the content is not publicly accessible. Anyone who wants to build a web application in these days has to implement their own solutions for pretty much everything e.g ORM, authentication, validations, job queues, emails... 
+🚧 Under development 🚧
 
-For some people, having the flexibility of being able to choose tools for their specific requirements can be valuable, but most of the cases spending time on mixing and matching technologies is a big waste of time and resources. 
+## What differenciates gemi from next.js and remix
 
-Gemi is going to provide a solid fundamental that you can focus on your business value from the get go.
+Gemi is focused on application development, it prioritises features which are fundamental for application development. It comes with built-in authentication and authorisation, orm, forms and validations, emails, file storage, job queues and task scheduling, events, websockets and more...
 
-## Features in the current road map
-  - Customizable component library
-  - Form helpers and http client (useQuery and useMutation hooks)
-  - Routing (Soft navigation on client side)
-  - Authentication and Authorisation
-  - ORM
-  - Request validations
-  - Notifications and Email
-  - File storage
-  - Job queues
-  - Task scheduling
-  - Events and Websockets
+With Next.js or Remix you need to roll your own solutions for these features or you need to put together different 3rd party services. 
 
+On the other hand, Next.js and Remix provide cutting edge data fetching and streaming features which will not be prioritised in Gemi e.g. server components. 
 
-## Highlights
+Both frameworks amplify React's capabilities whereas Gemi uses React as a layer in its system design. But similar to both, Gemi supports SSR and soft-navigation in the client.
 
-- Written in Typescript and only supports Typescript
-- Uses MVC design pattern
-- Only supports bun runtime
-- Uses vite for dev server and bundling
-- Uses React in the view layer
-- Doesn't support RSCs and progressive enchancement (might change, low prio)
-- Doesn't support serverless (might change, low prio)
+## Documentation
+
+WIP
 
 
-## Code examples
+## Some code samples
 
 ### Defining routes
 
@@ -61,8 +50,9 @@ const api = {
 ### Accessing authenticated user
 ``` ts
 class OrdersController extends Controller {
-   async list(request: Request){
-     return await Order.findMany({ where: { userId: request.user.id } })
+   async list(request: HttpRequest){
+     const userId = await request.user().id
+     return await Order.findMany({ where: { userId } })
    } 
 }
 ```
@@ -83,6 +73,7 @@ const LoginForm = () => {
 ```
 
 ### Fetching data using http client
+
 ``` tsx
 
 const Posts = () => {
@@ -95,5 +86,16 @@ const Posts = () => {
 
 ## Roadmap
 
-TBD
-
+  - [x] Routing
+  - [ ] Form helpers and 
+  - [ ] Http client (useQuery and useMutation hooks)
+  - [ ] Authentication and Authorisation
+  - [ ] ORM and models
+  - [x] Request validations
+  - [ ] Notifications
+  - [ ] Email
+  - [ ] File storage
+  - [ ] Job queues
+  - [ ] Task scheduling
+  - [ ] Events and Websockets
+  - [ ] Customizable component library
