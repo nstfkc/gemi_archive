@@ -1,6 +1,7 @@
 # Roadmap
 
-## Pre-alpha v0.1.0
+## Pre-alpha v0.1.0 
+Due date 15.12.2023
 
 ### 1.Router
 
@@ -16,7 +17,9 @@
 
 - [ ] Link component
 - [ ] useNavigate hook
-- [ ] useParams and useSearchQuery hooks
+- [ ] useRouteParams hook
+- [ ] useQueryParams hook
+- [ ] usePathname hook
 
 
 ### 2. Authentication 

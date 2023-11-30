@@ -1,0 +1,18 @@
+#+title: Test
+
+
+#+begin_src typescript
+
+function test() {
+  alert('hello world!')
+}
+
+#+end_src
+
+#+begin_src typescript-tsx
+
+function Component() {
+  return <Container>Hello world</Container>
+}
+
+#+end_src
