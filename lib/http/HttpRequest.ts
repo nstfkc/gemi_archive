@@ -6,15 +6,15 @@ export class HttpRequest {
   constructor(private ctx: Context) {}
 
   getBody() {
-    return this.parseBody(z.object({}));
+    return this.parseBody(z.object({}).passthrough());
   }
 
   getQuery() {
-    return this.parseQuery(z.object({}));
+    return this.parseQuery(z.object({}).passthrough());
   }
 
   getParams() {
-    return this.parseQuery(z.object({}));
+    return this.parseQuery(z.object({}).passthrough());
   }
 
   protected async parseBody<K extends z.ZodRawShape, T extends z.ZodObject<K>>(

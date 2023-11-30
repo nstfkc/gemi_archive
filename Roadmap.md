@@ -13,6 +13,9 @@ Due date 15.12.2023
 - [x] Wildcard routes
 - [ ] Route.resource
 
+**Blockers**
+- [ ] ResourceController
+
 #### Client API
 
 - [ ] Link component
@@ -34,7 +37,9 @@ Due date 15.12.2023
 
 - [ ] http.useQuery
 - [ ] http.useMutation
-- [x] Form component
+- [ ] Form component
+- [ ] Form validations
+
 
 ### 4. Models MVP
 
