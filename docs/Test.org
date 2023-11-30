@@ -9,7 +9,7 @@ function test() {
 
 #+end_src
 
-#+begin_src typescript-tsx
+#+begin_src tsx
 
 function Component() {
   return <Container>Hello world</Container>
