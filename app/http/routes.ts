@@ -4,6 +4,7 @@ import { AboutController } from "./controllers/AboutController";
 import { PublicLayoutController } from "./controllers/PublicLayoutController";
 import { ProductController } from "./controllers/ProductController";
 import { AuthController } from "./controllers/AuthController";
+import { DashboardController } from "./controllers/DashboardController";
 
 export const web = {
   "/": Route.viewGroup({
@@ -12,6 +13,9 @@ export const web = {
       "/": Route.view("Home", [HomeController, "index"], {}),
       "/about": Route.view("About", [AboutController, "index"]),
     },
+  }),
+  "/dashboard": Route.view("Dashboard", [DashboardController, "index"], {
+    middlewares: ["auth"],
   }),
   "/auth": Route.viewGroup({
     routes: {

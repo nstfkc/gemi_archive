@@ -178,10 +178,13 @@ export const Link = (props: LinkProps) => {
         }
         loader(href)
           .then((data) => {
-            routeDataRef.current?.set(route?.path!, data as any);
-            history.push(href);
-            if (data.unauthorized === true) {
-              history.push("/auth/login");
+            if (data.success === false) {
+              if (data.error.name === "AuthenticationError") {
+                history.push("/auth/sign-in");
+              }
+            } else {
+              routeDataRef.current?.set(route?.path!, data as any);
+              history.push(href);
             }
           })
           .catch(console.log);
