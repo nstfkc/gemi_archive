@@ -46,6 +46,7 @@ model Account {
 
 model Session {
   id           String   @id @default(cuid())
+  userAgent    String?
   sessionToken String   @unique
   userId       String
   expires      DateTime
@@ -60,7 +61,6 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   password      String
-  image         String?
   accounts      Account[]
   sessions      Session[]
   Post          Post[]

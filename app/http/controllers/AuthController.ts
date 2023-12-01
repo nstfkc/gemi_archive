@@ -1,3 +1,3 @@
-import { BaseAuthController } from "@/lib/server/auth/BaseAuthController";
+import { BaseAuthController } from "@/lib/http/BaseAuthController";
 
 export class AuthController extends BaseAuthController {}

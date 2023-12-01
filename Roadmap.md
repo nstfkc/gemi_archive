@@ -30,6 +30,9 @@ Due date 15.12.2023
 - [ ] request.user()
 - [ ] AuthController
 
+**Blockers**
+- [ ] Controller.setCookie, Controller.getCookie, Controller.deleteCookie
+
 
 ### 3. Http Client and Forms
 

@@ -9,6 +9,7 @@ import { render, renderLayout } from "./render";
 import { CreateApiRoutes, CreateViewRoutes } from "./createViewRoutes";
 import { HttpRequest } from "./HttpRequest";
 import { createRequest } from "./createRequest";
+import { AuthenticationError } from "./errors/AuthenticationError";
 
 function renderMiddlewares(middlewares: Middleware[] = []) {
   return middlewares.map((middleware) => {
@@ -57,7 +58,7 @@ type InferBody<
 type InferRequest<
   T extends Controller,
   K extends ClassMethodNames<T>,
-> = InstanceType<{ new (): T }>[K] extends (req: infer R) => unknown
+> = InstanceType<{ new (ctx: Context): T }>[K] extends (req: infer R) => unknown
   ? R extends HttpRequest
     ? R
     : never
@@ -72,7 +73,7 @@ const createApiHandler =
     Query = UnwrapPromise<ExtractQuery<InferRequest<T, K>>>,
     Data = InferData<T, K>,
   >(
-    handler: [{ new (): T }, K],
+    handler: [{ new (ctx: Context): T }, K],
     config: { middlewares: Middleware[] } = { middlewares: [] },
   ): ApiRoute<Body, Params, Query, Data> => {
     const { middlewares } = config;
@@ -84,22 +85,6 @@ const createApiHandler =
           `${parentPath}${path}`,
           ...renderMiddlewares(middlewares),
           async (ctx) => {
-            let dataPromise = Promise.resolve({} as Data);
-            if (handler) {
-              const [Controller, methodName] = handler;
-              const instance = new Controller();
-              const method = instance[methodName];
-              if (typeof method === "function") {
-                const req = createRequest(
-                  ctx,
-                  `${Controller.name}.${methodName}`,
-                );
-
-                dataPromise = method.call(instance, req) as Promise<
-                  Awaited<Data>
-                >;
-              }
-            }
             const contentTypeHeader = ctx.req.raw.headers.get("Content-Type");
 
             const unsupportedContentTypes = [
@@ -116,17 +101,39 @@ const createApiHandler =
               }
             }
 
+            let dataPromise = Promise.resolve({} as Data);
+            if (handler) {
+              const [Controller, methodName] = handler;
+              const instance = new Controller(ctx);
+              const method = instance[methodName];
+              if (typeof method === "function") {
+                const req = createRequest(
+                  ctx,
+                  `${Controller.name}.${methodName}`,
+                );
+
+                dataPromise = method.call(instance, req) as Promise<
+                  Awaited<Data>
+                >;
+              }
+            }
+
             try {
               const [data] = await Promise.all([dataPromise]);
-
-              return ctx.json({ data });
+              return ctx.json({ data, success: true });
             } catch (err) {
-              console.log(err);
+              let error = {};
               if (err instanceof z.ZodError) {
+                error = err;
                 ctx.status(403);
               }
 
-              return ctx.json({ success: false, error: err });
+              if (err instanceof AuthenticationError) {
+                ctx.status(401);
+                error = { name: err.name, message: err.message };
+              }
+
+              return ctx.json({ success: false, error });
               // Do something
             }
           },
