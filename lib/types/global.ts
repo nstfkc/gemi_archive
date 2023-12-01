@@ -12,3 +12,9 @@ type Route =
     };
 
 export type RouteManifest = Record<string, Route>;
+
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+  name: string;
+}

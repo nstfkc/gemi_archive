@@ -1,4 +1,6 @@
 import { Controller } from "@/lib/http/Controller";
+import { HttpRequest } from "@/lib/http/HttpRequest";
+
 import TestRequest from "../requests/TestRequest";
 
 export class ProductController extends Controller {
@@ -9,7 +11,7 @@ export class ProductController extends Controller {
     return { action: "" };
   };
 
-  list = () => {
+  list = (request: HttpRequest) => {
     return [
       { id: 1, title: "iphone 15" },
       { id: 2, title: "iphone 16" },

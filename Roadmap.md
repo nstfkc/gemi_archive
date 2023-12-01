@@ -27,11 +27,11 @@ Due date 15.12.2023
 
 ### 2. Authentication 
 
-- [ ] request.user()
-- [ ] AuthController
+- [x] request.user()
+- [x] AuthController
 
 **Blockers**
-- [ ] Controller.setCookie, Controller.getCookie, Controller.deleteCookie
+- [x] Controller.setCookie, Controller.getCookie, Controller.deleteCookie
 
 
 ### 3. Http Client and Forms

@@ -1,9 +1,14 @@
 import * as z from "zod";
 
 import { Context } from "hono";
+import { AuthenticatedUser } from "../types/global";
 
 export class HttpRequest {
   constructor(private ctx: Context) {}
+
+  user(): AuthenticatedUser {
+    return this.ctx.get("jwtPayload");
+  }
 
   getBody() {
     return this.parseBody(z.object({}).passthrough());

@@ -32,5 +32,7 @@ export const api = {
     },
   }),
   "/test/:id?": Route.post([ProductController, "test1"]),
-  "/products": Route.get([ProductController, "list"]),
+  "/products": Route.get([ProductController, "list"], {
+    middlewares: ["auth"],
+  }),
 };

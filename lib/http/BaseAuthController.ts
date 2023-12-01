@@ -34,7 +34,7 @@ export class BaseAuthController extends Controller {
         name: user.name,
         emailVerified: user.emailVerified,
       },
-      import.meta.env.SECRET ?? "secret",
+      process.env.SECRET ?? "secret",
     );
 
     this.setCookie("Authorization", token, { path: "/" });
