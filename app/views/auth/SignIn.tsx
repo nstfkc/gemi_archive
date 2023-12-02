@@ -1,10 +1,11 @@
 import { Form, SubmitButton, Field } from "@/lib/client/form";
 import { Input } from "../components/ui/Input";
-import { Link } from "@/lib/client/router";
+import { Link, useNavigate } from "@/lib/client/router";
 
 const LoginForm = () => {
+  const navigate = useNavigate();
   return (
-    <Form action="/auth/login">
+    <Form action="/auth/sign-in" onSuccess={() => navigate("/app/dashboard")}>
       <div className="flex flex-col gap-2">
         <Field name="email" label="Email">
           <Input type="email" name="email" />

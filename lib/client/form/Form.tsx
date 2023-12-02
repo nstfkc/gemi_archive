@@ -16,10 +16,11 @@ const FormContext = createContext({
 interface FormProps {
   action: string;
   method?: "POST" | "GET";
+  onSuccess?: (data: unknown) => void;
 }
 
 export const Form = (props: PropsWithChildren<FormProps>) => {
-  const { children, action, method } = props;
+  const { children, action, method, onSuccess = () => {} } = props;
   const formRef = useRef<HTMLFormElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({} as Record<string, string[]>);
@@ -28,12 +29,19 @@ export const Form = (props: PropsWithChildren<FormProps>) => {
     setIsLoading(true);
     fetch(`/api${action}`, {
       method: method ?? "POST",
-      body: formData,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(formData)),
     })
       .then((res) => {
-        if (res.status === 200) {
+        return res.json();
+      })
+      .then(({ data, success }: any) => {
+        if (success) {
           setErrors({});
           formRef.current?.reset();
+          onSuccess(data);
+        } else {
+          // TODO: handle errors and validation
         }
       })
       .then(() => {

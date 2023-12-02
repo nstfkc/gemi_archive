@@ -18,8 +18,8 @@ Due date 15.12.2023
 
 #### Client API
 
-- [ ] Link component
-- [ ] useNavigate hook
+- [x] Link component
+- [x] useNavigate hook
 - [ ] useRouteParams hook
 - [ ] useQueryParams hook
 - [ ] usePathname hook
@@ -40,7 +40,7 @@ Due date 15.12.2023
 
 - [ ] http.useQuery
 - [ ] http.useMutation
-- [ ] Form component
+- [-] Form component
 - [ ] Form validations
 
 

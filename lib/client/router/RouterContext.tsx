@@ -12,6 +12,7 @@ import {
 } from "react";
 import { createBrowserHistory, History, Location } from "history";
 import { createRouteMatcher } from "./routeMatcher";
+import { useNavigate } from "./useNavigate";
 
 export interface RouteDefinition {
   loader: (() => Promise<unknown>) | null;
@@ -78,7 +79,8 @@ interface RouterContextValue {
     params: Record<string, string>;
   };
 }
-const RouterContext = createContext({} as RouterContextValue);
+
+export const RouterContext = createContext({} as RouterContextValue);
 
 let history: History;
 
@@ -151,47 +153,5 @@ export const RouterProvider = (
     >
       {props.children}
     </RouterContext.Provider>
-  );
-};
-
-interface LinkProps extends Omit<ComponentProps<"a">, "href"> {
-  href: string;
-}
-
-export const Link = (props: LinkProps) => {
-  const { href, onClick = () => {}, ...rest } = props;
-
-  const { history, routes, routeDataRef, routeMatcher } =
-    useContext(RouterContext);
-
-  return (
-    <a
-      href={href}
-      onClick={(e) => {
-        e.preventDefault();
-        const { match } = routeMatcher(href);
-        onClick(e);
-        let loader = (_: any) => Promise.resolve({} as unknown);
-        const route = routes.find((route) => route.path === match);
-        if (route && typeof route.loader === "function") {
-          loader = route.loader;
-        }
-        loader(href)
-          .then((data) => {
-            if (data.success === false) {
-              if (data.error.name === "AuthenticationError") {
-                history.push("/auth/sign-in");
-              }
-            } else {
-              routeDataRef.current?.set(route?.path!, data as any);
-              history.push(href);
-            }
-          })
-          .catch(console.log);
-      }}
-      {...rest}
-    >
-      {props.children}
-    </a>
   );
 };

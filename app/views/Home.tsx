@@ -15,7 +15,7 @@ const Home = (props: { data: HomeData }) => {
         </Link>
       </div>
       <div>
-        <Link href="/dashboard">Dashboard</Link>
+        <Link href="/app/dashboard">Dashboard</Link>
       </div>
     </div>
   );

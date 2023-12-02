@@ -1,7 +1,7 @@
-import { Context } from "hono";
+import { Controller } from "@/lib/http/Controller";
 
-export class PublicLayoutController {
-  async index(ctx: Context) {
+export class PublicLayoutController extends Controller {
+  index() {
     return { title: "Public layout 2" };
   }
 }

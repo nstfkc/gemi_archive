@@ -5,6 +5,7 @@ import { PublicLayoutController } from "./controllers/PublicLayoutController";
 import { ProductController } from "./controllers/ProductController";
 import { AuthController } from "./controllers/AuthController";
 import { DashboardController } from "./controllers/DashboardController";
+import { AppLayoutController } from "./controllers/AppLayoutController";
 
 export const web = {
   "/": Route.viewGroup({
@@ -14,8 +15,12 @@ export const web = {
       "/about": Route.view("About", [AboutController, "index"]),
     },
   }),
-  "/dashboard": Route.view("Dashboard", [DashboardController, "index"], {
+  "/app": Route.viewGroup({
+    layout: Route.layout("AppLayout", [AppLayoutController, "index"]),
     middlewares: ["auth"],
+    routes: {
+      "/dashboard": Route.view("Dashboard", [DashboardController, "index"]),
+    },
   }),
   "/auth": Route.viewGroup({
     routes: {
@@ -23,7 +28,6 @@ export const web = {
       "/sign-up": Route.view("auth/SignUp"),
     },
   }),
-  // "/:id": Route.view("Product", [ProductController, "edit"]),
   "/*": Route.view("404"),
 };
 
