@@ -1,4 +1,4 @@
-import { ComponentType, lazy } from "react";
+import { ComponentType, PropsWithChildren, lazy } from "react";
 import { Root } from "@/app/views/root";
 
 import { hydrateRoot } from "react-dom/client";
@@ -16,7 +16,7 @@ declare const window: {
   serverData: string;
 } & Window;
 
-interface ServerData {
+export interface ServerData {
   routeManifest: RouteManifest;
   currentRoute: string;
   currentUrl: string;
@@ -33,7 +33,11 @@ const lazyViews = Object.fromEntries(
   Object.entries(views).map(([key, loaderFn]) => [key, lazy(loaderFn)]),
 );
 
-const renderRoutes = (routes: RouteManifest, level = 0, parentPath = "") => {
+export const renderRoutes = (
+  routes: RouteManifest,
+  level = 0,
+  parentPath = "",
+) => {
   const res = Object.entries(routes).map(([path, route]) => {
     if ("layout" in route) {
       const layoutPath = `${
@@ -127,11 +131,11 @@ function getFlatRouteDefinitions(
   return flatten(routeManifest, [], -1, []);
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
-const App = () => {
+export const App = (props: PropsWithChildren<{ serverData: ServerData }>) => {
+  const { serverData, children } = props;
   const { currentRoute, routeData, layoutData, routeManifest, currentUrl } =
-    JSON.parse(window.serverData) as ServerData;
-  const render = renderRoutes(routeManifest);
+    serverData;
+
   return (
     <Root>
       <RouterProvider
@@ -141,10 +145,8 @@ const App = () => {
         initialRouteData={routeData[currentRoute]}
         initialLayoutData={layoutData}
       >
-        {render}
+        {children}
       </RouterProvider>
     </Root>
   );
 };
-
-hydrateRoot(document.getElementById("app")!, <App />);

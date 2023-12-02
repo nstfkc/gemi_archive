@@ -19,7 +19,7 @@ export class HttpRequest {
   }
 
   getParams() {
-    return this.parseQuery(z.object({}).passthrough());
+    return this.parseParams(z.object({}).passthrough());
   }
 
   protected async parseBody<K extends z.ZodRawShape, T extends z.ZodObject<K>>(

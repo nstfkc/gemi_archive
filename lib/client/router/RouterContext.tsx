@@ -1,5 +1,4 @@
 import {
-  ComponentProps,
   ComponentType,
   LazyExoticComponent,
   PropsWithChildren,
@@ -12,7 +11,6 @@ import {
 } from "react";
 import { createBrowserHistory, History, Location } from "history";
 import { createRouteMatcher } from "./routeMatcher";
-import { useNavigate } from "./useNavigate";
 
 export interface RouteDefinition {
   loader: (() => Promise<unknown>) | null;

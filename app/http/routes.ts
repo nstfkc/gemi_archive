@@ -20,6 +20,10 @@ export const web = {
     middlewares: ["auth"],
     routes: {
       "/dashboard": Route.view("Dashboard", [DashboardController, "index"]),
+      "/product/:productId": Route.view("ProductEdit", [
+        ProductController,
+        "edit",
+      ]),
     },
   }),
   "/auth": Route.viewGroup({

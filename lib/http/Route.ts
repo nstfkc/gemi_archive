@@ -228,10 +228,14 @@ export class Route {
           let dataPromise = Promise.resolve({} as Data);
           if (handler) {
             const [Controller, methodName] = handler;
-            const instance = new Controller();
+            const instance = new Controller(ctx);
             const method = instance[methodName];
             if (typeof method === "function") {
-              dataPromise = method.call(instance, ctx) as Promise<
+              const request = createRequest(
+                ctx,
+                `${Controller.name}.${methodName}`,
+              );
+              dataPromise = method.call(instance, request) as Promise<
                 Awaited<Data>
               >;
             }
