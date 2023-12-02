@@ -8,6 +8,7 @@ export function useNavigate() {
     const { match } = routeMatcher(href);
     let loader = (_: any) => Promise.resolve({} as unknown);
     const route = routes.find((route) => route.path === match);
+    console.log(route);
     if (route && typeof route.loader === "function") {
       loader = route.loader;
     }
@@ -21,7 +22,7 @@ export function useNavigate() {
           const { layoutData, ...rest } = data as any;
           routeDataRef.current?.set(route?.path!, rest as any);
           if (layoutData) {
-            const [key, value] = Object.entries(layoutData)[0];
+            const [key, value] = Object.entries(layoutData)?.[0] ?? [];
             layoutDataRef.current?.set(key, value);
           }
           history.push(href);

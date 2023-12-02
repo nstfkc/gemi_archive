@@ -37,7 +37,10 @@ export class BaseAuthController extends Controller {
       process.env.SECRET ?? "secret",
     );
 
-    this.setCookie("Authorization", token, { path: "/" });
+    this.setCookie("Authorization", token, {
+      path: "/",
+      maxAge: 60 * 60 * 24,
+    });
     return {};
   };
 
