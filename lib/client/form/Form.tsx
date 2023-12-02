@@ -35,13 +35,19 @@ export const Form = (props: PropsWithChildren<FormProps>) => {
       .then((res) => {
         return res.json();
       })
-      .then(({ data, success }: any) => {
-        if (success) {
+      .then((result) => {
+        if (result.success) {
           setErrors({});
           formRef.current?.reset();
-          onSuccess(data);
+          onSuccess(result.data);
         } else {
-          // TODO: handle errors and validation
+          const issues = result.error?.issues ?? {};
+          let errors = {};
+          for (const issue of issues) {
+            errors[issue.path[0]] = issue.message;
+          }
+          console.log({ errors });
+          setErrors(errors);
         }
       })
       .then(() => {
@@ -70,8 +76,18 @@ export const SubmitButton = (props: SubmitButtonProps) => {
 export const Field = (
   props: PropsWithChildren<{ name: string; label: string }>,
 ) => {
-  const { label, name, ...rest } = props;
+  const { label, name, children, ...rest } = props;
+
+  const { errors } = useContext(FormContext);
   const { components } = useContext(FormConfigContext);
-  const Field = components.field ?? "div";
-  return <Field {...rest} name={name} label={label} />;
+  const Component = components.field ?? "div";
+  const errorMessage = errors[name];
+  return (
+    <Component {...rest} name={name} label={label}>
+      {children}
+      {errorMessage && (
+        <div className="text-sm text-red-400">{errorMessage}</div>
+      )}
+    </Component>
+  );
 };

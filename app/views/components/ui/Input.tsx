@@ -1,8 +1,6 @@
 import { ComponentProps } from "react";
 
-interface InputProps extends ComponentProps<"input"> {}
-
-export const Input = (props: InputProps) => {
+export const Input = (props: ComponentProps<"input">) => {
   return (
     <input
       className="rounded-md px-2 py-2 outline-slate-400 ring-offset-4"

@@ -47,6 +47,7 @@ export const api = {
     middlewares: ["auth"],
     routes: {
       "/:productId": Route.get([ProductController, "show"]),
+      "": Route.post([ProductController, "create"]),
     },
   }),
 };
