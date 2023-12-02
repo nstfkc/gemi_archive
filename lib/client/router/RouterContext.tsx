@@ -75,6 +75,7 @@ interface RouterContextValue {
   routerState: {
     match: string;
     params: Record<string, string>;
+    query: URLSearchParams;
   };
 }
 
@@ -129,6 +130,7 @@ export const RouterProvider = (
   });
 
   const [routerState, setRouterState] = useState(routeMatcher(initialUrl));
+  console.log({ initialUrl });
 
   useEffect(() => {
     history.listen((update) => {

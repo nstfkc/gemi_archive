@@ -253,7 +253,7 @@ export class Route {
             data,
             path: [parentPath, path].join("").replace("//", "/"),
             params: ctx.req.param() as Record<string, string>,
-            url: ctx.req.path,
+            url: ctx.req.url,
             template,
             routeManifest,
             layout: layout.wrapper,

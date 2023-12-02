@@ -52,7 +52,9 @@ export function render<Data>(config: {
   )}';</script>`;
 
   const apphtml = renderToString(
-    <App serverData={serverData}>{layout(<Children data={data} />)}</App>,
+    <App serverData={serverData as any}>
+      {layout(<Children data={data} />)}
+    </App>,
   );
 
   return template

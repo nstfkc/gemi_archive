@@ -7,6 +7,7 @@ interface ProductEditData {
 
 const ProductEdit = (props: { data: ProductEditData }) => {
   const { productId } = useRouteParams();
+
   return (
     <div>
       <div>ProductEdit View {productId}</div>

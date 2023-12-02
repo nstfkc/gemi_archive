@@ -6,12 +6,16 @@ interface RouteMatcherResult {
 type RouteMatcher = (path: string) => RouteMatcherResult;
 
 export function createRouteMatcher(routes: string[]): RouteMatcher {
-  return (path: string) => {
+  return (url: string) => {
+    const _url = new URL(url);
+    const path = _url.pathname;
+    const query = _url.searchParams;
     // Exact match
     if (routes.includes(path)) {
       return {
         match: path,
         params: {},
+        query,
       };
     }
 
@@ -57,6 +61,7 @@ export function createRouteMatcher(routes: string[]): RouteMatcher {
         matchedResults.push({
           match,
           params,
+          query,
         });
       }
     }
@@ -76,6 +81,7 @@ export function createRouteMatcher(routes: string[]): RouteMatcher {
     return {
       match: "/*",
       params: {},
+      query,
     };
   };
 }
