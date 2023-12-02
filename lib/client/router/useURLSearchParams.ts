@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { RouterContext } from "./RouterContext";
 
-export function useQueryParams() {
+export function useURLSearchParams() {
   const { routerState } = useContext(RouterContext);
-  return routerState?.query ?? {};
+  return routerState?.urlSearchParams ?? {};
 }

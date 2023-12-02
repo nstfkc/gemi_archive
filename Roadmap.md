@@ -21,7 +21,7 @@ Due date 15.12.2023
 - [x] Link component
 - [x] useNavigate hook
 - [x] useRouteParams hook
-- [ ] useQueryParams hook
+- [x] useURLSearchParams hook
 - [ ] usePathname hook
 
 

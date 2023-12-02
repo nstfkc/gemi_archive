@@ -75,7 +75,7 @@ interface RouterContextValue {
   routerState: {
     match: string;
     params: Record<string, string>;
-    query: URLSearchParams;
+    urlSearchParams: URLSearchParams;
   };
 }
 
@@ -135,7 +135,7 @@ export const RouterProvider = (
   const [routerState, setRouterState] = useState({
     match,
     params,
-    query: url.searchParams,
+    urlSearchParams: url.searchParams,
   });
 
   useEffect(() => {
@@ -143,7 +143,7 @@ export const RouterProvider = (
       setLocation({ ...update.location });
       const { match, params } = routeMatcher(update.location.pathname);
       const searchParams = new URLSearchParams(update.location.search);
-      setRouterState({ match, params, query: searchParams });
+      setRouterState({ match, params, urlSearchParams: searchParams });
     });
   }, [routeMatcher]);
 
