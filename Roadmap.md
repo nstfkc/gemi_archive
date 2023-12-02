@@ -22,7 +22,7 @@ Due date 15.12.2023
 - [x] useNavigate hook
 - [x] useRouteParams hook
 - [x] useURLSearchParams hook
-- [ ] usePathname hook
+- [x] usePathname hook
 
 
 ### 2. Authentication 
