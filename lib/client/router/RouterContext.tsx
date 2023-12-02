@@ -129,13 +129,21 @@ export const RouterProvider = (
     state: {},
   });
 
-  const [routerState, setRouterState] = useState(routeMatcher(initialUrl));
-  console.log({ initialUrl });
+  const url = new URL(initialUrl);
+
+  const { match, params } = routeMatcher(url.pathname);
+  const [routerState, setRouterState] = useState({
+    match,
+    params,
+    query: url.searchParams,
+  });
 
   useEffect(() => {
     history.listen((update) => {
       setLocation({ ...update.location });
-      setRouterState(routeMatcher(update.location.pathname));
+      const { match, params } = routeMatcher(update.location.pathname);
+      const searchParams = new URLSearchParams(update.location.search);
+      setRouterState({ match, params, query: searchParams });
     });
   }, [routeMatcher]);
 
