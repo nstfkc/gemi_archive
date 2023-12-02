@@ -14,7 +14,7 @@ const Dashboard = () => {
         <Link href="/">Home Link</Link>
       </div>
       <div>
-        <Link href="/product/1234">Products</Link>
+        <Link href="/app/products/1234">Products</Link>
       </div>
     </div>
   );

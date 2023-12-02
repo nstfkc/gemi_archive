@@ -1,21 +1,23 @@
-import { Link } from "@/lib/client/router";
+import { http } from "@/lib/client/http";
 import { useRouteParams } from "@/lib/client/router/useRouteParams";
 
 interface ProductEditData {
   message: string;
 }
 
-const ProductEdit = (props: { data: ProductEditData }) => {
-  const { productId } = useRouteParams();
+const ProductDetails = () => {
+  const { data } = http.useQuery("/product/:productId", {
+    params: { productId: "1234" },
+  });
 
+  return <div>Product Details {data?.title}</div>;
+};
+
+const ProductEdit = (props: { data: ProductEditData }) => {
   return (
     <div>
-      <div>ProductEdit View {productId}</div>
-      {props.data.message}
       <div>
-        <Link href="/product/1234" className="font-bold text-sm">
-          Back to Product
-        </Link>
+        <ProductDetails />
       </div>
     </div>
   );

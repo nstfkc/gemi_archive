@@ -20,7 +20,7 @@ export const web = {
     middlewares: ["auth"],
     routes: {
       "/dashboard": Route.view("Dashboard", [DashboardController, "index"]),
-      "/product/:productId": Route.view("ProductEdit", [
+      "/products/:productId": Route.view("ProductEdit", [
         ProductController,
         "edit",
       ]),
@@ -43,8 +43,10 @@ export const api = {
       "/sign-up": Route.post([AuthController, "signUp"]),
     },
   }),
-  "/test/:id?": Route.post([ProductController, "test1"]),
-  "/products": Route.get([ProductController, "list"], {
+  "/product": Route.apiGroup({
     middlewares: ["auth"],
+    routes: {
+      "/:productId": Route.get([ProductController, "show"]),
+    },
   }),
 };
