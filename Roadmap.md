@@ -38,7 +38,7 @@ Due date 15.12.2023
 
 #### Client API
 
-- [ ] http.useQuery
+- [x] http.useQuery
 - [ ] http.useMutation
 - [x] Form component (MVP)
 - [ ] Form validations
@@ -58,4 +58,6 @@ Due date 15.12.2023
 
 ## v1.0.0
 
-TBD
+### Router 
+- [ ] Type-safe http.useQuery and http.useMutation
+- [ ] Page<Path> and Layout<Path> types to make views typesafe
