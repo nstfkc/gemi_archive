@@ -40,7 +40,7 @@ Due date 15.12.2023
 
 - [ ] http.useQuery
 - [ ] http.useMutation
-- [-] Form component
+- [x] Form component (MVP)
 - [ ] Form validations
 
 

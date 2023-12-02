@@ -8,7 +8,6 @@ export function useNavigate() {
     const { match } = routeMatcher(href);
     let loader = (_: any) => Promise.resolve({} as unknown);
     const route = routes.find((route) => route.path === match);
-    console.log(route);
     if (route && typeof route.loader === "function") {
       loader = route.loader;
     }
