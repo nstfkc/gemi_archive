@@ -2,7 +2,7 @@ import { Hono } from "hono";
 
 import { api, web } from "@/app/http/routes";
 import { createApiRoutes, createViewRoutes } from "../http/createViewRoutes";
-import { ViewRoute, ViewRouteGroup } from "../http/Route";
+import { Route, ViewRoute, ViewRouteGroup } from "../http/Route";
 import { RouteManifest } from "../types/global";
 
 type WebRoutes<T> = Record<string, ViewRoute<T> | ViewRouteGroup<T>>;
@@ -43,16 +43,22 @@ function createWebRoutes<T>(routes: WebRoutes<T>) {
   };
 }
 
-export function bootstrap(template: string) {
+export function bootstrap(template: string, serveStatic?: (app: Hono) => void) {
   const app = new Hono();
 
   const { manifest, routes } = createWebRoutes(web);
 
   createApiRoutes(app, "/api", api);
+
   app.all("/api/*", (ctx) => {
     ctx.status(404);
     return ctx.json({ error: "Not found" });
   });
+
+  if (serveStatic) {
+    serveStatic(app);
+  }
+
   createViewRoutes(app, "/", { template, routeManifest: manifest }, routes);
 
   app.get("__routes", (ctx) => ctx.json(app.routes));

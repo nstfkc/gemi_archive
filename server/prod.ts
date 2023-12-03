@@ -12,11 +12,14 @@ const template = readFileSync(
   "utf-8",
 );
 
-const router = bootstrap(template);
-
-router.use("*", serveStatic({ root: "./dist/client" }));
+const router = bootstrap(template, (app) => {
+  app.use(
+    "/:filename{.+\\.(png|txt|js|css|jpg|svg|jpeg)$}",
+    serveStatic({ root: "./dist/client" }),
+  );
+});
 
 serve({
   fetch: router.fetch,
-  port: 3000,
+  port: 5173,
 });

@@ -11,9 +11,6 @@ export default defineConfig({
   build: {
     ssrEmitAssets: true,
     manifest: true,
-    rollupOptions: {
-      external: ["react", "react-dom"],
-    },
   },
   resolve: {
     alias: {
