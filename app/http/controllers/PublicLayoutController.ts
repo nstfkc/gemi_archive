@@ -2,6 +2,6 @@ import { Controller } from "@/lib/http/Controller";
 
 export class PublicLayoutController extends Controller {
   index() {
-    return { title: "Public layout 2" };
+    return { title: "Public layout" };
   }
 }

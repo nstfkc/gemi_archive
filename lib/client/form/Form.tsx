@@ -1,14 +1,6 @@
-import {
-  ComponentProps,
-  PropsWithChildren,
-  createContext,
-  useContext,
-  useRef,
-  useState,
-} from "react";
-import { FormConfigContext } from "./FormConfig";
+import { PropsWithChildren, createContext, useRef, useState } from "react";
 
-const FormContext = createContext({
+export const FormContext = createContext({
   isLoading: false,
   errors: {} as Record<string, string[]>,
 });
@@ -61,33 +53,5 @@ export const Form = (props: PropsWithChildren<FormProps>) => {
         {children}
       </form>
     </FormContext.Provider>
-  );
-};
-
-interface SubmitButtonProps extends ComponentProps<"button"> {}
-
-export const SubmitButton = (props: SubmitButtonProps) => {
-  const { isLoading } = useContext(FormContext);
-  const { components } = useContext(FormConfigContext);
-  const Button = components.primaryButton ?? "button";
-  return <Button {...props} type="submit" disabled={isLoading} />;
-};
-
-export const Field = (
-  props: PropsWithChildren<{ name: string; label: string }>,
-) => {
-  const { label, name, children, ...rest } = props;
-
-  const { errors } = useContext(FormContext);
-  const { components } = useContext(FormConfigContext);
-  const Component = components.field ?? "div";
-  const errorMessage = errors[name];
-  return (
-    <Component {...rest} name={name} label={label}>
-      {children}
-      {errorMessage && (
-        <div className="text-sm text-red-400">{errorMessage}</div>
-      )}
-    </Component>
   );
 };

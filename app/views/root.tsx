@@ -1,13 +1,18 @@
-import { FormConfig } from "@/lib/client/form/FormConfig";
-import { Button } from "./components/ui/Button";
-import { Field } from "./components/ui/Field";
+import { PropsWithChildren, StrictMode } from "react";
+import { MantineProvider, createTheme } from "@mantine/core";
 
-import { PropsWithChildren } from "react";
+import "@mantine/core/styles.css";
+
+const theme = createTheme({
+  primaryColor: "dark",
+});
 
 export const Root = (props: PropsWithChildren) => {
   return (
-    <FormConfig components={{ primaryButton: Button, field: Field }}>
-      <main className="">{props.children}</main>
-    </FormConfig>
+    <StrictMode>
+      <MantineProvider theme={theme}>
+        <main className="">{props.children}</main>
+      </MantineProvider>
+    </StrictMode>
   );
 };

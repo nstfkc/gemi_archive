@@ -1,11 +1,7 @@
 import { PropsWithChildren } from "react";
 import { renderToString } from "react-dom/server";
 import { App } from "../app";
-
-const views: Record<string, { default: <T>(data: T) => JSX.Element }> =
-  import.meta.glob(["@/app/views/**/*", "!**/components/*"], {
-    eager: true,
-  });
+import { renderRoutes } from "../renderRoutes";
 
 export function render<Data>(config: {
   viewPath: string;
@@ -29,14 +25,6 @@ export function render<Data>(config: {
     params,
     url,
   } = config;
-  let Children = (_props: { data: Data }) => <></>;
-  try {
-    Children = views[`/app/views/${viewPath}.tsx`].default;
-  } catch (err) {
-    console.log(err);
-    // eslint-disable-next-line react/display-name
-    Children = () => <div>Cannot find {viewPath} view</div>;
-  }
 
   const serverData = {
     routeManifest,
@@ -51,10 +39,10 @@ export function render<Data>(config: {
     serverData,
   )}';</script>`;
 
+  const routes = renderRoutes(routeManifest);
+
   const apphtml = renderToString(
-    <App serverData={serverData as any}>
-      {layout(<Children data={data} />)}
-    </App>,
+    <App serverData={serverData as any}>{<>{routes}</>}</App>,
   );
 
   return template
@@ -70,13 +58,13 @@ export function renderLayout<Data>(
   let Layout = (props: PropsWithChildren<{ data: Data }>) => (
     <>{props.children}</>
   );
-  try {
-    Layout = views[`/app/views/${viewPath}.tsx`].default;
-  } catch (err) {
-    console.log(err);
-    // eslint-disable-next-line react/display-name
-    Layout = () => <div>Cannot find {viewPath} layout</div>;
-  }
+  /* try {
+   *   Layout = views[`/app/views/${viewPath}.tsx`].default;
+   * } catch (err) {
+   *   console.log(err);
+   *   // eslint-disable-next-line react/display-name
+   *   Layout = () => <div>Cannot find {viewPath} layout</div>;
+   * } */
 
   // eslint-disable-next-line react/display-name
 

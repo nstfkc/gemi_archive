@@ -1,29 +1,29 @@
-import { Form, Field, SubmitButton } from "@/lib/client/form";
-import { Input } from "./components/ui/Input";
+import { Form } from "@/lib/client/form";
 
 interface ProductEditData {
   message: string;
 }
 
 const ProductEditForm = () => {
-  return (
-    <Form action="/product">
-      <div>
-        <div className="ff gap-4">
-          <Field label="Name" name="name">
-            <Input name="name" />
-          </Field>
-          <Field label="Price" name="price">
-            <Input name="price" type="number" />
-          </Field>
-          <Field label="Description" name="description">
-            <Input name="description" />
-          </Field>
-        </div>
-        <SubmitButton>Submit</SubmitButton>
-      </div>
-    </Form>
-  );
+  return null;
+  /* return (
+   *   <Form action="/product">
+   *     <div>
+   *       <div className="ff gap-4">
+   *         <Field label="Name" name="name">
+   *           <Input name="name" />
+   *         </Field>
+   *         <Field label="Price" name="price">
+   *           <Input name="price" type="number" />
+   *         </Field>
+   *         <Field label="Description" name="description">
+   *           <Input name="description" />
+   *         </Field>
+   *       </div>
+   *       <SubmitButton>Submit</SubmitButton>
+   *     </div>
+   *   </Form>
+   * ); */
 };
 
 const ProductEdit = (props: { data: ProductEditData }) => {

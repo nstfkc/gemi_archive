@@ -2,6 +2,6 @@ import { Controller } from "@/lib/http/Controller";
 
 export class HomeController extends Controller {
   index() {
-    return { message: "Home" };
+    return { message: "Home Test" };
   }
 }
