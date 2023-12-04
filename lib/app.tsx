@@ -1,4 +1,4 @@
-import { PropsWithChildren, Suspense } from "react";
+import { PropsWithChildren } from "react";
 import { Root } from "@/app/views/root";
 import { RouterProvider, RouteDefinition } from "@/lib/client/router";
 import { RouteManifest } from "./types/global";
@@ -68,7 +68,7 @@ export const App = (props: PropsWithChildren<{ serverData: ServerData }>) => {
         initialRouteData={routeData[currentRoute]}
         initialLayoutData={layoutData}
       >
-        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        {children}
       </RouterProvider>
     </Root>
   );

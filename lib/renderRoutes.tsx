@@ -1,15 +1,19 @@
-import { ComponentType, lazy } from "react";
+import { ComponentType, Suspense, lazy } from "react";
 import { RouteManifest } from "./types/global";
 import { Layout, Route } from "./client/router";
 
-const views = import.meta.glob([
-  "@/app/views/**/*",
-  "!**/components/**/*",
-  "!**/root.tsx",
-]) as Record<string, () => Promise<{ default: ComponentType<unknown> }>>;
+const views = import.meta.glob(
+  [
+    "@/app/views/**/*",
+    "!**/components/**/*",
+    "!**/styles/**/*",
+    "!**/root.tsx",
+  ],
+  { eager: true },
+) as Record<string, () => Promise<{ default: ComponentType<unknown> }>>;
 
 const lazyViews = Object.fromEntries(
-  Object.entries(views).map(([key, loaderFn]) => [key, lazy(loaderFn)]),
+  Object.entries(views).map(([key, loaderFn]) => [key, loaderFn.default]),
 );
 
 export const renderRoutes = (
