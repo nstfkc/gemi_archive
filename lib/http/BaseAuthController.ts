@@ -5,7 +5,7 @@ import { Controller } from "@/lib/http/Controller";
 import { AuthenticationError } from "./errors/AuthenticationError";
 
 export class BaseAuthController extends Controller {
-  signIn = async (request: HttpRequest) => {
+  async signIn(request: HttpRequest) {
     const { email, password } = await request.getBody();
 
     const user = await User.findUnique({
@@ -42,7 +42,7 @@ export class BaseAuthController extends Controller {
       maxAge: 60 * 60 * 24,
     });
     return {};
-  };
+  }
 
   async signUp(request: HttpRequest) {
     const { email, name, password } = await request.getBody();
@@ -65,8 +65,32 @@ export class BaseAuthController extends Controller {
     return {};
   }
 
-  signOut = () => {
+  async signInPasswordless(request: HttpRequest) {
+    const { email } = await request.getBody();
+
+    const user = await User.findUnique({
+      where: {
+        email: String(email),
+      },
+    });
+
+    if (!user) {
+      throw new AuthenticationError("Invalid credentials");
+    }
+    const loginToken = "";
+    const magicLink = "";
+    // Email.send('MagicLink', { magicLink:'', loginToken: '' })
+    return {};
+  }
+
+  async signInWithMagicLink(request: HttpRequest) {}
+  async signInWithLoginCode(request: HttpRequest) {}
+  async signInWithSocial(request: HttpRequest) {}
+
+  async signInWithSocialCallback(request: HttpRequest) {}
+
+  signOut() {
     this.deleteCookie("Authorization", { path: "/" });
     return {};
-  };
+  }
 }

@@ -7,6 +7,7 @@ const views = import.meta.glob(
     "@/app/views/**/*",
     "!**/components/**/*",
     "!**/styles/**/*",
+    "!**/email/**/*",
     "!**/root.tsx",
   ],
   { eager: true },

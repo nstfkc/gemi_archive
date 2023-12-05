@@ -9,6 +9,7 @@ const rootDir = process.cwd();
 const libDir = path.join(rootDir, "lib");
 const appDir = path.join(rootDir, "app");
 const dbDir = path.join(rootDir, "db");
+const debugDir = path.join(rootDir, "debug");
 
 const parser = new TypescriptParser();
 
@@ -94,6 +95,9 @@ export async function main() {
   );
 
   await vite.listen(5174);
+
+  process.env.DEBUG_DIR = debugDir;
+  process.env.APP_DIR = appDir;
 
   serve({
     fetch: app.fetch,

@@ -60,7 +60,11 @@ model User {
   name          String?
   email         String?   @unique
   emailVerified DateTime?
-  password      String
+  password      String? @default("")
+  loginCode     String? @default("")
+  loginCodeCreatedAt     DateTime?
+  magicLink    String? @default("")
+  magicLinkCreatedAt     DateTime?
   accounts      Account[]
   sessions      Session[]
   Post          Post[]

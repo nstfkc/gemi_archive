@@ -23,6 +23,8 @@
     "@mantine/core": "^7.2.2",
     "@mantine/hooks": "^7.2.2",
     "@prisma/client": "5.5.2",
+    "@react-email/components": "^0.0.12",
+    "@react-email/render": "^0.0.10",
     "cookie-parser": "^1.4.6",
     "date-fns": "^2.30.0",
     "history": "^5.3.0",
@@ -30,6 +32,7 @@
     "prisma": "^5.5.2",
     "react": "canary",
     "react-dom": "canary",
+    "resend": "^2.0.0",
     "swr": "^2.2.4",
     "zod": "^3.22.4"
   },
