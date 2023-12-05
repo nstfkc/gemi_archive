@@ -30,6 +30,10 @@ export const web = {
     routes: {
       "/sign-in": Route.view("auth/SignIn"),
       "/sign-up": Route.view("auth/SignUp"),
+      "/magic-link": Route.view("auth/MagicLink", [
+        AuthController,
+        "signInWithMagicLink",
+      ]),
     },
   }),
   "/*": Route.view("404"),
@@ -39,6 +43,10 @@ export const api = {
   "/auth": Route.apiGroup({
     routes: {
       "/sign-in": Route.post([AuthController, "signIn"]),
+      "/sign-in/passwordless": Route.post([
+        AuthController,
+        "signInPasswordless",
+      ]),
       "/sign-out": Route.post([AuthController, "signOut"]),
       "/sign-up": Route.post([AuthController, "signUp"]),
     },

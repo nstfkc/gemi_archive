@@ -3,8 +3,25 @@ import { HttpRequest } from "@/lib/http/HttpRequest";
 import { User } from "@/app/models/User";
 import { Controller } from "@/lib/http/Controller";
 import { AuthenticationError } from "./errors/AuthenticationError";
+import { Email } from "../email";
+import { generateRandomString } from "../utils/generateRandomString";
 
 export class BaseAuthController extends Controller {
+  private async signToken(user: User) {
+    const token = await sign(
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+      process.env.SECRET ?? "secret",
+    );
+
+    this.setCookie("Authorization", token, {
+      path: "/",
+      maxAge: 60 * 60 * 24,
+    });
+  }
   async signIn(request: HttpRequest) {
     const { email, password } = await request.getBody();
 
@@ -66,7 +83,7 @@ export class BaseAuthController extends Controller {
   }
 
   async signInPasswordless(request: HttpRequest) {
-    const { email } = await request.getBody();
+    const { email } = (await request.getBody()) as { email: string };
 
     const user = await User.findUnique({
       where: {
@@ -77,16 +94,76 @@ export class BaseAuthController extends Controller {
     if (!user) {
       throw new AuthenticationError("Invalid credentials");
     }
-    const loginToken = "";
-    const magicLink = "";
+
+    const loginCode = `${generateRandomString(5)}-${generateRandomString(5)}`;
+
+    const magicLink = new URL(`${process.env.HOST}/auth/magic-link`);
+    magicLink.searchParams.append("email", email);
+    magicLink.searchParams.append(
+      "token",
+      Buffer.from(loginCode).toString("base64"),
+    );
+
+    try {
+      await User.update({
+        where: { email: String(email) },
+        data: { loginCode },
+      });
+    } catch (err) {
+      console.log(err);
+      // Do something
+    }
+
+    const magicLinkEmail = new Email("auth/MagicLink", {
+      loginCode,
+      magicLink: magicLink.toString(),
+    });
+
+    await magicLinkEmail.send({
+      from: "gemi@key5studio.com",
+      to: "enesxtufekci@gmail.com",
+      subject: "Test",
+      debug: true,
+    });
+
     // Email.send('MagicLink', { magicLink:'', loginToken: '' })
     return {};
   }
 
-  async signInWithMagicLink(request: HttpRequest) {}
+  async signInWithMagicLink(request: HttpRequest) {
+    const { email, token } = request.getQuery() as {
+      email: string;
+      token: string;
+    };
+
+    if (!(email && token)) {
+      return { success: false };
+    }
+
+    const loginCode = Buffer.from(token, "base64").toString("utf8");
+
+    const user = await User.findUnique({ where: { email, loginCode } });
+    if (user) {
+      const token = await sign(
+        {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
+        process.env.SECRET ?? "secret",
+      );
+
+      this.setCookie("Authorization", token, {
+        path: "/",
+        maxAge: 60 * 60 * 24,
+      });
+      return { success: true };
+    }
+    return { success: false };
+  }
+
   async signInWithLoginCode(request: HttpRequest) {}
   async signInWithSocial(request: HttpRequest) {}
-
   async signInWithSocialCallback(request: HttpRequest) {}
 
   signOut() {

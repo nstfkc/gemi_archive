@@ -18,7 +18,6 @@ export const Model = {
     public email: UserData["email"];
     public password: UserData["password"] = null as any;
     public sessions: UserData["sessions"];
-    public image: UserData["image"];
     public accounts: UserData["accounts"];
 
     constructor() {
@@ -33,7 +32,6 @@ export const Model = {
           email: this.email,
           password: this.password,
           sessions: this.sessions,
-          image: this.image,
           accounts: this.accounts,
         },
       });
@@ -42,5 +40,6 @@ export const Model = {
     static findFirst = wrap(prisma.user.findFirst);
     static findUnique = wrap(prisma.user.findUnique);
     static create = wrap(prisma.user.create);
+    static update = prisma.user.update;
   },
 };

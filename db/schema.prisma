@@ -44,6 +44,7 @@ model Account {
   @@index([userId])
 }
 
+
 model Session {
   id           String   @id @default(cuid())
   userAgent    String?

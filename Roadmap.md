@@ -51,8 +51,8 @@ Due date 15.12.2023
 
 ### 5. Emails
 
-- [ ] send
-- [ ] debug
+- [x] send
+- [x] debug
 
 
 ## v1.0.0

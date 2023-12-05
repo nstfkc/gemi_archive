@@ -12,6 +12,7 @@ import {
   Paper,
   useMantineTheme,
 } from "@mantine/core";
+import { useState } from "react";
 
 const SubmitButton = () => {
   const { isLoading } = useForm();
@@ -23,12 +24,23 @@ const SubmitButton = () => {
 };
 
 const LoginForm = () => {
-  const navigate = useNavigate();
+  const [success, setSuccess] = useState(false);
+
+  if (success) {
+    return <div>We sent you a magic link</div>;
+  }
   return (
-    <Form action="/auth/sign-in" onSuccess={() => navigate("/app/dashboard")}>
+    <Form
+      action="/auth/sign-in/passwordless"
+      onSuccess={() => setSuccess(true)}
+    >
       <Flex gap={8} direction="column">
-        <TextInput autoFocus label="Email" name="email" />
-        <TextInput label="Password" name="password" type="password" />
+        <TextInput
+          defaultValue="enes@gemijs.dev"
+          autoFocus
+          label="Email"
+          name="email"
+        />
         <Flex justify="end" pt={8} align="center">
           <SubmitButton />
         </Flex>

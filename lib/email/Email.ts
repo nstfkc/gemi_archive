@@ -25,7 +25,8 @@ export class Email {
       .split("/")
       .join("-")}.html`;
 
-    Bun.spawnSync(["open", fileName]);
     await writeFile(fileName, html);
+
+    Bun.spawnSync(["open", fileName]);
   }
 }

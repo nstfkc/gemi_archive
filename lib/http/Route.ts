@@ -226,20 +226,22 @@ export class Route {
 
         app.get(path, ...renderMiddlewares(middlewares), async (ctx) => {
           let dataPromise = Promise.resolve({} as Data);
+          let instance: T | undefined;
           if (handler) {
             const [Controller, methodName] = handler;
-            const instance = new Controller(ctx);
+            instance = new Controller(ctx);
             const method = instance[methodName];
             if (typeof method === "function") {
               const request = createRequest(
                 ctx,
-                `${Controller.name}.${methodName}`,
+                `${Controller.name}.${String(methodName)}`,
               );
               dataPromise = method.call(instance, request) as Promise<
                 Awaited<Data>
               >;
             }
           }
+
           const [data, layout] = await Promise.all([
             dataPromise,
             layoutGetter(ctx),
@@ -259,6 +261,10 @@ export class Route {
             layout: layout.wrapper,
             layoutData: layout.data,
           });
+
+          if (instance) {
+            console.log(instance.cookies);
+          }
 
           return ctx.html(html);
         });
