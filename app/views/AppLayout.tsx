@@ -1,5 +1,6 @@
 import { Form } from "@/lib/client/form";
 import { useNavigate } from "@/lib/client/router";
+import { Button, Container, Flex, Text } from "@mantine/core";
 import { PropsWithChildren } from "react";
 
 const Logout = ({ children }: PropsWithChildren) => {
@@ -14,14 +15,29 @@ const Logout = ({ children }: PropsWithChildren) => {
 const AppLayout = ({ children, data }: PropsWithChildren) => {
   const { user } = data;
   return (
-    <div>
-      <div>
-        <Logout>
-          <button>Logout</button>
-        </Logout>
-      </div>
+    <Container>
+      <Flex justify="space-between">
+        <img
+          src="http://localhost:5173/gemi-logo.png"
+          style={{ width: "44px" }}
+          alt=""
+        />
+        <Flex gap="md">
+          <Text fz="sm">
+            Logged in as
+            <Text fz="sm" fw="bold">
+              {user.email}
+            </Text>
+          </Text>
+          <Logout>
+            <Button type="submit" variant="subtle">
+              Logout
+            </Button>
+          </Logout>
+        </Flex>
+      </Flex>
       <div>{children}</div>
-    </div>
+    </Container>
   );
 };
 

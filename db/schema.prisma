@@ -44,7 +44,6 @@ model Account {
   @@index([userId])
 }
 
-
 model Session {
   id           String   @id @default(cuid())
   userAgent    String?
@@ -57,18 +56,16 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  password      String? @default("")
-  loginCode     String? @default("")
-  loginCodeCreatedAt     DateTime?
-  magicLink    String? @default("")
-  magicLinkCreatedAt     DateTime?
-  accounts      Account[]
-  sessions      Session[]
-  Post          Post[]
+  id                 String    @id @default(cuid())
+  name               String?
+  email              String?   @unique
+  emailVerified      DateTime?
+  password           String?   @default("")
+  loginCode          String?   @default("")
+  loginCodeCreatedAt DateTime?
+  accounts           Account[]
+  sessions           Session[]
+  Post               Post[]
 }
 
 model VerificationToken {

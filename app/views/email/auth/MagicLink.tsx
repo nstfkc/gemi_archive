@@ -13,9 +13,7 @@ import {
   Text,
 } from "@react-email/components";
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "";
+const baseUrl = process.env.HOST ?? "";
 
 export const MagicLink = (props: {
   data: { loginCode: string; magicLink: string };
@@ -24,20 +22,20 @@ export const MagicLink = (props: {
   return (
     <Html>
       <Head />
-      <Preview>Your login code for Linear</Preview>
+      <Preview>Your login code for Gemi</Preview>
       <Body style={main}>
         <Container style={container}>
           <Img
-            src={`${baseUrl}/static/linear-logo.png`}
+            src={`${baseUrl}/gemi-logo.png`}
             width="42"
             height="42"
-            alt="Linear"
+            alt="Gemi"
             style={logo}
           />
-          <Heading style={heading}>Your login code for Linear</Heading>
+          <Heading style={heading}>Your login code for Gemi</Heading>
           <Section style={buttonContainer}>
             <Button style={button} href={magicLink}>
-              Login to Linear
+              Login to Gemi
             </Button>
           </Section>
           <Text style={paragraph}>
@@ -47,8 +45,8 @@ export const MagicLink = (props: {
           </Text>
           <code style={code}>{loginCode}</code>
           <Hr style={hr} />
-          <Link href="https://linear.app" style={reportLink}>
-            Linear
+          <Link href="https://gemijs.dev" style={reportLink}>
+            Gemi
           </Link>
         </Container>
       </Body>
@@ -97,14 +95,15 @@ const buttonContainer = {
 };
 
 const button = {
-  backgroundColor: "#5e6ad2",
-  borderRadius: "3px",
+  backgroundColor: "#000",
+  borderRadius: "32px",
   fontWeight: "600",
   color: "#fff",
   fontSize: "15px",
   textDecoration: "none",
   textAlign: "center" as const,
   display: "block",
+  padding: "16px",
 };
 
 const reportLink = {

@@ -107,7 +107,7 @@ export class BaseAuthController extends Controller {
     try {
       await User.update({
         where: { email: String(email) },
-        data: { loginCode },
+        data: { loginCode, loginCodeCreatedAt: new Date(Date.now()) },
       });
     } catch (err) {
       console.log(err);
@@ -143,7 +143,14 @@ export class BaseAuthController extends Controller {
     const loginCode = Buffer.from(token, "base64").toString("utf8");
 
     const user = await User.findUnique({ where: { email, loginCode } });
-    if (user) {
+    if (user && user.loginCodeCreatedAt) {
+      const createdAt = new Date(user.loginCodeCreatedAt);
+      const now = new Date(Date.now());
+      const diff = now.valueOf() - createdAt.valueOf();
+
+      if (diff > 1000 * 60 * 5) {
+        return { success: false };
+      }
       const token = await sign(
         {
           id: user.id,

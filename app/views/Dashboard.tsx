@@ -7,15 +7,7 @@ interface DashboardData {
 const Dashboard = () => {
   return (
     <div className="p-4 border-2">
-      <div>
-        <div className="text-red-400">Dashboard View</div>
-      </div>
-      <div>
-        <Link href="/">Home Link</Link>
-      </div>
-      <div>
-        <Link href="/app/products/1234">Products</Link>
-      </div>
+      <h1>Dashboard</h1>
     </div>
   );
 };

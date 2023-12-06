@@ -55,6 +55,9 @@ const Login = () => {
     <Container mih="100vh">
       <Center mih="100vh">
         <Box>
+          <div>
+            <img alt="" />
+          </div>
           <Paper miw="360" shadow="sm" radius="lg" p={32}>
             <LoginForm />
           </Paper>
