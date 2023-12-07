@@ -1,31 +1,47 @@
 import { Form, useForm } from "@/lib/client/form";
 import { TextInput } from "../components/ui/Form/TextInput";
-import { Link } from "@/lib/client/router";
 import {
   Box,
-  Anchor,
   Button,
   Center,
   Flex,
   Container,
   Text,
-  Paper,
-  useMantineTheme,
+  ButtonProps,
+  Divider,
+  Transition,
 } from "@mantine/core";
-import { useState } from "react";
-import { IconBrandGoogle } from "@tabler/icons-react";
+
+import { useEffect, useState } from "react";
+import { IconBrandGoogleFilled } from "@tabler/icons-react";
+import { Logo } from "../components/Logo";
 
 const SubmitButton = () => {
   const { isLoading } = useForm();
   return (
-    <Button radius="xl" size="md" type="submit" disabled={isLoading}>
-      Submit
+    <Button
+      fullWidth
+      variant="outline"
+      size="md"
+      type="submit"
+      disabled={isLoading}
+    >
+      Continue with email
+    </Button>
+  );
+};
+
+const ShowButton = (props: ButtonProps) => {
+  return (
+    <Button fullWidth variant="outline" type="button" size="md" {...props}>
+      Continue with email
     </Button>
   );
 };
 
 const LoginForm = () => {
   const [success, setSuccess] = useState(false);
+  const [showInput, setShowInput] = useState(false);
 
   if (success) {
     return <div>We sent you a magic link</div>;
@@ -35,48 +51,82 @@ const LoginForm = () => {
       action="/auth/sign-in/passwordless"
       onSuccess={() => setSuccess(true)}
     >
-      <Flex gap={8} direction="column">
-        <TextInput
-          defaultValue="enes@gemijs.dev"
-          autoFocus
-          label="Email"
-          name="email"
-        />
+      <Flex gap={4} direction="column">
+        <Transition
+          mounted={showInput}
+          transition={{
+            in: { height: "80px" },
+            out: { height: 0 },
+            transitionProperty: "all",
+          }}
+          duration={200}
+        >
+          {(styles) => (
+            <Box style={styles}>
+              <Divider my="lg" color="dark" />
+              <TextInput
+                placeholder="Enter your email address..."
+                autoFocus
+                name="email"
+                required
+              />
+            </Box>
+          )}
+        </Transition>
         <Flex justify="end" pt={8} align="center">
-          <SubmitButton />
+          {showInput ? (
+            <SubmitButton />
+          ) : (
+            <ShowButton onClick={() => setShowInput(true)} />
+          )}
         </Flex>
       </Flex>
     </Form>
   );
 };
 
-const Login = (props: { data: { googleSignInUrl: string } }) => {
+const SignIn = (props: { data: { googleSignInUrl: string } }) => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <Container mih="100vh">
       <Center mih="100vh">
         <Box>
-          <div>
-            <img alt="" />
-          </div>
-          <Paper miw="360" shadow="sm" radius="lg" p={32}>
-            <LoginForm />
-            <Anchor href={props.data.googleSignInUrl}>
-              <Flex>
-                <IconBrandGoogle strokeWidth="2px" />
-                <Text fw="bold">Continue with Google</Text>
-              </Flex>
-            </Anchor>
-          </Paper>
-          <Flex gap={0} direction="column" align="center" px="xl" py={16}>
-            <Text>Don&apos;t have an account?</Text>
-            <Anchor fw="bold" component={Link} href="/auth/sign-up">
-              Sign up
-            </Anchor>
-          </Flex>
+          <Transition
+            mounted={mounted}
+            transition="pop"
+            duration={500}
+            timingFunction="ease"
+          >
+            {(styles) => (
+              <Box style={styles}>
+                <Flex direction="column" align="center" justify="center">
+                  <Logo />
+                  <Text>Login to Gemi</Text>
+                </Flex>
+                <Box mt={16} />
+                <Button
+                  variant="filled"
+                  component="a"
+                  size="md"
+                  href={props.data.googleSignInUrl}
+                >
+                  <Flex bg="dark" gap={8}>
+                    <IconBrandGoogleFilled />
+                    <Text fw={600}>Continue with Google</Text>
+                  </Flex>
+                </Button>
+                <LoginForm />
+              </Box>
+            )}
+          </Transition>
         </Box>
       </Center>
     </Container>
   );
 };
 
-export default Login;
+export default SignIn;

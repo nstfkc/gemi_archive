@@ -7,9 +7,9 @@ import { Email } from "../email";
 import { generateRandomString } from "../utils/generateRandomString";
 
 export class BaseAuthController extends Controller {
-  protected googleScope = "";
+  protected googleScope = "https://www.googleapis.com/auth/userinfo.profile";
+
   private getGoogleSignInUrl() {
-    console.log("this.googleScope", this.googleScope);
     const searchParams = new URLSearchParams({
       scope: "https://www.googleapis.com/auth/userinfo.profile",
       include_granted_scopes: "true",

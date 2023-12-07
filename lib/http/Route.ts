@@ -262,10 +262,6 @@ export class Route {
             layoutData: layout.data,
           });
 
-          if (instance) {
-            console.log(instance.cookies);
-          }
-
           return ctx.html(html);
         });
       },

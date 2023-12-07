@@ -1,7 +1,11 @@
 export const Logo = () => {
   return (
     <div>
-      <span className="text-6xl logo">Gemi</span>
+      <img
+        src="http://localhost:5173/gemi-logo.png"
+        style={{ width: "44px" }}
+        alt=""
+      />
     </div>
   );
 };

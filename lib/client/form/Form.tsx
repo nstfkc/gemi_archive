@@ -38,7 +38,6 @@ export const Form = (props: PropsWithChildren<FormProps>) => {
           for (const issue of issues) {
             errors[issue.path[0]] = issue.message;
           }
-          console.log({ errors });
           setErrors(errors);
         }
       })

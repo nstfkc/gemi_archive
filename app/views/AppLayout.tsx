@@ -22,10 +22,10 @@ const AppLayout = ({ children, data }: PropsWithChildren) => {
           style={{ width: "44px" }}
           alt=""
         />
-        <Flex gap="md">
+        <Flex gap="md" align="center">
           <Text fz="sm">
-            Logged in as
-            <Text fz="sm" fw="bold">
+            Logged in as <br />
+            <Text component="span" fz="sm" fw="bold">
               {user.email}
             </Text>
           </Text>

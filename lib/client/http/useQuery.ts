@@ -41,9 +41,7 @@ export function useQuery(
       }
       const result = await res.json();
 
-      console.log({ result });
       if (result.success) {
-        console.log(result);
         return result.data;
       } else {
         error.info = (await res.json()).error;

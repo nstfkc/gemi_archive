@@ -6,7 +6,6 @@ export async function renderEmail(templatePath: string, data: JSONLike) {
     const Template = (
       await import(`${process.env.APP_DIR}/views/email/${templatePath}.tsx`)
     ).default;
-    console.log(Template);
     return await renderAsync(<Template data={data} />);
   } catch (err) {
     console.log(err);
