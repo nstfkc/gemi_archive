@@ -4,18 +4,19 @@ import { RouterContext } from "./RouterContext";
 export function useNavigate() {
   const { routeMatcher, routes, routeDataRef, layoutDataRef, history } =
     useContext(RouterContext);
-  return (href: string) => {
-    const { match } = routeMatcher(href);
+  function navigate(href: string) {
+    const { match } = routeMatcher(href.split("?")[0]);
     let loader = (_: any) => Promise.resolve({} as unknown);
     const route = routes.find((route) => route.path === match);
     if (route && typeof route.loader === "function") {
       loader = route.loader;
     }
-    loader(href)
+    loader(match)
       .then((data) => {
         if (data.success === false) {
           if (data.error.name === "AuthenticationError") {
-            history.push("/auth/sign-in");
+            // TODO: get redirect from config
+            navigate(`/auth/sign-in?callbackUrl=${href}`);
           }
         } else {
           const { layoutData, ...rest } = data as any;
@@ -28,5 +29,7 @@ export function useNavigate() {
         }
       })
       .catch(console.log);
-  };
+  }
+
+  return navigate;
 }

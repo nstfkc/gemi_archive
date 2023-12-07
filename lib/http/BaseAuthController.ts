@@ -7,21 +7,28 @@ import { Email } from "../email";
 import { generateRandomString } from "../utils/generateRandomString";
 
 export class BaseAuthController extends Controller {
-  private async signToken(user: User) {
-    const token = await sign(
-      {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-      },
-      process.env.SECRET ?? "secret",
-    );
-
-    this.setCookie("Authorization", token, {
-      path: "/",
-      maxAge: 60 * 60 * 24,
+  protected googleScope = "";
+  private getGoogleSignInUrl() {
+    console.log("this.googleScope", this.googleScope);
+    const searchParams = new URLSearchParams({
+      scope: "https://www.googleapis.com/auth/userinfo.profile",
+      include_granted_scopes: "true",
+      response_type: "token",
+      state: "state_parameter_passthrough_value",
+      redirect_uri: `${process.env.HOST}/auth/google/callback`,
+      client_id: process.env.GOOGLE_CLIENT_ID!,
     });
+
+    const host = "https://accounts.google.com/o/oauth2/v2/auth";
+    const url = [host, searchParams.toString()].join("?");
+
+    return url;
   }
+
+  async signInView() {
+    return { googleSignInUrl: this.getGoogleSignInUrl() };
+  }
+
   async signIn(request: HttpRequest) {
     const { email, password } = await request.getBody();
 
@@ -170,8 +177,62 @@ export class BaseAuthController extends Controller {
   }
 
   async signInWithLoginCode(request: HttpRequest) {}
-  async signInWithSocial(request: HttpRequest) {}
-  async signInWithSocialCallback(request: HttpRequest) {}
+
+  async oauthSignIn(request: HttpRequest) {
+    const query = request.getQuery();
+
+    try {
+      const res = await fetch(
+        `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${query.access_token}`,
+      );
+
+      const data = (await res.json()) as { email: string; name: string };
+
+      if (data?.email && data?.name) {
+        let user;
+
+        try {
+          user = await User.findUnique({ where: { email: data.email } });
+        } catch (err) {
+          // Do something
+        }
+
+        if (!user) {
+          try {
+            user = await User.create({
+              data: { email: data.email, name: data.name },
+            });
+          } catch (err) {
+            // Do something
+          }
+        }
+
+        if (user) {
+          const token = await sign(
+            {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+            },
+            process.env.SECRET ?? "secret",
+          );
+
+          this.setCookie("Authorization", token, {
+            path: "/",
+            maxAge: 60 * 60 * 24,
+          });
+          return {};
+        }
+      }
+
+      throw Error("Can not login");
+    } catch (err) {
+      console.log(err);
+      // Do something
+    }
+
+    return {};
+  }
 
   signOut() {
     this.deleteCookie("Authorization", { path: "/" });

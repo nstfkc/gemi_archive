@@ -14,12 +14,19 @@ describe("routeMatcher", () => {
   });
 
   test("matches routes with variables", () => {
-    const routeMatcher = createRouteMatcher(["/:id", "/foo/:id"]);
+    const routeMatcher = createRouteMatcher([
+      "/:id",
+      "/foo/:id",
+      "/foo/:id/bar",
+    ]);
 
     expect(routeMatcher("/1234").match).toEqual("/:id");
     expect(routeMatcher("/1234").params).toEqual({ id: "1234" });
     expect(routeMatcher("/foo/1234").match).toEqual("/foo/:id");
     expect(routeMatcher("/foo/1234").params).toStrictEqual({ id: "1234" });
+
+    expect(routeMatcher("/foo/1234/bar").match).toEqual("/foo/:id/bar");
+    expect(routeMatcher("/foo/1234/bar").params).toStrictEqual({ id: "1234" });
   });
 
   test("matches routes with optional variables", () => {

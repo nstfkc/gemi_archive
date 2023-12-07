@@ -10,6 +10,10 @@ export class HttpRequest {
     return this.ctx.get("jwtPayload");
   }
 
+  url(): string {
+    return this.ctx.req.url;
+  }
+
   getBody() {
     return this.parseBody(z.object({}).passthrough());
   }

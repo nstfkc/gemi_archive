@@ -28,16 +28,13 @@ export const web = {
   }),
   "/auth": Route.viewGroup({
     routes: {
-      "/sign-in": Route.view("auth/SignIn"),
+      "/sign-in": Route.view("auth/SignIn", [AuthController, "signInView"]),
       "/sign-up": Route.view("auth/SignUp"),
       "/magic-link": Route.view("auth/MagicLink", [
         AuthController,
         "signInWithMagicLink",
       ]),
-      "/github/callback": Route.view("auth/OAuth", [
-        AuthController,
-        "githubCallback",
-      ]),
+      "/:oauth/callback": Route.view("auth/OAuthCallback"),
     },
   }),
   "/*": Route.view("404"),
@@ -53,6 +50,7 @@ export const api = {
       ]),
       "/sign-out": Route.post([AuthController, "signOut"]),
       "/sign-up": Route.post([AuthController, "signUp"]),
+      "/:oauth/sign-in": Route.get([AuthController, "oauthSignIn"]),
     },
   }),
   "/product": Route.apiGroup({
