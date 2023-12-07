@@ -34,6 +34,10 @@ export const web = {
         AuthController,
         "signInWithMagicLink",
       ]),
+      "/github/callback": Route.view("auth/OAuth", [
+        AuthController,
+        "githubCallback",
+      ]),
     },
   }),
   "/*": Route.view("404"),
