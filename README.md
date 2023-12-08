@@ -11,11 +11,12 @@ Gemi is a full-stack MVC web application framework written in TypeScript runs on
 
 The goal of Gemi is to make application development as efficient as possible by providing all the features required for application development out of the box and integrate them tightly so developers can start building features for their products starting from day 0.
 
-🚨 This project is under development, it is not ready for using on production. 
+🚨 This project is under development 🚨
 
-v0.1.0 is going to be release at 15.12.2023
+`v0.1.0` is going to be release at 15.12.2023
 
-## Comparison
+
+## Comparison with other frameworks
 
 ### Next.js and Remix
 Both frameworks are driven by innovation (server components, streaming etc.) and making the initial page render as fast as possible. They both are very flexible, and they don't make any decisions for the developers other than routing and data fetching. You need to make your own decisions to build up your own tech stack. 
