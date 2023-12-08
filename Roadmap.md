@@ -29,6 +29,7 @@ Due date 15.12.2023
 
 - [x] request.user()
 - [x] AuthController
+- [x] Google login
 
 **Blockers**
 - [x] Controller.setCookie, Controller.getCookie, Controller.deleteCookie
@@ -63,7 +64,6 @@ Due date 15.12.2023
 ### Authentication
 - [ ] Github login
 - [ ] X login
-- [ ] Google login
 
 ### Http client
 - [ ] http.useMutation

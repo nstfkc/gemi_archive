@@ -55,8 +55,8 @@ const LoginForm = () => {
         <Transition
           mounted={showInput}
           transition={{
-            in: { height: "80px" },
-            out: { height: 0 },
+            in: { height: "80px", opacity: 1 },
+            out: { height: 0, opacity: 0 },
             transitionProperty: "all",
           }}
           duration={200}
