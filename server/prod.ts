@@ -6,6 +6,9 @@ import { join, resolve } from "node:path";
 import { bootstrap } from "../lib/server/bootstrap";
 
 const root = process.cwd();
+const rootDir = process.cwd();
+const appDir = join(rootDir, "app");
+const debugDir = join(rootDir, "debug");
 
 const template = readFileSync(
   resolve(join(root, "dist/client/index.html")),
@@ -18,6 +21,9 @@ const router = bootstrap(template, (app) => {
     serveStatic({ root: "./dist/client" }),
   );
 });
+
+process.env.DEBUG_DIR = debugDir;
+process.env.APP_DIR = appDir;
 
 serve({
   fetch: router.fetch,
