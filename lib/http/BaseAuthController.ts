@@ -1,6 +1,7 @@
 import { sign } from "hono/jwt";
 import { HttpRequest } from "@/lib/http/HttpRequest";
 import { User } from "@/app/models/User";
+import { VerificationToken } from "@/app/models/VerificationToken";
 import { Controller } from "@/lib/http/Controller";
 import { AuthenticationError } from "./errors/AuthenticationError";
 import { Email } from "../email";
@@ -8,10 +9,12 @@ import { generateRandomString } from "../utils/generateRandomString";
 
 export class BaseAuthController extends Controller {
   protected googleScope = "https://www.googleapis.com/auth/userinfo.profile";
+  protected magicLinkSender = "";
+  protected magicLinkSubject = "";
 
   private getGoogleSignInUrl() {
     const searchParams = new URLSearchParams({
-      scope: "https://www.googleapis.com/auth/userinfo.profile",
+      scope: this.googleScope,
       include_granted_scopes: "true",
       response_type: "token",
       state: "state_parameter_passthrough_value",
@@ -25,7 +28,7 @@ export class BaseAuthController extends Controller {
     return url;
   }
 
-  async signInView() {
+  signInView() {
     return { googleSignInUrl: this.getGoogleSignInUrl() };
   }
 
@@ -42,10 +45,7 @@ export class BaseAuthController extends Controller {
       throw new AuthenticationError("Invalid credentials");
     }
 
-    const isPasswordValid = await Bun.password.verify(
-      String(password),
-      user.password,
-    );
+    const isPasswordValid = await Bun.password.verify(String(password), "");
 
     if (!isPasswordValid) {
       throw new AuthenticationError("Invalid credentials");
@@ -56,7 +56,6 @@ export class BaseAuthController extends Controller {
         id: user.id,
         email: user.email,
         name: user.name,
-        emailVerified: user.emailVerified,
       },
       process.env.SECRET ?? "secret",
     );
@@ -69,20 +68,12 @@ export class BaseAuthController extends Controller {
   }
 
   async signUp(request: HttpRequest) {
-    const { email, name, password } = await request.getBody();
+    const { email, name } = await request.getBody();
 
     await User.create({
       data: {
         email: String(email),
         name: String(name),
-        password: await Bun.password.hash(String(password)),
-        accounts: {
-          create: {
-            provider: String(import.meta.env.APP_NAME ?? "Gemijs"),
-            type: "EmailPassword",
-            providerAccountId: "",
-          },
-        },
       },
     });
 
@@ -92,29 +83,22 @@ export class BaseAuthController extends Controller {
   async signInPasswordless(request: HttpRequest) {
     const { email } = (await request.getBody()) as { email: string };
 
-    const user = await User.findUnique({
-      where: {
-        email: String(email),
-      },
-    });
-
-    if (!user) {
-      throw new AuthenticationError("Invalid credentials");
-    }
-
-    const loginCode = `${generateRandomString(5)}-${generateRandomString(5)}`;
+    const token = `${generateRandomString(5)}${generateRandomString(5)}`;
 
     const magicLink = new URL(`${process.env.HOST}/auth/magic-link`);
     magicLink.searchParams.append("email", email);
     magicLink.searchParams.append(
       "token",
-      Buffer.from(loginCode).toString("base64"),
+      Buffer.from(token).toString("base64"),
     );
 
     try {
-      await User.update({
-        where: { email: String(email) },
-        data: { loginCode, loginCodeCreatedAt: new Date(Date.now()) },
+      await VerificationToken.create({
+        data: {
+          identifier: email,
+          token,
+          expires: new Date(Date.now() + 1000 * 60 * 5),
+        },
       });
     } catch (err) {
       console.log(err);
@@ -122,19 +106,17 @@ export class BaseAuthController extends Controller {
     }
 
     const magicLinkEmail = new Email("auth/MagicLink", {
-      loginCode,
+      token,
       magicLink: magicLink.toString(),
     });
 
     await magicLinkEmail.send({
-      from: "gemi@key5studio.com",
-      to: "enesxtufekci@gmail.com",
-      subject: "Test",
-      debug: true,
+      from: this.magicLinkSender,
+      to: email,
+      subject: this.magicLinkSender,
     });
 
-    // Email.send('MagicLink', { magicLink:'', loginToken: '' })
-    return {};
+    return { email };
   }
 
   async signInWithMagicLink(request: HttpRequest) {
@@ -147,17 +129,36 @@ export class BaseAuthController extends Controller {
       return { success: false };
     }
 
-    const loginCode = Buffer.from(token, "base64").toString("utf8");
+    const verificationCode = await VerificationToken.findFirst({
+      where: {
+        identifier: email,
+        token: Buffer.from(token, "base64").toString("utf8"),
+      },
+    });
 
-    const user = await User.findUnique({ where: { email, loginCode } });
-    if (user && user.loginCodeCreatedAt) {
-      const createdAt = new Date(user.loginCodeCreatedAt);
-      const now = new Date(Date.now());
-      const diff = now.valueOf() - createdAt.valueOf();
+    if (!verificationCode) {
+      return { success: false };
+    }
 
-      if (diff > 1000 * 60 * 5) {
-        return { success: false };
-      }
+    const isVerificationTokenExpired =
+      new Date(verificationCode.expires).valueOf() < Date.now();
+
+    if (isVerificationTokenExpired) {
+      return { success: false };
+    }
+
+    let user = await User.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await User.create({
+        data: {
+          email: String(email),
+          name: "",
+        },
+      });
+    }
+
+    if (user) {
       const token = await sign(
         {
           id: user.id,
@@ -175,8 +176,6 @@ export class BaseAuthController extends Controller {
     }
     return { success: false };
   }
-
-  async signInWithLoginCode(request: HttpRequest) {}
 
   async oauthSignIn(request: HttpRequest) {
     const query = request.getQuery();
@@ -232,6 +231,58 @@ export class BaseAuthController extends Controller {
     }
 
     return {};
+  }
+
+  async signInWithToken(request: HttpRequest) {
+    const { code, email } = (await request.getBody()) as {
+      code: string;
+      email: string;
+    };
+
+    const verificationToken = await VerificationToken.findFirst({
+      where: {
+        identifier: email,
+        token: code,
+      },
+    });
+
+    if (!verificationToken) {
+      throw new AuthenticationError("Invalid credentials");
+    }
+
+    const isTokenExpired =
+      new Date(verificationToken.expires).valueOf() < Date.now();
+
+    if (isTokenExpired) {
+      throw new AuthenticationError("Invalid credentials");
+    }
+
+    let user = await User.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await User.create({
+        data: {
+          email,
+          name: "",
+        },
+      });
+    }
+
+    const token = await sign(
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+      process.env.SECRET ?? "secret",
+    );
+
+    this.setCookie("Authorization", token, {
+      path: "/",
+      maxAge: 60 * 60 * 24,
+    });
+
+    return { success: true };
   }
 
   signOut() {

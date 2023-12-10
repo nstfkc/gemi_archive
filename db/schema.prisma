@@ -16,19 +16,17 @@ datasource db {
   relationMode = "prisma"
 }
 
-enum UserRole {
-  OWNER
-  ADMIN
-  MODERATOR
-  USER
-  VISITOR
-}
-
 model Organization {
   id   Int    @id @default(autoincrement())
   name String
 
   membership Membership[]
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  USER
 }
 
 model Membership {
@@ -47,12 +45,6 @@ model Membership {
 
   @@unique([organizationId, invitedEmail])
   @@index([userId])
-}
-
-enum MembershipRole {
-  OWNER
-  ADMIN
-  USER
 }
 
 enum GlobalRole {

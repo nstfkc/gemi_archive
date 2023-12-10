@@ -16,9 +16,9 @@ import {
 const baseUrl = process.env.HOST ?? "";
 
 export const MagicLink = (props: {
-  data: { loginCode: string; magicLink: string };
+  data: { token: string; magicLink: string };
 }) => {
-  const { loginCode, magicLink } = props.data;
+  const { token, magicLink } = props.data;
   return (
     <Html>
       <Head />
@@ -43,7 +43,7 @@ export const MagicLink = (props: {
             link does not work, you can use the login verification code
             directly:
           </Text>
-          <code style={code}>{loginCode}</code>
+          <code style={code}>{token}</code>
           <Hr style={hr} />
           <Link href="https://gemijs.dev" style={reportLink}>
             Gemi

@@ -48,6 +48,7 @@ export const api = {
         AuthController,
         "signInPasswordless",
       ]),
+      "/sign-in/with-token": Route.post([AuthController, "signInWithToken"]),
       "/sign-out": Route.post([AuthController, "signOut"]),
       "/sign-up": Route.post([AuthController, "signUp"]),
       "/:oauth/sign-in": Route.get([AuthController, "oauthSignIn"]),

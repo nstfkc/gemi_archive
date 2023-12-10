@@ -46,7 +46,7 @@ Due date 15.12.2023
 
 ### 4. Models MVP
 
-- [ ] Basic CRUD operations
+- [x] Basic CRUD operations
 - [ ] Collection (Maybe)
 - [ ] Guarded fields (Maybe)
 
@@ -68,3 +68,5 @@ Due date 15.12.2023
 ### Http client
 - [ ] http.useMutation
 - [ ] Type-safe http.useQuery and http.useMutation
+
+
