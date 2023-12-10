@@ -3,9 +3,12 @@ import { Context } from "hono";
 import { CookieOptions } from "hono/utils/cookie";
 
 export class Controller {
+  cookies: any = [];
+
   constructor(protected ctx: Context) {}
 
   protected setCookie(name: string, value: string, options?: CookieOptions) {
+    this.cookies.push({ name, value, options });
     setCookie(this.ctx, name, value, options);
   }
 

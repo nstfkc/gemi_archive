@@ -7,7 +7,7 @@ generator client {
 }
 
 generator gemi {
-  provider = "./db/generator.cjs"
+  provider = "./lib/db/generator.cjs"
 }
 
 datasource db {
@@ -16,7 +16,7 @@ datasource db {
   relationMode = "prisma"
 }
 
-enum AccountRole {
+enum UserRole {
   OWNER
   ADMIN
   MODERATOR
@@ -24,48 +24,51 @@ enum AccountRole {
   VISITOR
 }
 
-model Account {
-  id                String      @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?     @db.Text
-  access_token      String?     @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?     @db.Text
-  session_state     String?
-  role              AccountRole @default(USER)
+model Organization {
+  id   Int    @id @default(autoincrement())
+  name String
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  membership Membership[]
+}
 
+model Membership {
+  id   Int            @id @default(autoincrement())
+  role MembershipRole
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId Int
+
+  user   User? @relation(fields: [userId], references: [id])
+  userId Int?
+
+  // When the user joins, we will clear out the name and email and set the user.
+  invitedName  String?
+  invitedEmail String?
+
+  @@unique([organizationId, invitedEmail])
   @@index([userId])
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  userAgent    String?
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+enum MembershipRole {
+  OWNER
+  ADMIN
+  USER
+}
 
-  @@index([userId])
+enum GlobalRole {
+  SUPERADMIN
+  CUSTOMER
 }
 
 model User {
-  id                 String    @id @default(cuid())
-  name               String?
-  email              String?   @unique
-  emailVerified      DateTime?
-  password           String?   @default("")
-  loginCode          String?   @default("")
-  loginCodeCreatedAt DateTime?
-  accounts           Account[]
-  sessions           Session[]
-  Post               Post[]
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  name      String?
+  email     String     @unique
+  role      GlobalRole @default(CUSTOMER)
+
+  membership Membership[]
 }
 
 model VerificationToken {
@@ -74,17 +77,4 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
-}
-
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String
-  published Boolean  @default(false)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([authorId])
 }
