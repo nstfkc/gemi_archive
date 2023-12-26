@@ -6,10 +6,6 @@ generator client {
   binaryTargets = ["native", "darwin-arm64"]
 }
 
-generator gemi {
-  provider = "./lib/db/generator.cjs"
-}
-
 datasource db {
   provider     = "mysql"
   url          = env("DATABASE_URL")

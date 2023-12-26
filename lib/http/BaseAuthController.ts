@@ -1,11 +1,11 @@
 import { sign } from "hono/jwt";
 import { HttpRequest } from "@/lib/http/HttpRequest";
-import { User } from "@/app/models/User";
-import { VerificationToken } from "@/app/models/VerificationToken";
 import { Controller } from "@/lib/http/Controller";
+import { prisma } from "@/db/orm";
+
 import { AuthenticationError } from "./errors/AuthenticationError";
-import { Email } from "../email";
 import { generateRandomString } from "../utils/generateRandomString";
+import { Email } from "../email";
 
 export class BaseAuthController extends Controller {
   protected googleScope = "https://www.googleapis.com/auth/userinfo.profile";
@@ -35,7 +35,7 @@ export class BaseAuthController extends Controller {
   async signIn(request: HttpRequest) {
     const { email, password } = await request.getBody();
 
-    const user = await User.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         email: String(email),
       },
@@ -70,7 +70,7 @@ export class BaseAuthController extends Controller {
   async signUp(request: HttpRequest) {
     const { email, name } = await request.getBody();
 
-    await User.create({
+    await prisma.user.create({
       data: {
         email: String(email),
         name: String(name),
@@ -93,7 +93,7 @@ export class BaseAuthController extends Controller {
     );
 
     try {
-      await VerificationToken.create({
+      await prisma.verificationToken.create({
         data: {
           identifier: email,
           token,
@@ -129,7 +129,7 @@ export class BaseAuthController extends Controller {
       return { success: false };
     }
 
-    const verificationCode = await VerificationToken.findFirst({
+    const verificationCode = await prisma.verificationToken.findFirst({
       where: {
         identifier: email,
         token: Buffer.from(token, "base64").toString("utf8"),
@@ -147,10 +147,10 @@ export class BaseAuthController extends Controller {
       return { success: false };
     }
 
-    let user = await User.findUnique({ where: { email } });
+    let user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      user = await User.create({
+      user = await prisma.user.create({
         data: {
           email: String(email),
           name: "",
@@ -191,14 +191,14 @@ export class BaseAuthController extends Controller {
         let user;
 
         try {
-          user = await User.findUnique({ where: { email: data.email } });
+          user = await prisma.user.findUnique({ where: { email: data.email } });
         } catch (err) {
           // Do something
         }
 
         if (!user) {
           try {
-            user = await User.create({
+            user = await prisma.user.create({
               data: { email: data.email, name: data.name },
             });
           } catch (err) {
@@ -239,7 +239,7 @@ export class BaseAuthController extends Controller {
       email: string;
     };
 
-    const verificationToken = await VerificationToken.findFirst({
+    const verificationToken = await prisma.verificationToken.findFirst({
       where: {
         identifier: email,
         token: code,
@@ -257,10 +257,10 @@ export class BaseAuthController extends Controller {
       throw new AuthenticationError("Invalid credentials");
     }
 
-    let user = await User.findUnique({ where: { email } });
+    let user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      user = await User.create({
+      user = await prisma.user.create({
         data: {
           email,
           name: "",
