@@ -1,5 +1,4 @@
 import { PropsWithChildren } from "react";
-import { renderToString } from "react-dom/server";
 import { App } from "../app";
 import { renderRoutes } from "../renderRoutes";
 
@@ -13,6 +12,8 @@ export function render<Data>(config: {
   layoutData?: unknown;
   params: Record<string, string>;
   url: string;
+  styles: string;
+  scripts: string;
 }) {
   const {
     data,
@@ -24,6 +25,8 @@ export function render<Data>(config: {
     layoutData = {},
     params,
     url,
+    styles,
+    scripts,
   } = config;
 
   const serverData = {
@@ -35,19 +38,27 @@ export function render<Data>(config: {
     params,
   };
 
-  const scripts = `<script>window.serverData = '${JSON.stringify(
-    serverData,
-  )}';</script>`;
-
   const routes = renderRoutes(routeManifest);
 
-  const apphtml = renderToString(
-    <App serverData={serverData as any}>{<>{routes}</>}</App>,
-  );
-
-  return template
-    .replace(`<!--app-html-->`, apphtml)
-    .replace(`<!--server-data-->`, scripts);
+  return {
+    App: () => (
+      <html>
+        <head
+          dangerouslySetInnerHTML={{
+            __html: `
+${scripts}
+${styles}
+        `,
+          }}
+        ></head>
+        <body>
+          <App serverData={serverData}>{routes}</App>
+        </body>
+      </html>
+    ),
+    serverData,
+    routes,
+  };
 }
 
 export function renderLayout<Data>(

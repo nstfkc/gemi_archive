@@ -14,6 +14,9 @@ export function createViewRoutes<
   parentPath: string,
   config: { template: string; routeManifest: any; layoutGetter?: LayoutGetter },
   routes: Record<string, T>,
+  renderToReadableStream: any,
+  styles: string,
+  scripts: string,
 ) {
   const defaultLayoutGetter: LayoutGetter = (_ctx) => {
     return Promise.resolve({
@@ -29,6 +32,9 @@ export function createViewRoutes<
       template: config.template,
       createViewRoutes,
       layoutGetter: config.layoutGetter ?? defaultLayoutGetter,
+      renderToReadableStream,
+      styles,
+      scripts,
     });
   });
 }

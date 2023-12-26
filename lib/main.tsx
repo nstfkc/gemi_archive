@@ -12,4 +12,4 @@ const Main = () => {
   return <App serverData={serverData}>{render}</App>;
 };
 
-hydrateRoot(document.getElementById("app")!, <Main />);
+hydrateRoot(document.body, <Main />, {});

@@ -1,4 +1,6 @@
+import "vite/modulepreload-polyfill";
 // @app import
+//
 import { Root } from "@/app/views/root";
 
 import { PropsWithChildren } from "react";

@@ -11,6 +11,9 @@ export default defineConfig({
   build: {
     ssrEmitAssets: true,
     manifest: true,
+    rollupOptions: {
+      input: "/lib/main.tsx",
+    },
   },
   resolve: {
     alias: {

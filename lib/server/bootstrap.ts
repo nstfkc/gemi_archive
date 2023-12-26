@@ -45,9 +45,14 @@ function createWebRoutes<T>(routes: WebRoutes<T>) {
   };
 }
 
-export function bootstrap(template: string, serveStatic?: (app: Hono) => void) {
+export function bootstrap(
+  template: string,
+  serveStatic?: (app: Hono) => void,
+  renderToReadableStream: any,
+  styles: string,
+  scripts: string,
+) {
   const app = new Hono();
-
   const { manifest, routes } = createWebRoutes(web);
 
   createApiRoutes(app, "/api", api);
@@ -61,7 +66,15 @@ export function bootstrap(template: string, serveStatic?: (app: Hono) => void) {
     serveStatic(app);
   }
 
-  createViewRoutes(app, "/", { template, routeManifest: manifest }, routes);
+  createViewRoutes(
+    app,
+    "/",
+    { template, routeManifest: manifest },
+    routes,
+    renderToReadableStream,
+    styles,
+    scripts,
+  );
 
   app.get("__routes", (ctx) => ctx.json(app.routes));
 

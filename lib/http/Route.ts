@@ -1,5 +1,5 @@
 import * as z from "zod";
-import React from "react";
+import React, { createElement } from "react";
 import { Context, Hono } from "hono";
 
 import { middlewareAliases } from "@/app/http/kernel";
@@ -10,6 +10,7 @@ import { CreateApiRoutes, CreateViewRoutes } from "./createViewRoutes";
 import { HttpRequest } from "./HttpRequest";
 import { createRequest } from "./createRequest";
 import { AuthenticationError } from "./errors/AuthenticationError";
+import * as RD from "react-dom/server";
 
 function renderMiddlewares(middlewares: Middleware[] = []) {
   return middlewares.map((middleware) => {
@@ -161,6 +162,7 @@ interface ViewRouteConfig {
   routeManifest: Record<string, any>;
   createViewRoutes: CreateViewRoutes;
   layoutGetter: LayoutGetter;
+  renderToReadableStream: typeof RD.renderToReadableStream;
 }
 
 interface ApiRouteConfig {
@@ -221,8 +223,16 @@ export class Route {
       viewPath,
       hasLoader: !!handler,
       handler: (app: Hono, config: ViewRouteConfig) => {
-        const { path, routeManifest, template, layoutGetter, parentPath } =
-          config;
+        const {
+          path,
+          routeManifest,
+          template,
+          layoutGetter,
+          parentPath,
+          renderToReadableStream,
+          styles,
+          scripts,
+        } = config;
 
         app.get(path, ...renderMiddlewares(middlewares), async (ctx) => {
           let dataPromise = Promise.resolve({} as Data);
@@ -251,7 +261,7 @@ export class Route {
             return ctx.json({ ...data, layoutData: layout.data });
           }
 
-          const html = render({
+          const { App, routes, serverData } = render({
             viewPath,
             data,
             path: [parentPath, path].join("").replace("//", "/"),
@@ -261,9 +271,21 @@ export class Route {
             routeManifest,
             layout: layout.wrapper,
             layoutData: layout.data,
+            styles,
+            scripts,
           });
 
-          return ctx.html(html);
+          const stream = await renderToReadableStream(createElement(App), {
+            bootstrapScriptContent: `window.serverData = '${JSON.stringify(
+              serverData,
+            )}'`,
+            bootstrapModules:
+              process.env.NODE_ENV === "development"
+                ? ["/lib/main.tsx", "http://localhost:5173/@vite/client"]
+                : [],
+          });
+
+          return new Response(stream, { headers: ctx.res.headers });
         });
       },
     };
@@ -336,6 +358,9 @@ export class Route {
           routeManifest,
           template,
           parentPath,
+          renderToReadableStream,
+          styles,
+          scripts,
         } = config;
         const groupPath = [parentPath, path].join("").replace("//", "/");
         const group = new Hono();
@@ -349,6 +374,9 @@ export class Route {
             layoutGetter: layout?.handler(layoutGetter) ?? layoutGetter,
           },
           routes as any,
+          renderToReadableStream,
+          styles,
+          scripts,
         );
         app.route(path, group);
       },

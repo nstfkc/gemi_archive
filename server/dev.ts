@@ -1,17 +1,22 @@
 import { serve } from "bun";
 import { Hono } from "hono";
-import { readFileSync } from "node:fs";
-import path, { join } from "node:path";
-import { TypescriptParser } from "typescript-parser";
+import path from "node:path";
 import { parseFile, updateManifest } from "./helpers";
+import { renderToReadableStream } from "react-dom/server";
+
+const scripts = `<script type="module">
+  import RefreshRuntime from 'http://localhost:5173/@react-refresh'
+  RefreshRuntime.injectIntoGlobalHook(window)
+  window.$RefreshReg$ = () => {}
+  window.$RefreshSig$ = () => (type) => type
+  window.__vite_plugin_react_preamble_installed__ = true
+</script>`;
 
 const rootDir = process.cwd();
 const libDir = path.join(rootDir, "lib");
 const appDir = path.join(rootDir, "app");
 const dbDir = path.join(rootDir, "db");
 const debugDir = path.join(rootDir, "debug");
-
-const parser = new TypescriptParser();
 
 export async function main() {
   const root = process.cwd();
@@ -34,6 +39,9 @@ export async function main() {
       ssrManifest: true,
       manifest: true,
       ssrEmitAssets: true,
+      rollupOptions: {
+        input: "/lib/main.tsx",
+      },
     },
     appType: "custom",
     resolve: {
@@ -65,10 +73,12 @@ export async function main() {
       }
     },
     async (ctx) => {
-      const template = await vite.transformIndexHtml(
-        ctx.req.url,
-        readFileSync(path.resolve(join(rootDir, "index.html")), "utf-8"),
-      );
+      // const template = await vite.transformIndexHtml(
+      //   ctx.req.url,
+      //   readFileSync(path.resolve(join(rootDir, "index.html")), "utf-8"),
+      // );
+
+      const template = ``;
       const { bootstrap } = await vite.ssrLoadModule(
         "/lib/server/bootstrap.ts",
       );
@@ -88,6 +98,10 @@ export async function main() {
 
       const router = bootstrap(
         template.replace("<!--css-entry-->", styles.join("\n")),
+        null,
+        renderToReadableStream,
+        styles.join("\n"),
+        scripts,
       );
 
       return await router.fetch(ctx.req.raw);
