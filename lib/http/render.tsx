@@ -19,9 +19,6 @@ export function render<Data>(config: {
     data,
     path,
     routeManifest,
-    template,
-    viewPath,
-    layout = (children) => <>{children}</>,
     layoutData = {},
     params,
     url,
@@ -45,10 +42,7 @@ export function render<Data>(config: {
       <html>
         <head
           dangerouslySetInnerHTML={{
-            __html: `
-${scripts}
-${styles}
-        `,
+            __html: `${scripts}\n${styles}`,
           }}
         ></head>
         <body>

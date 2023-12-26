@@ -9,7 +9,14 @@ declare const window: {
 const Main = () => {
   const serverData = JSON.parse(window.serverData) as ServerData;
   const render = renderRoutes(serverData.routeManifest);
-  return <App serverData={serverData}>{render}</App>;
+  return (
+    <>
+      <></>
+      <>
+        <App serverData={serverData}>{render}</App>
+      </>
+    </>
+  );
 };
 
 hydrateRoot(document.body, <Main />, {});

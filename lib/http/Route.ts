@@ -158,11 +158,12 @@ export type LayoutGetter = (
 interface ViewRouteConfig {
   path: string;
   parentPath: string;
-  template: string;
   routeManifest: Record<string, any>;
   createViewRoutes: CreateViewRoutes;
   layoutGetter: LayoutGetter;
   renderToReadableStream: typeof RD.renderToReadableStream;
+  styles: string;
+  scripts: string;
 }
 
 interface ApiRouteConfig {
@@ -226,7 +227,6 @@ export class Route {
         const {
           path,
           routeManifest,
-          template,
           layoutGetter,
           parentPath,
           renderToReadableStream,
@@ -267,7 +267,6 @@ export class Route {
             path: [parentPath, path].join("").replace("//", "/"),
             params: ctx.req.param() as Record<string, string>,
             url: ctx.req.url,
-            template,
             routeManifest,
             layout: layout.wrapper,
             layoutData: layout.data,
@@ -356,7 +355,6 @@ export class Route {
           layoutGetter,
           path,
           routeManifest,
-          template,
           parentPath,
           renderToReadableStream,
           styles,
@@ -370,7 +368,6 @@ export class Route {
           groupPath,
           {
             routeManifest,
-            template,
             layoutGetter: layout?.handler(layoutGetter) ?? layoutGetter,
           },
           routes as any,
