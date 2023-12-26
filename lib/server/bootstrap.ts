@@ -5,7 +5,10 @@ import { api, web } from "@/app/http/routes";
 
 import { createApiRoutes, createViewRoutes } from "../http/createViewRoutes";
 import { ViewRoute, ViewRouteGroup } from "../http/Route";
+import { renderToReadableStream } from "react-dom/server";
 import { RouteManifest } from "../types/global";
+
+type RenderToReadableStream = typeof renderToReadableStream;
 
 type WebRoutes<T> = Record<string, ViewRoute<T> | ViewRouteGroup<T>>;
 
@@ -46,11 +49,10 @@ function createWebRoutes<T>(routes: WebRoutes<T>) {
 }
 
 export function bootstrap(
-  template: string,
-  serveStatic?: (app: Hono) => void,
-  renderToReadableStream: any,
+  renderToReadableStream: RenderToReadableStream,
   styles: string,
   scripts: string,
+  serveStatic?: (app: Hono) => void,
 ) {
   const app = new Hono();
   const { manifest, routes } = createWebRoutes(web);
@@ -69,7 +71,7 @@ export function bootstrap(
   createViewRoutes(
     app,
     "/",
-    { template, routeManifest: manifest },
+    { routeManifest: manifest },
     routes,
     renderToReadableStream,
     styles,

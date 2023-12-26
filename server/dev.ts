@@ -73,12 +73,6 @@ export async function main() {
       }
     },
     async (ctx) => {
-      // const template = await vite.transformIndexHtml(
-      //   ctx.req.url,
-      //   readFileSync(path.resolve(join(rootDir, "index.html")), "utf-8"),
-      // );
-
-      const template = ``;
       const { bootstrap } = await vite.ssrLoadModule(
         "/lib/server/bootstrap.ts",
       );
@@ -97,8 +91,6 @@ export async function main() {
       }
 
       const router = bootstrap(
-        template.replace("<!--css-entry-->", styles.join("\n")),
-        null,
         renderToReadableStream,
         styles.join("\n"),
         scripts,

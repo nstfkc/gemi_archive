@@ -6,7 +6,6 @@ export function render<Data>(config: {
   viewPath: string;
   data: Data;
   path: string;
-  template: string;
   routeManifest: Record<string, any>;
   layout?: (children: JSX.Element) => JSX.Element;
   layoutData?: unknown;
@@ -19,9 +18,6 @@ export function render<Data>(config: {
     data,
     path,
     routeManifest,
-    template,
-    viewPath,
-    layout = (children) => <>{children}</>,
     layoutData = {},
     params,
     url,
@@ -45,10 +41,7 @@ export function render<Data>(config: {
       <html>
         <head
           dangerouslySetInnerHTML={{
-            __html: `
-${scripts}
-${styles}
-        `,
+            __html: `${scripts}\n${styles}`,
           }}
         ></head>
         <body>
@@ -69,15 +62,6 @@ export function renderLayout<Data>(
   let Layout = (props: PropsWithChildren<{ data: Data }>) => (
     <>{props.children}</>
   );
-  /* try {
-   *   Layout = views[`/app/views/${viewPath}.tsx`].default;
-   * } catch (err) {
-   *   console.log(err);
-   *   // eslint-disable-next-line react/display-name
-   *   Layout = () => <div>Cannot find {viewPath} layout</div>;
-   * } */
-
-  // eslint-disable-next-line react/display-name
 
   return {
     wrapper: (children: JSX.Element) =>

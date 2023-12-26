@@ -12,7 +12,7 @@ export function createViewRoutes<
 >(
   app: Hono,
   parentPath: string,
-  config: { template: string; routeManifest: any; layoutGetter?: LayoutGetter },
+  config: { routeManifest: any; layoutGetter?: LayoutGetter },
   routes: Record<string, T>,
   renderToReadableStream: any,
   styles: string,
@@ -29,7 +29,6 @@ export function createViewRoutes<
       path,
       parentPath,
       routeManifest: config.routeManifest,
-      template: config.template,
       createViewRoutes,
       layoutGetter: config.layoutGetter ?? defaultLayoutGetter,
       renderToReadableStream,
