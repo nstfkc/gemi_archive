@@ -1,9 +1,9 @@
-import { PropsWithChildren } from "react";
+// @app import
 import { Root } from "@/app/views/root";
+
+import { PropsWithChildren } from "react";
 import { RouterProvider, RouteDefinition } from "@/lib/client/router";
 import { RouteManifest } from "./types/global";
-
-import "@/app/views/styles/global.css";
 
 export interface ServerData {
   routeManifest: RouteManifest;

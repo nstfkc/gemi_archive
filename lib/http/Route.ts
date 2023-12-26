@@ -250,6 +250,7 @@ export class Route {
           if (ctx.req.query("__json") === "true") {
             return ctx.json({ ...data, layoutData: layout.data });
           }
+
           const html = render({
             viewPath,
             data,

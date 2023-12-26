@@ -1,8 +1,10 @@
 import { Hono } from "hono";
 
+// @app import
 import { api, web } from "@/app/http/routes";
+
 import { createApiRoutes, createViewRoutes } from "../http/createViewRoutes";
-import { Route, ViewRoute, ViewRouteGroup } from "../http/Route";
+import { ViewRoute, ViewRouteGroup } from "../http/Route";
 import { RouteManifest } from "../types/global";
 
 type WebRoutes<T> = Record<string, ViewRoute<T> | ViewRouteGroup<T>>;

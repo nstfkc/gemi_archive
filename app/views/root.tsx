@@ -7,6 +7,7 @@ import {
 } from "@mantine/core";
 
 import "@mantine/core/styles.css";
+import "@/app/views/styles/global.css";
 
 const Wrapper = (props: PropsWithChildren) => {
   const theme = useMantineTheme();

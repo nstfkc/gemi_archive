@@ -1,7 +1,7 @@
-import { writeFile } from "node:fs/promises";
-
 import { EmailOptions, JSONLike } from "../types/global";
 import { renderEmail } from "./renderEmail";
+
+// @app import
 import { EmailServiceProvider } from "@/app/providers/EmailServiceProvider";
 
 export class Email {
@@ -25,7 +25,7 @@ export class Email {
       .split("/")
       .join("-")}.html`;
 
-    await writeFile(fileName, html);
+    await Bun.write(fileName, html);
 
     Bun.spawnSync(["open", fileName]);
   }
