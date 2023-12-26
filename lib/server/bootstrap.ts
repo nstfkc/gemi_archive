@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 
-// @app import
-import { api, web } from "@/app/http/routes";
+import web from "@/app/http/routes/web";
+import api from "@/app/http/routes/api";
 
 import { createApiRoutes, createViewRoutes } from "../http/createViewRoutes";
 import { ViewRoute, ViewRouteGroup } from "../http/Route";
