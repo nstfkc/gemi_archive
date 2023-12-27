@@ -13,8 +13,7 @@ The goal of Gemi is to make application development as efficient as possible by 
 
 🚨 This project is under development 🚨
 
-`v0.1.0` is going to be release at 15.12.2023
-
+Currently not available for public. We are aiming for v0.1.0 release in early 2024. If you are interested in you can follow us on twitter https://twitter.com/gemijs
 
 ## Comparison with other frameworks
 
