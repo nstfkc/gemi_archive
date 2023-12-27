@@ -13,11 +13,12 @@ export default defineConfig({
     outDir: "dist/server",
     rollupOptions: {
       input: "/server/prod.ts",
-      external: ["bun"],
+      external: ["bun", "react-native"],
     },
   },
   resolve: {
     alias: {
+      "react-native": "react-native-web",
       "@/lib": libDir,
       "@/app": appDir,
       "@/db": dbDir,

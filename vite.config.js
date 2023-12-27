@@ -13,10 +13,12 @@ export default defineConfig({
     manifest: true,
     rollupOptions: {
       input: "/lib/main.tsx",
+      external: ["react-native"],
     },
   },
   resolve: {
     alias: {
+      "react-native": "react-native-xweb",
       "@/lib": libDir,
       "@/app": appDir,
     },

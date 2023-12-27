@@ -1,8 +1,13 @@
 import { Link } from "@/lib/client/router";
+import { lazy } from "react";
 
 interface HomeData {
   message: string;
 }
+
+const TestX = lazy(() =>
+  import("./components/Test").then((m) => ({ default: m.Test })),
+);
 
 const Home = (props: { data: HomeData }) => {
   return (
@@ -16,6 +21,9 @@ const Home = (props: { data: HomeData }) => {
       </div>
       <div>
         <Link href="/app/dashboard">Dashboard</Link>
+      </div>
+      <div>
+        <TestX />
       </div>
     </div>
   );

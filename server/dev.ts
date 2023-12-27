@@ -41,11 +41,13 @@ export async function main() {
       ssrEmitAssets: true,
       rollupOptions: {
         input: "/lib/main.tsx",
+        external: ["react-native"],
       },
     },
     appType: "custom",
     resolve: {
       alias: {
+        "react-native": "react-native-web",
         "@/lib": libDir,
         "@/app": appDir,
         "@/db": dbDir,
@@ -73,9 +75,15 @@ export async function main() {
       }
     },
     async (ctx) => {
-      const { bootstrap } = await vite.ssrLoadModule(
-        "/lib/server/bootstrap.ts",
-      );
+      let bootstrap;
+      try {
+        const res = await vite.ssrLoadModule("/lib/server/bootstrap.ts", {
+          fixStacktrace: true,
+        });
+        bootstrap = res.bootstrap;
+      } catch (err) {
+        return ctx.html(JSON.stringify(err));
+      }
 
       const styles = [];
 

@@ -5,14 +5,12 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "esnext",
     "skipLibCheck": true,
-
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "esModuleInterop": true,
-
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -25,5 +23,10 @@
     "types": ["bun-types", "vite/client", "./types.d.ts"]
   },
   "include": ["app", "lib", "server"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ],
+  "extends": "expo/tsconfig.base"
 }
