@@ -40,6 +40,7 @@
   "devDependencies": {
     "@flydotio/dockerfile": "latest",
     "@prisma/generator-helper": "^5.5.2",
+    "@types/bun": "^1.0.0",
     "@types/node": "^20.8.10",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
@@ -60,7 +61,7 @@
     "tslib": "^2.6.2",
     "typescript": "^5.0.2",
     "typescript-parser": "^2.6.1",
-    "vite": "^4.4.5"
+    "vite": "^5.0.10"
   },
   "resolutions": {
     "react": "canary",
